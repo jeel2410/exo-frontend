@@ -1,11 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dropdown } from "../../lib/components/atoms/Dropdown";
 import { DropdownItem } from "../../lib/components/atoms/DropdownItem";
 import { useNavigate } from "react-router";
+import { useModal } from "../../hooks/useModal";
+import LogoutModal from "../modal/LogoutModal";
+import localStorageService from "../../services/local.service";
+import { UserData } from "../../pages/Dashboard/CreateProject";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [userData, setUserData] = useState<UserData | undefined>();
   const navigate = useNavigate();
+
+  const {isOpen: isOpenLogoutModal,openModal: openLogoutModal,closeModal: closeLogoutModal} = useModal();
+  
+
+  useEffect(() => {
+    try {
+      const userRaw = localStorageService.getUser();
+      const user = typeof userRaw === "string" ? JSON.parse(userRaw) : userRaw;
+      setUserData(user || null);
+    } catch (error) {
+      console.error("Failed to parse user data from localStorage", error);
+    }
+  }, []);
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -72,7 +90,9 @@ export default function UserDropdown() {
           </li>
 
           <li>
-            <DropdownItem className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700">
+            <DropdownItem className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700"
+            onClick={openLogoutModal}
+            >
               <svg
                 className="fill-gray-500 group-hover:fill-gray-700"
                 width="24"
@@ -93,6 +113,7 @@ export default function UserDropdown() {
           </li>
         </ul>
       </Dropdown>
+      <LogoutModal isOpen={isOpenLogoutModal} onClose={closeLogoutModal} userData={userData} />
     </div>
   );
 }

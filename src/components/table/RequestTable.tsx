@@ -8,6 +8,9 @@ import {
 } from "./CreateRequestTable.tsx";
 import { CrossRedIcon, RightGreenIcon } from "../../icons";
 import Typography from "../../lib/components/atoms/Typography.tsx";
+import { useNavigate } from "react-router";
+import { useMutation } from "@tanstack/react-query";
+import projectService from "../../services/project.service.ts";
 
 export interface Data {
   id: number;
@@ -15,6 +18,7 @@ export interface Data {
   amount: number;
   createdDate: string;
   status: string;
+  request_id:string
 }
 
 const RequestTable = ({
@@ -31,6 +35,7 @@ const RequestTable = ({
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event: Event) => {
@@ -85,11 +90,26 @@ const RequestTable = ({
     setEditingId(null);
     setEditFormData({});
   };
-
-  const handleDelete = (orderId: number) => {
-    if (window.confirm("Are you sure you want to delete this record?")) {
-      setTableData((prev) => prev.filter((order) => order.id !== orderId));
-      setSelectedRows((prev) => prev.filter((id) => id !== orderId));
+  const deleteRequestMutation=useMutation({
+    mutationFn:async(requestIds:any)=>{
+      const res = await projectService.deleteRequest(requestIds);      
+      return res
+    },
+    onSuccess: (data) => {
+      console.log(data);      
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+  })
+  
+  const handleDelete = async(orderId: number,request_id:string) => {
+    if (window.confirm("Are you sure you want to delete this record?")) {      
+      const response=await deleteRequestMutation.mutateAsync(request_id);      
+      if(response.data.status===200){
+        setTableData((prev) => prev.filter((order) => order.id !== orderId));
+        setSelectedRows((prev) => prev.filter((id) => id !== orderId));
+      }
     }
     setOpenMenuId(null);
   };
@@ -356,8 +376,8 @@ const RequestTable = ({
                                 onClick={(
                                   e: React.MouseEvent<HTMLButtonElement>
                                 ) => {
-                                  e.stopPropagation();
-                                  //   handleEdit(data);
+                                  e.stopPropagation();                                  
+                                  navigate(`/request-details/${data.request_id}`)
                                 }}
                                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                                 role="menuitem"
@@ -384,7 +404,7 @@ const RequestTable = ({
                                   e: React.MouseEvent<HTMLButtonElement>
                                 ) => {
                                   e.stopPropagation();
-                                  handleDelete(data.id);
+                                  handleDelete(data.id,data.request_id);
                                 }}
                                 className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 transition-colors"
                                 role="menuitem"

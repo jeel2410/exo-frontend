@@ -308,11 +308,11 @@ const ProjectInfoForm = ({
   const uploadMutation = useMutation({
     mutationFn: fileUploadMutation,
     onSuccess: (data) => {
-      toast.success("File uploaded successfully!");
+      // toast.success("File uploaded successfully!");
       console.log("Upload result:", data);
     },
     onError: () => {
-      toast.error("Failed to upload file.");
+      // toast.error("Failed to upload file.");
     },
   });
 
@@ -327,10 +327,10 @@ const ProjectInfoForm = ({
       return { status: true };
     },
     onSuccess: () => {
-      toast.success("File removed successfully!");
+      // toast.success("File removed successfully!");
     },
     onError: () => {
-      toast.error("Failed to remove file.");
+      // toast.error("Failed to remove file.");
     },
   });
 

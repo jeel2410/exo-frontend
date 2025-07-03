@@ -30,12 +30,12 @@ const SignInForm = () => {
     onSuccess: (res) => {
       localStorageService.setUser(JSON.stringify(res.data.data));
       localStorageService.setAccessToken(JSON.stringify(res.data.data.token));
-      toast.success(t("login_successful"));
+      // toast.success(t("login_successful"));
       navigate("/");
     },
     onError: (error) => {
       console.error("Error during sign in:", error);
-      return toast.error(t("sign_in_error"));
+      // return toast.error(t("sign_in_error"));
     },
   });
 

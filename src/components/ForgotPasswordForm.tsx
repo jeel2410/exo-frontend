@@ -28,7 +28,7 @@ const ForgotPasswordForm = () => {
     onSuccess: (_, data) => {
       console.log(data, "data");
       localStorageService.setEmail(JSON.stringify(data.email));
-      toast.success(t("otp_sent_successfully"));
+      // toast.success(t("otp_sent_successfully"));
       navigate("/otp-verification", {
         state: {
           path: "forgot-password",
@@ -37,10 +37,10 @@ const ForgotPasswordForm = () => {
     },
     onError: (error: AxiosError) => {
       if (error.response?.status === 412) {
-        return toast.error(t("email_is_not_registered"));
+        // return toast.error(t("email_is_not_registered"));
       }
       console.error("Error during sign in:", error.response?.status);
-      return toast.error(t("otp_send_error"));
+      // return toast.error(t("otp_send_error"));
     },
   });
 

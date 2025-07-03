@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import {
@@ -13,6 +15,7 @@ import Typography from "../../lib/components/atoms/Typography";
 import AddressTable, { Data as AddressData } from "../table/AddressTable";
 import RequestTable, { Data as RequestData } from "../table/RequestTable";
 import History, { HistoryItem } from "./History";
+import projectService from "../../services/project.service";
 
 const initialAddressData: AddressData[] = [
   {
@@ -38,6 +41,7 @@ const initialRequestData: RequestData[] = [
     amount: 123300,
     createdDate: "24-20-2001",
     status: "pending",
+    request_id:""
   },
 ];
 
@@ -72,8 +76,55 @@ const historyData: HistoryItem[] = [
 ];
 
 const ProjectDetails = () => {
-  const files = ["tax 2025_file.pdf", "tax 2025_file.pdf", "tax 2025_file.pdf"];
+  const { projectId } = useParams();
   const { t } = useTranslation();
+  const [project, setProject] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await projectService.getProjectDetails(projectId!);
+        setProject(data);
+      } catch (err: any) {
+        setError(t("Failed to load project details"));
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (projectId) fetchProject();
+  }, [projectId, t]);
+
+  if (loading) return <div className="p-8">Loading...</div>;
+  if (error) return <div className="p-8 text-red-500">{error}</div>;
+  if (!project) return null;
+
+  // Map address for AddressTable
+  const addressData = (project.address || []).map((item: any, idx: number) => ({
+    id: idx + 1,
+    country: item.country,
+    providence: item.providence,
+    city: item.city,
+    municipality: item.municipality,
+  }));
+  
+  // Map requests for RequestTable
+  const requestData = (project.requests || []).map((item: any, idx: number) => ({
+    id: idx + 1,
+    requestNo: item.request_unique_number || idx + 1,
+    amount: Number(item.total_amount || 0),
+    createdDate: item.created_at ? new Date(item.created_at).toLocaleDateString("en-US") : "",
+    status: item.status || "",
+    request_id:item.id,
+  }));
+
+  // Format dates
+  const formatDate = (date: string) => date ? new Date(date).toLocaleDateString("en-US") : "-";
+  // Format amount
+  const formatAmount = (amount: string | number) => Number(amount).toLocaleString();
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -133,7 +184,7 @@ const ProjectDetails = () => {
                   weight="extrabold"
                   className="text-secondary-100"
                 >
-                  {t("project_details")} #25-00001
+                  {t("project_details")} {project.reference ? `#${project.reference}` : ""}
                 </Typography>
               </motion.div>
               <Typography
@@ -141,7 +192,7 @@ const ProjectDetails = () => {
                 weight="normal"
                 className="text-secondary-60"
               >
-                {t("last_updated_april_20_2025")}
+                {t("last_updated")} {formatDate(project.created_at)}
               </Typography>
             </div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -175,20 +226,25 @@ const ProjectDetails = () => {
               </Typography>
               <div className="mt-4 sm:mt-6 space-y-4 sm:space-y-5">
                 {[
-                  { label: "Project Name:", value: "Renovation Project" },
-                  { label: "Project Reference:", value: "PRJ-2025-001" },
+                  { label: "Project Name:", value: project.name },
+                  { label: "Project Reference:", value: project.reference },
                   {
                     label: "Amount:",
                     value: (
                       <>
-                        <span className="text-secondary-60">USD</span> 2,500,000
+                        <span className="text-secondary-60">{project.currency}</span> {formatAmount(project.amount)}
                       </>
                     ),
                   },
-                  { label: "Project Begin Date:", value: "01-06-2025" },
-                  { label: "Project End Date:", value: "01-06-2025" },
-                  { label: "Description:", value: "-" },
-                  { label: "Upload Files:", value: "-" },
+                  { label: "Project Begin Date:", value: formatDate(project.begin_date) },
+                  { label: "Project End Date:", value: formatDate(project.end_date) },
+                  { label: "Description:", value: <span dangerouslySetInnerHTML={{ __html: project.description || "-" }} /> },
+                  { label: "Upload Files:", value: project.documents && project.documents.length > 0 ? project.documents.map((doc: any, idx: number) => (
+                    <a key={idx} href={doc.file} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline">
+                      <PdfIcon width={16} height={16} />
+                      {doc.original_name}
+                    </a>
+                  )) : "-" },
                 ].map((item, index) => (
                   <motion.div
                     key={index}
@@ -230,11 +286,11 @@ const ProjectDetails = () => {
               </Typography>
               <div className="mt-4 sm:mt-6 space-y-4 sm:space-y-5">
                 {[
-                  { label: "Signed By:", value: "Jean Mukendi" },
-                  { label: "Position:", value: "Project Manager" },
-                  { label: "Organization:", value: "ABC Construction Ltd." },
-                  { label: "Place:", value: "Goma, North Kivu" },
-                  { label: "Date of Signing:", value: "01-06-2025" },
+                  { label: "Signed By:", value: project.signed_by },
+                  { label: "Position:", value: project.position },
+                  { label: "Organization:", value: project.organization },
+                  { label: "Place:", value: project.place },
+                  { label: "Date of Signing:", value: formatDate(project.date_of_signing) },
                 ].map((item, index) => (
                   <motion.div
                     key={index}
@@ -261,42 +317,37 @@ const ProjectDetails = () => {
                     </Typography>
                   </motion.div>
                 ))}
-                <motion.div
-                  className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4"
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  transition={{ delay: 0.5 }}
-                >
-                  <Typography
-                    size="sm"
-                    weight="normal"
-                    className="text-secondary-60 w-full sm:w-32"
+                {project.documents && project.documents.length > 0 && (
+                  <motion.div
+                    className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4"
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ delay: 0.5 }}
                   >
-                    Upload Files:
-                  </Typography>
-                  <div className="flex flex-col gap-2">
-                    {files.map((file, index) => (
-                      <motion.div
-                        key={index}
-                        className="border border-secondary-30 rounded-full flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 cursor-pointer hover:bg-secondary-10 transition-colors"
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                      >
-                        <PdfIcon width={16} height={16} />
-                        <Typography
-                          size="sm"
-                          weight="normal"
-                          className="text-secondary-100"
+                    <Typography
+                      size="sm"
+                      weight="normal"
+                      className="text-secondary-60 w-full sm:w-32"
+                    >
+                      Upload Files:
+                    </Typography>
+                    <div className="flex flex-col gap-2">
+                      {project.documents.map((doc: any, idx: number) => (
+                        <a
+                          key={idx}
+                          href={doc.file}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-blue-600 hover:underline"
                         >
-                          {file}
-                        </Typography>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
+                          <PdfIcon width={16} height={16} />
+                          {doc.original_name}
+                        </a>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -319,7 +370,7 @@ const ProjectDetails = () => {
               className="mt-4 sm:mt-6 overflow-x-auto"
               variants={itemVariants}
             >
-              <AddressTable data={initialAddressData} />
+              <AddressTable data={addressData} />
             </motion.div>
           </motion.div>
 
@@ -341,11 +392,11 @@ const ProjectDetails = () => {
               className="mt-4 sm:mt-6 overflow-x-auto"
               variants={itemVariants}
             >
-              <RequestTable data={initialRequestData} />
+              <RequestTable data={requestData} />
             </motion.div>
           </motion.div>
 
-          <motion.div
+          {/* <motion.div
             className="mt-4 sm:mt-5 rounded-lg"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -370,9 +421,9 @@ const ProjectDetails = () => {
                 <CloseYellowIcon width={24} height={24} />
               </motion.div>
             </div>
-          </motion.div>
+          </motion.div> */}
 
-          <motion.div
+          {/* <motion.div
             className="mt-4 sm:mt-5 mb-4 w-full border rounded-md bg-white shadow-lg p-4 sm:p-6"
             variants={containerVariants}
             initial="hidden"
@@ -383,7 +434,7 @@ const ProjectDetails = () => {
               History
             </Typography>
             <History items={historyData} />
-          </motion.div>
+          </motion.div> */}
         </div>
       </AppLayout>
     </div>

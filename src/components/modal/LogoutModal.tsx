@@ -3,14 +3,42 @@ import { ExitIcon } from "../../icons";
 import Button from "../../lib/components/atoms/Button";
 import Modal from "../../lib/components/atoms/Modal";
 import Typography from "../../lib/components/atoms/Typography";
+import { UserData } from "../../pages/Dashboard/CreateProject";
+import authService from "../../services/auth.service";
+import { useMutation } from "@tanstack/react-query";
+import localStorageService from "../../services/local.service";
 
 interface ChangeEmailModalProps {
   isOpen: boolean;
   onClose: () => void;
+  userData?:UserData
 }
 
-const LogoutModal = ({ isOpen, onClose }: ChangeEmailModalProps) => {
+const LogoutModal = ({ isOpen, onClose,userData }: ChangeEmailModalProps) => {
   const navigate = useNavigate();
+  const logoutMutatioin=useMutation({
+    mutationFn: async () => {  
+      const res = await authService.logOutUser()
+      return res.data;
+    },
+    onSuccess: (res) => {
+      console.log(res)
+    },
+    onError: (error) => {
+      console.error(error)
+    },
+  });
+
+  const handelLogoutUser= async()=>{
+    const res=await logoutMutatioin.mutateAsync();
+    if(res.status===200){
+      console.log("inside status")
+      onClose()
+      navigate("/sign-in");
+      localStorageService.logoutUSer();
+    }
+  }
+
   return (
     <div className="w-fit">
       <Modal
@@ -33,7 +61,7 @@ const LogoutModal = ({ isOpen, onClose }: ChangeEmailModalProps) => {
             weight="normal"
             className="text-secondary-60 mt-2"
           >
-            Logout of ExoTrack as pratik@mailinator.com?
+            Logout of ExoTrack as {userData?.email}?
           </Typography>
 
           <div className="flex gap-4 mt-6">
@@ -43,9 +71,7 @@ const LogoutModal = ({ isOpen, onClose }: ChangeEmailModalProps) => {
             <Button
               variant="primary"
               className="w-fit py-3"
-              onClick={() => {
-                navigate("/sign-in");
-              }}
+              onClick={handelLogoutUser}
             >
               Logout
             </Button>

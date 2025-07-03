@@ -3,6 +3,7 @@ import { CongratulationIcon } from "../../icons";
 import Button from "../../lib/components/atoms/Button";
 import Modal from "../../lib/components/atoms/Modal";
 import Typography from "../../lib/components/atoms/Typography";
+import { useNavigate } from "react-router";
 
 interface ChangeEmailModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ const CreateProjectConfirmationModal = ({
   onClose,
 }: ChangeEmailModalProps) => {
   const { t } = useTranslation();
+  const navigate=useNavigate()
   return (
     <div className="flex w-full">
       <Modal
@@ -54,12 +56,14 @@ const CreateProjectConfirmationModal = ({
             <Button
               variant="outline"
               className="w-full md:w-fit py-2.5 md:py-3 px-4 md:px-[35px]"
+              onClick={()=>{navigate("/");onClose()}}
             >
               {t("go_to_dashboard")}
             </Button>
             <Button
               variant="primary"
               className="w-full md:w-fit py-2.5 md:py-3 px-4 md:px-[35px]"
+              onClick={()=>navigate("/add-request")}
             >
               {t("create_request")}
             </Button>

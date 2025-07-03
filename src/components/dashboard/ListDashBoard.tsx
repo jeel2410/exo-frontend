@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import AppLayout from "../../layout/AppLayout";
@@ -16,95 +17,52 @@ import {
 import Typography from "../../lib/components/atoms/Typography.tsx";
 import Input from "../../lib/components/atoms/Input.tsx";
 import ListDashBoardTable, { Data } from "../table/ListDashboardTable.tsx";
+import homeService from "../../services/home.service.ts";
 
-const initialData: Data[] = [
-  {
-    id: 1,
-    projectId: "#25-00001",
-    projectName: "Renovation Project",
-    currency: "USD",
-    amount: 123,
-    createdDate: "24/20/2001",
-    noOfRequest: 2,
-  },
-  {
-    id: 2,
-    projectId: "#25-00002",
-    projectName: "Renovation Project",
-    currency: "USD",
-    amount: 123,
-    createdDate: "24/20/2001",
-    noOfRequest: 2,
-  },
-  {
-    id: 3,
-    projectId: "#25-00003",
-    projectName: "Renovation Project",
-    currency: "USD",
-    amount: 123,
-    createdDate: "24/20/2001",
-    noOfRequest: 2,
-  },
-  {
-    id: 4,
-    projectId: "#25-00001",
-    projectName: "Renovation Project",
-    currency: "CDF",
-    amount: 123,
-    createdDate: "24/20/2001",
-    noOfRequest: 2,
-  },
-  {
-    id: 5,
-    projectId: "#25-00001",
-    projectName: "Renovation Project",
-    currency: "USD",
-    amount: 123,
-    createdDate: "24/20/2001",
-    noOfRequest: 2,
-  },
-  {
-    id: 6,
-    projectId: "#25-00001",
-    projectName: "Renovation Project",
-    currency: "CDF",
-    amount: 123,
-    createdDate: "24/20/2001",
-    noOfRequest: 2,
-  },
-  {
-    id: 7,
-    projectId: "#25-00001",
-    projectName: "Renovation Project",
-    currency: "USD",
-    amount: 123,
-    createdDate: "24/20/2001",
-    noOfRequest: 2,
-  },
-];
-
-// Animation variants for staggered card animation
-const cardContainerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.2,
-    },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
-};
 
 const ListDashBoard = () => {
   const { t } = useTranslation();
+  const [data, setData] = useState<Data[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(8); // default rows per page
+  const [page, setPage] = useState(1);
+  // Dashboard card state
+  const [totalProject, setTotalProject] = useState(0);
+  const [totalAmountProject, setTotalAmountProject] = useState(0);
+  const [totalRequest, setTotalRequest] = useState(0);
+  const [totalAmountRequest, setTotalAmountRequest] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await homeService.getHomeData(limit, page);
+        setData(
+          (res.data || []).map((item: any, idx: number) => ({
+            id: idx + 1 + (page - 1) * limit,
+            projectId: item.reference,
+            projectName: item.name,
+            currency: item.currency,
+            amount: Number(item.amount),
+            createdDate: item.created_at,
+            noOfRequest: item.no_of_request || 0,
+            projectUuid: item.id,
+          }))
+        );
+        setTotal(res.total_project || 0); // Use total_project for pagination
+        setTotalProject(res.total_project || 0);
+        setTotalAmountProject(res.total_amount_project || 0);
+        setTotalRequest(res.total_request || 0);
+        setTotalAmountRequest(res.total_amount_request || 0);
+      } catch (e) {
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [limit, page]);
 
   return (
     <AppLayout>
@@ -137,70 +95,29 @@ const ListDashBoard = () => {
       </motion.div>
       <motion.div
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
-        variants={cardContainerVariants}
         initial="hidden"
         animate="visible"
       >
         {[
           {
-            icon: (
-              <FileVioletIcon
-                width={36}
-                height={36}
-                className="sm:w-11 sm:h-11"
-              />
-            ),
-            count: 2,
-            title: t("total_entity"),
+            icon: <FileVioletIcon width={36} height={36} className="sm:w-11 sm:h-11" />, count: totalProject, title: t("total_project"),
           },
           {
-            icon: (
-              <UsdGreenIcon
-                width={36}
-                height={36}
-                className="sm:w-11 sm:h-11"
-              />
-            ),
-            count: 2200,
-            title: t("total_amount"),
+            icon: <UsdGreenIcon width={36} height={36} className="sm:w-11 sm:h-11" />, count: totalAmountProject, title: t("total_amount_of_project"),
           },
           {
-            icon: (
-              <UsdVioletIcon
-                width={36}
-                height={36}
-                className="sm:w-11 sm:h-11"
-              />
-            ),
-            count: 440,
-            title: t("total_tax_amount"),
+            icon: <UsdVioletIcon width={36} height={36} className="sm:w-11 sm:h-11" />, count: totalRequest, title: t("total_request"),
           },
           {
-            icon: (
-              <UsdOrangeIcon
-                width={36}
-                height={36}
-                className="sm:w-11 sm:h-11"
-              />
-            ),
-            count: 4840,
-            title: t("total_amount_with_tax"),
+            icon: <UsdOrangeIcon width={36} height={36} className="sm:w-11 sm:h-11" />, count: totalAmountRequest, title: t("total_amount_requested"),
           },
         ].map((card, index) => (
           <motion.div
             key={index}
-            variants={cardVariants}
-            whileHover={{
-              scale: 1.03,
-              boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
-            }}
+            // whileHover={{ scale: 1.03, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
             transition={{ duration: 0.3 }}
           >
-            <DashBoardCard
-              icon={card.icon}
-              count={card.count}
-              title={card.title}
-            />
+            <DashBoardCard icon={card.icon} count={card.count} title={card.title} />
           </motion.div>
         ))}
       </motion.div>
@@ -224,63 +141,47 @@ const ListDashBoard = () => {
                 type="text"
                 placeholder="Search By Project ID or Project Name..."
                 className="pl-9 sm:pl-10 bg-white pr-4 text-sm sm:text-base w-full"
+              // Add search logic as needed
               />
             </div>
           </motion.div>
           <div className="flex gap-2 sm:gap-3">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Button
-                variant="outline"
-                className="flex justify-center items-center gap-2 w-fit py-2 px-3 sm:py-3 sm:px-4 min-w-[100px] sm:min-w-[120px] h-fit"
-              >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.2 }}>
+              <Button variant="outline" className="flex justify-center items-center gap-2 w-fit py-2 px-3 sm:py-3 sm:px-4 min-w-[100px] sm:min-w-[120px] h-fit">
                 <ArchiveIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                <Typography
-                  className="text-secondary-60"
-                  element="span"
-                  size="sm"
-                  weight="semibold"
-                >
-                  Archive
-                </Typography>
+                <Typography className="text-secondary-60" element="span" size="sm" weight="semibold">Archive</Typography>
               </Button>
             </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Button
-                variant="outline"
-                className="flex justify-center items-center gap-2 w-fit py-2 px-3 sm:py-3 sm:px-4 min-w-[100px] sm:min-w-[120px] h-fit"
-              >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ duration: 0.2 }}>
+              <Button variant="outline" className="flex justify-center items-center gap-2 w-fit py-2 px-3 sm:py-3 sm:px-4 min-w-[100px] sm:min-w-[120px] h-fit">
                 <FilterIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                <Typography
-                  className="text-secondary-60"
-                  element="span"
-                  size="sm"
-                  weight="semibold"
-                >
-                  Filter
-                </Typography>
+                <Typography className="text-secondary-60" element="span" size="sm" weight="semibold">Filter</Typography>
               </Button>
             </motion.div>
           </div>
         </div>
-        <motion.div
-          className="mt-4 sm:mt-6 mb-5 overflow-x-auto"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut", delay: 0.4 }}
-        >
-          <ListDashBoardTable data={initialData} />
+        <motion.div className="mt-4 sm:mt-6 mb-5 overflow-x-auto" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: "easeOut", delay: 0.4 }}>
+          <ListDashBoardTable data={data} />
+          {loading && <Typography className="text-center mt-4">{t("Loading...")}</Typography>}
         </motion.div>
+        <div className="flex justify-between items-center mt-4">
+          <div>
+            Rows per page:
+            <select value={limit} onChange={e => setLimit(Number(e.target.value))} className="ml-2 border rounded px-2 py-1">
+              {[8, 16, 32].map(opt => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span>Page: {page} of {Math.max(1, Math.ceil(total / limit))}</span>
+            <Button variant="outline" className="px-2 py-1" disabled={page === 1} onClick={() => setPage(page - 1)}>&lt;</Button>
+            <Button variant="outline" className="px-2 py-1" disabled={page === Math.ceil(total / limit) || total === 0} onClick={() => setPage(page + 1)}>&gt;</Button>
+          </div>
+        </div>
       </motion.div>
     </AppLayout>
   );
 };
 
-export default ListDashBoard;
+export default ListDashBoard;

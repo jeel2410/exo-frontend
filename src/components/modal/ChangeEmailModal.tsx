@@ -9,9 +9,12 @@ import Typography from "../../lib/components/atoms/Typography";
 interface ChangeEmailModalProps {
   isOpen: boolean;
   onClose: () => void;
+  sendOtp:()=>void;
+  onChange:(e:React.ChangeEvent<HTMLInputElement>)=>void;
+  fieldValue:{email:string,password:string,otp:string}
 }
 
-const ChangeEmailModal = ({ isOpen, onClose }: ChangeEmailModalProps) => {
+const ChangeEmailModal = ({ isOpen, onClose,sendOtp,onChange,fieldValue }: ChangeEmailModalProps) => {
   const { t } = useTranslation();
   return (
     <div className="w-fit">
@@ -30,11 +33,11 @@ const ChangeEmailModal = ({ isOpen, onClose }: ChangeEmailModalProps) => {
         <div className="mt-7">
           <div>
             <Label>{t("new_email")}</Label>
-            <Input placeholder={t("enter_email_address")} />
+            <Input placeholder={t("enter_email_address")} name="email" onChange={onChange} value={fieldValue.email} />
           </div>
           <div className="mt-6">
             <Label>{t("current_password")}</Label>
-            <Password />
+            <Password name="password" onChange={onChange} value={fieldValue.password} />
           </div>
         </div>
         <div className="w-full flex gap-4 justify-end mt-6">
@@ -45,7 +48,7 @@ const ChangeEmailModal = ({ isOpen, onClose }: ChangeEmailModalProps) => {
           >
             {t("cancel")}
           </Button>
-          <Button variant="primary" className="w-fit !py-3">
+          <Button variant="primary" className="w-fit !py-3" onClick={() => sendOtp()}>
             {t("send_otp")}
           </Button>
         </div>

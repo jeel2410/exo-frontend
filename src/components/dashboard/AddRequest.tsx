@@ -61,8 +61,7 @@ const AddRequest = () => {
   }, []);
 
   const projectId =
-    localStorageService.getProjectId() ||
-    "9f461061-94f2-4257-b7c5-911bbd724fe1";
+    localStorageService.getProjectId() ||null;
 
   const { data: addressData, isLoading: isLoadingAddresses } = useQuery<any>({
     queryKey: [`project-${projectId}-address`],
@@ -143,11 +142,11 @@ const AddRequest = () => {
       );
     },
     onSuccess: () => {
-      toast.success(t("request_created"));
+      // toast.success(t("request_created"));
       navigate("/");
     },
     onError: () => {
-      toast.error("Failed to upload file.");
+      // toast.error("Failed to upload file.");
     },
   });
 
@@ -203,11 +202,11 @@ const AddRequest = () => {
   const uploadMutation = useMutation({
     mutationFn: fileUploadMutation,
     onSuccess: (data) => {
-      toast.success("File uploaded successfully!");
+      // toast.success("File uploaded successfully!");
       console.log("Upload result:", data);
     },
     onError: () => {
-      toast.error("Failed to upload file.");
+      // toast.error("Failed to upload file.");
     },
   });
   const handleUploadFile = async (file: any, onProgress: any) => {
@@ -221,10 +220,10 @@ const AddRequest = () => {
       return { status: true };
     },
     onSuccess: () => {
-      toast.success("File removed successfully!");
+      // toast.success("File removed successfully!");
     },
     onError: () => {
-      toast.error("Failed to remove file.");
+      // toast.error("Failed to remove file.");
     },
   });
   const handleDeleteFile = async (fileId: string) => {

@@ -83,9 +83,9 @@ const SignUpForm = () => {
     validationSchema,
     onSubmit: (values) => {
       localStorageService.setUser(JSON.stringify(values));
-      toast.success(t("account_created_successfully"), {
-        autoClose: 800,
-      });
+      // toast.success(t("account_created_successfully"), {
+      //   autoClose: 800,
+      // });
       setTimeout(() => {
         navigate("/otp-verification", {
           state: {

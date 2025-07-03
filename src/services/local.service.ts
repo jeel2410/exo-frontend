@@ -98,14 +98,20 @@ class LocalStorageService {
       localStorage.removeItem(this.CLIENT_VIEW);
     }
   }
-  setProjectId(data: boolean) {
+  setProjectId(data: any) {
     const stringData = JSON.stringify(data);
     localStorage.setItem(this.PROJECT_ID, stringData);
   }
   getProjectId() {
-    return localStorage.getItem(this.PROJECT_ID);
+    const projectID = window ? localStorage.getItem(this.PROJECT_ID) : null;
+    return projectID ? JSON.parse(projectID) : null;
   }
   removeProjectId() {
+    localStorage.removeItem(this.PROJECT_ID);
+  }
+  logoutUSer(){
+    localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.PROJECT_ID);
   }
 }

@@ -35,9 +35,9 @@ export default function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/add-request" element={<AddRequest />} />
-            <Route path="/list-record" element={<ListDashBoard />} />
-            <Route path="/project-details" element={<ProjectDetails />} />
-            <Route path="/request-details" element={<TestRequestDetails />} />
+            <Route path="/list-project" element={<ListDashBoard />} />
+            <Route path="/project-details/:projectId" element={<ProjectDetails />} />
+            <Route path="/request-details/:requestId" element={<TestRequestDetails />} />
             <Route path="/filter-data" element={<TestFilterData />} />
 
             <Route path="/help" element={<Help />} />

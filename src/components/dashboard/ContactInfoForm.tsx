@@ -221,10 +221,10 @@ const ContactInfoForm = ({
   const uploadMutation = useMutation({
     mutationFn: fileUploadMutation,
     onSuccess: () => {
-      toast.success("File uploaded successfully!");
+      // toast.success("File uploaded successfully!");
     },
     onError: () => {
-      toast.error("Failed to upload file.");
+      // toast.error("Failed to upload file.");
     },
   });
 
@@ -239,10 +239,10 @@ const ContactInfoForm = ({
       return { status: true };
     },
     onSuccess: () => {
-      toast.success("File removed successfully!");
+      // toast.success("File removed successfully!");
     },
     onError: () => {
-      toast.error("Failed to remove file.");
+      // toast.error("Failed to remove file.");
     },
   });
   console.log(projectData);

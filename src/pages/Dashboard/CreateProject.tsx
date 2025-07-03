@@ -17,6 +17,7 @@ import moment from "moment";
 import { useMutation } from "@tanstack/react-query";
 import projectService from "../../services/project.service";
 import { toast } from "react-toastify";
+import localStorageService from "../../services/local.service";
 
 export interface UserData {
   id: number;
@@ -218,12 +219,13 @@ const CreateProject = () => {
     mutationFn: async (data: any) => {
       return await projectService.createProject(data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       openModal();
+      localStorageService.setProjectId(data.data.data.id)
     },
     onError: (error) => {
       console.error("Error during project creation:", error);
-      return toast.error("Failed to create project.");
+      // return toast.error("Failed to create project.");
     },
   });
 

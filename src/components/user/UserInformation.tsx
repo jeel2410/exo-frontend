@@ -7,7 +7,8 @@ import Label from "../../lib/components/atoms/Label";
 import PhoneInput from "../../lib/components/atoms/PhoneInput";
 import Typography from "../../lib/components/atoms/Typography";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+
+import authService from "../../services/auth.service";
 
 // 📌 Type definitions
 interface UserData {
@@ -56,15 +57,7 @@ const UserInformation = ({ userData }: UserInformationProps) => {
         formData.append(key, value);
       });
 
-      const res = await axios.post(
-        "https://exotrack.makuta.cash/api/V1/profile",
-        data,
-        {
-          headers: {
-            VAuthorization: `Bearer ${userData?.token || ""}`,
-          },
-        }
-      );
+      const res = await authService.editProfile(data)
       return res.data;
     },
     onSuccess: (res) => {
