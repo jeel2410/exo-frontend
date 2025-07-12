@@ -77,6 +77,15 @@ import { ReactComponent as SearchIcon } from "./search-icon.svg?react";
 import { ReactComponent as ArchiveIcon } from "./archive.svg?react";
 import { ReactComponent as InfoIcon } from "./info.svg?react";
 import { ReactComponent as CloseYellowIcon } from "./close-yellow.svg?react";
+import { ReactComponent as XCircleIcon } from "./x-circle.svg?react";
+import { ReactComponent as BanIcon } from "./ban.svg?react";
+import { ReactComponent as PencilIcon } from "./pencil.svg?react";
+import { ReactComponent as ArchiveIconDark } from "./archive-dark.svg?react";
+import { ReactComponent as EyeDarkIcon } from "./eye-dark.svg?react";
+import { ReactComponent as ChevronLeftIcon } from "./chevron-left.svg?react";
+import { ReactComponent as ChevronLeftLightIcon } from "./chevron-left-light.svg?react";
+import { ReactComponent as ChevronRightIcon } from "./chevron-right.svg?react";
+import { ReactComponent as ChevronRightLightIcon } from "./chevron-right-light.svg?react";
 
 import USFlag from "./USFlag";
 import CDFFlag from "./CDFFlag";
@@ -160,4 +169,13 @@ export {
   CreateRequestIcon,
   WhitePlusIcon,
   CongratulationIcon,
+  XCircleIcon,
+  BanIcon,
+  PencilIcon,
+  ArchiveIconDark,
+  EyeDarkIcon,
+  ChevronLeftIcon,
+  ChevronLeftLightIcon,
+  ChevronRightIcon,
+  ChevronRightLightIcon
 };

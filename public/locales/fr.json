@@ -193,5 +193,7 @@
   "password_update_error": "Échec de la mise à jour du mot de passe.",
   "password_updated_successfully": "Mot de passe mis à jour avec succès.",
   "last_updated": "last updated",
-  "total_quantity": "Total Quantity"
+  "total_quantity": "Total Quantity",
+  "no_projects_available": "Aucun projet disponible",
+  "get_started_by_submitting_your_first_project": "Commencez en soumettant votre premier projet"
 }

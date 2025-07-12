@@ -23,10 +23,10 @@ const CreateRequest = ({ onClick }: Props) => {
           size="xl_2"
           weight="extrabold"
         >
-          {t("no_requests_available")}
+          {t("no_projects_available")}
         </Typography>
         <Typography className="text-secondary-60" size="xl_2" weight="semibold">
-          {t("get_started_by_submitting_your_first_request")}
+          {t("get_started_by_submitting_your_first_project")}
         </Typography>
         <Button
           variant="primary"
@@ -34,7 +34,7 @@ const CreateRequest = ({ onClick }: Props) => {
           onClick={() => navigate("/create-project")}
         >
           <WhitePlusIcon />
-          <Typography>{t("create_request")}</Typography>
+          <Typography>{t("create_project")}</Typography>
         </Button>
       </div>
     </div>

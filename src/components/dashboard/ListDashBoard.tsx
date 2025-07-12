@@ -5,6 +5,10 @@ import AppLayout from "../../layout/AppLayout";
 import Button from "../../lib/components/atoms/Button";
 import DashBoardCard from "../../lib/components/molecules/DashBoardCard.tsx";
 import {
+  ChevronLeftIcon,
+  ChevronLeftLightIcon,
+  ChevronRightIcon,
+  ChevronRightLightIcon,
   // ArchiveIcon,
   FileVioletIcon,
   FilterIcon,
@@ -90,6 +94,9 @@ const ListDashBoard = () => {
           createdDate: item.created_at,
           noOfRequest: item.requests_count || 0,
           projectUuid: item.id,
+          status:item.status,
+          endDate:item.end_date,
+          financeBy:item.finance_by
         }));
 
         setData(dataArray);
@@ -190,7 +197,7 @@ const ListDashBoard = () => {
 
         <motion.div className="px-4 sm:px-0">
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6"
             initial="hidden"
             animate="visible"
           >
@@ -217,17 +224,17 @@ const ListDashBoard = () => {
                 count: totalAmountProject,
                 title: t("total_amount_of_project"),
               },
-              {
-                icon: (
-                  <UsdVioletIcon
-                    width={36}
-                    height={36}
-                    className="sm:w-11 sm:h-11"
-                  />
-                ),
-                count: totalRequest,
-                title: t("total_request"),
-              },
+              // {
+              //   icon: (
+              //     <UsdVioletIcon
+              //       width={36}
+              //       height={36}
+              //       className="sm:w-11 sm:h-11"
+              //     />
+              //   ),
+              //   count: totalRequest,
+              //   title: t("total_request"),
+              // },
               {
                 icon: (
                   <UsdOrangeIcon
@@ -329,13 +336,13 @@ const ListDashBoard = () => {
               </div>
             </div>
 
-            <div className="-mx-3 sm:mx-0 overflow-x-auto">
+            <div className="sm:mx-0 overflow-x-auto">
               <ListDashBoardTable data={data} />
             </div>
 
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-4 sm:px-0">
-              <div className="flex items-center gap-3 text-sm">
-                <span>{t("Rows per page:")} </span>
+              <div className="flex items-center gap-2 text-sm">
+                <span>Rows per page:</span>
                 <select
                   value={limit}
                   onChange={(e) => handleLimitChange(Number(e.target.value))}
@@ -347,59 +354,26 @@ const ListDashBoard = () => {
                     </option>
                   ))}
                 </select>
-                <span className="hidden sm:inline">
-                  {t("Showing")} {offset + 1} -{" "}
-                  {Math.min(offset + limit, total)} {t("of")} {total}
-                </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-sm">
                 <Button
                   variant="outline"
-                  className="px-2 py-1 min-w-[32px] text-sm"
+                  className="px-2 py-1 min-w-[32px] border-0 disabled:text-gray-400"
                   disabled={currentPage === 1}
                   onClick={() => handlePageChange(currentPage - 1)}
                 >
-                  &lt;
+                  {currentPage===1?<ChevronLeftLightIcon/>:<ChevronLeftIcon/>} 
                 </Button>
-
-                <div className="flex gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={
-                          currentPage === pageNum ? "primary" : "outline"
-                        }
-                        className={`px-2 py-1 min-w-[32px] text-sm ${
-                          currentPage === pageNum ? "text-white" : ""
-                        }`}
-                        onClick={() => handlePageChange(pageNum)}
-                      >
-                        {pageNum}
-                      </Button>
-                    );
-                  })}
-                </div>
-
+                <div><span className="text-nowrap">Page {currentPage} of {totalPages}</span></div>
                 <Button
                   variant="outline"
-                  className="px-2 py-1 min-w-[32px] text-sm"
+                  className="px-2 py-1 min-w-[32px] border-0"
                   disabled={currentPage === totalPages}
                   onClick={() => handlePageChange(currentPage + 1)}
                 >
-                  &gt;
+                {currentPage===totalPages?<ChevronRightLightIcon/>:<ChevronRightIcon/>} 
+
                 </Button>
               </div>
             </div>
