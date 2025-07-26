@@ -175,7 +175,6 @@ ProjectInfoFormProps) => {
     values: ProjectFormValues,
     { resetForm }: FormikHelpers<ProjectFormValues>
   ) => {
-    console.log("Form submitted with values:", values);
     onSubmit(values, () => {
       resetForm();
       setFormResetKey(Date.now().toString());
@@ -272,7 +271,7 @@ ProjectInfoFormProps) => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("type", "document");
-    formData.append("object_type", "request");
+    formData.append("object_type", "project");
 
     const response = await projectService.uploadFile(formData, {
       headers: {

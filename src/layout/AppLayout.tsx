@@ -20,9 +20,7 @@ const LayoutContent: React.FC<LayoutContentProps> = ({
       <div className="relative">
         <AppSidebar />
         <Backdrop />
-        <div className="absolute bottom-0 left-0 w-full p-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-          © {new Date().getFullYear()} ExoTrack, All rights reserved.
-        </div>
+        
       </div>
       <div
         className={`w-full flex-1 transition-all duration-300 ease-in-out ${
@@ -32,6 +30,9 @@ const LayoutContent: React.FC<LayoutContentProps> = ({
         <AppHeader />
         <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
           {children}
+          <div className="w-full p-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+            © {new Date().getFullYear()} ExoTrack, All rights reserved.
+          </div>
         </div>
       </div>
     </div>

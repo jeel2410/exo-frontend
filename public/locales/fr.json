@@ -251,5 +251,11 @@
   "no_data_found": "No Data Found",
   "no_projects_match_your_search_criteria": "No projects match your search criteria.",
   "clear_filters": "Clear Filters",
-  "create_new_project": "Create New Project"
+  "create_new_project": "Create New Project",
+  "signed_by_required": "Le champ 'Signé par' est requis",
+  "position_required": "Le champ 'Poste' est requis",
+  "amount_required": "Le champ 'Montant' est requis",
+  "organization_required": "Le champ 'Organisation' est requis",
+  "place_required": "Le champ 'Lieu' est requis",
+  "date_required": "La date est requise"
 }

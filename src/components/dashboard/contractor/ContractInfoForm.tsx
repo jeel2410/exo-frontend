@@ -1,4 +1,4 @@
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import { useTranslation } from "react-i18next";
 import UploadFile, { UploadedFile } from "../../common/UploadFile";
@@ -9,6 +9,9 @@ import DatePicker from "../../../lib/components/atoms/DatePicker";
 import { ArrowRightIconButton, CDFFlag, USFlag } from "../../../icons";
 import Button from "../../../lib/components/atoms/Button";
 import Typography from "../../../lib/components/atoms/Typography";
+import moment from "moment";
+import { useMutation } from "@tanstack/react-query";
+import projectService from "../../../services/project.service";
 
 interface ContractFormValues {
   signedBy: string;
@@ -57,14 +60,92 @@ const ContractInfoForm = ({ initialValues, onSubmit, isProjectSelected = false }
   ];
 
   const validationSchema = Yup.object().shape({
-    signedBy: Yup.string().required("Signed By is required"),
-    position: Yup.string().required("Position is required"),
+    signedBy: Yup.string().required(t("signed_by_required")),
+    position: Yup.string().required(t("position_required")),
     // projectManager: Yup.string().required("Project Manager is required"),
-    organization: Yup.string().required("Organization is required"),
-    amount: Yup.string().required("Amount is required"),
-    place: Yup.string().required("Place is required"),
-    dateOfSigning: Yup.string().required("Date is required"),
+    organization: Yup.string().required(t("amount_required")),
+    amount: Yup.string().required(t("organization_required")),
+    place: Yup.string().required(t("place_required")),
+    dateOfSigning: Yup.string().required(t("date_required")),
   });
+
+    const fileUploadMutation = async ({
+      file,
+      onProgress,
+    }: {
+      file: File;
+      onProgress: (percent: number) => void;
+    }): Promise<{ id: string; url: string }> => {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("type", "document");
+      formData.append("object_type", "contract");
+
+      const response = await projectService.uploadFile(formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          // VAuthorization: `Bearer ${user?.token}`,
+        },
+        onUploadProgress: (event: ProgressEvent) => {
+          if (event.total) {
+            const percent = Math.round((event.loaded * 100) / event.total);
+            onProgress(percent);
+          }
+        },
+      });
+
+      return {
+        id: response.data.data?.id ?? Date.now().toString(),
+        url: response.data.data?.url ?? "",
+        // file:response.data.data ?? ""
+      };
+    };
+    const uploadMutation = useMutation({
+      mutationFn: fileUploadMutation,
+      onSuccess: (data) => {
+        // toast.success("File uploaded successfully!");
+        console.log("Upload result:", data);
+      },
+      onError: () => {
+        // toast.error("Failed to upload file.");
+      },
+    });
+    const handleUploadFile = async (
+      file: File,
+      onProgress: (percent: number) => void
+    ) => {
+      const response = await uploadMutation.mutateAsync({ file, onProgress });
+      return response;
+    };
+
+    const removeFileMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await projectService.removeFile(id);
+      return { status: true };
+    },
+    onSuccess: () => {
+      // toast.success("File removed successfully!");
+    },
+    onError: () => {
+      // toast.error("Failed to remove file.");
+    },
+  });
+
+    const handleDeleteFile = async (
+        fileId: string,
+        setFieldValue: FormikHelpers<ContractFormValues>["setFieldValue"],
+        files: UploadedFile[]
+      ) => {
+        const response = await removeFileMutation.mutateAsync(fileId);
+        if (response.status) {
+          const filteredFiles = files.filter(
+            (file: UploadedFile) => file.id !== fileId
+          );
+          setFieldValue("files", filteredFiles);
+          return { status: true };
+        }
+        return { status: false };
+      };
 
   return (
     <Formik
@@ -92,7 +173,7 @@ const ContractInfoForm = ({ initialValues, onSubmit, isProjectSelected = false }
           </div>
           <div>
             <Label htmlFor="signedBy">
-              Signed By <span className="text-red-500">*</span>
+              {t("signed_by")}<span className="text-red-500">*</span>
             </Label>
             <Field
               id="signedBy"
@@ -110,7 +191,7 @@ const ContractInfoForm = ({ initialValues, onSubmit, isProjectSelected = false }
           <div className="flex gap-5 w-full">
             <div className="w-full">
               <Label htmlFor="position">
-                Position <span className="text-red-500">*</span>
+                {t("position")} :<span className="text-red-500">*</span>
               </Label>
               <Field
                 as={Input}
@@ -126,7 +207,7 @@ const ContractInfoForm = ({ initialValues, onSubmit, isProjectSelected = false }
             </div>
             <div className="w-full">
               <Label htmlFor="amount">
-                Amount <span className="text-red-500">*</span>
+                {t("amount")} :<span className="text-red-500">*</span>
               </Label>
               <CurrencyInput
                 id="amount"
@@ -176,7 +257,7 @@ const ContractInfoForm = ({ initialValues, onSubmit, isProjectSelected = false }
 
           <div>
             <Label htmlFor="organization">
-              Organization <span className="text-red-500">*</span>
+              {t("organization")} <span className="text-red-500">*</span>
             </Label>
             <Field
               as={Input}
@@ -192,7 +273,7 @@ const ContractInfoForm = ({ initialValues, onSubmit, isProjectSelected = false }
           </div>
           <div>
             <Label htmlFor="place">
-              Place <span className="text-red-500">*</span>
+              {t("place")} :<span className="text-red-500">*</span>
             </Label>
             <Field as={Input} name="place" id="place" placeholder="Frace" />
             <ErrorMessage
@@ -204,13 +285,13 @@ const ContractInfoForm = ({ initialValues, onSubmit, isProjectSelected = false }
 
           <div>
             <Label htmlFor="dateOfSigning">
-              Date of Signing <span className="text-red-500">*</span>
+              {t("date_of_signing")} :<span className="text-red-500">*</span>
             </Label>
             <DatePicker
               id="dateOfSigning"
               defaultDate={
                 values.dateOfSigning
-                  ? new Date(values.dateOfSigning)
+                  ? moment(values.dateOfSigning, "DD-MM-YYYY").toDate()
                   : undefined
               }
               onChange={(selectedDates: Date[]) => {
@@ -237,28 +318,36 @@ const ContractInfoForm = ({ initialValues, onSubmit, isProjectSelected = false }
           </div>
 
           <div>
-            <Label>Upload Files</Label>
+            <Label>{t("upload_files")} :</Label>
             <UploadFile
               files={values.contractFiles}
               onFilesSelect={(files) => setFieldValue("contractFiles", files)}
-              onUploadFile={async (file, onProgress) => {
-                return new Promise((res) => {
-                  setTimeout(() => {
-                    onProgress(100);
-                    res({
-                      id: Date.now().toString(),
-                      url: URL.createObjectURL(file),
-                    });
-                  }, 800);
-                });
-              }}
-              onDeleteFile={async (id) => {
-                const updated = values.contractFiles.filter(
-                  (file) => file.id !== id
-                );
-                setFieldValue("contractFiles", updated);
-                return { status: true };
-              }}
+              onUploadFile={handleUploadFile}
+              // onUploadFile={async (file, onProgress) => {
+              //   return new Promise((res) => {
+              //     setTimeout(() => {
+              //       onProgress(100);
+              //       res({
+              //         id: Date.now().toString(),
+              //         url: URL.createObjectURL(file),
+              //       });
+              //     }, 800);
+              //   });
+              // }}
+              onDeleteFile={async (fileId: string) => {
+                    return handleDeleteFile(
+                      fileId,
+                      setFieldValue,
+                      values.contractFiles
+                    );
+                  }}
+              // onDeleteFile={async (id) => {
+              //   const updated = values.contractFiles.filter(
+              //     (file) => file.id !== id
+              //   );
+              //   setFieldValue("contractFiles", updated);
+              //   return { status: true };
+              // }}
               maxSize={5}
               acceptedFormats={[".pdf", ".doc"]}
             />

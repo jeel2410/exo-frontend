@@ -122,7 +122,7 @@ const ContractProjectListPage = () => {
           endDate: project.end_date,
           financeBy: project.funded_by,
           projectUuid: project.id,
-          projectManager: `${project.user.first_name} ${project.user.last_name}`,
+          projectManager: `${project.user.first_name||""} ${project.user.last_name||""}`,
         })
       );
       setData(newProjectData);

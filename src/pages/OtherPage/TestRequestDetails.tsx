@@ -208,7 +208,7 @@ const TestRequestDetails = () => {
     {
       label: "project_details",
       path: requestData
-        ? `/project-details/${requestData && requestData.project_id}`
+        ? `/web/project-details/${requestData && requestData.project_id}`
         : "",
     },
     { label: "request_details", path: "" }, // current page, no link

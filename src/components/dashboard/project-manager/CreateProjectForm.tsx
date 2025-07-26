@@ -49,7 +49,7 @@ const initialValues: ProjectFormValues = {
 
 const CreateProjectForm = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t,i18n } = useTranslation();
   const { isOpen, openModal, closeModal } = useModal();
   const [formValue, setFormValue] = useState<ProjectFormValues>(initialValues);
   const { projectId } = useParams();
@@ -63,11 +63,28 @@ const CreateProjectForm = () => {
       openModal();
       setFormValue(initialValues); // Clear the form after successful creation
     },
-    onError: (error) => {
-      console.error("Error during project creation:", error);
-      return toast.error(t("failed_to_create_project"));
+    onError: async (error:any) => {
+      let errorMessage = "Failed to create project.";
+
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      const Errors = {
+        en: "The reference has already been taken.",
+        fr: "La référence a déjà été utilisée.",
+      };
+      
+      console.error("Error during project creation:", errorMessage);
+
+      if(errorMessage==="The reference has already been taken."){
+        
+        return toast.error(i18n.language==="en"?Errors.en:Errors.fr);
+      }
+      return toast.error(t(errorMessage||"failed_to_create_project"));
     },
-  });
+  });    
 
   const createProject = (values: ProjectFormValues, resetForm?: () => void) => {
     const payload = {

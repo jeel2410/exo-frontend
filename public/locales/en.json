@@ -254,5 +254,11 @@
   "no_data_found": "No Data Found",
   "no_projects_match_your_search_criteria": "No projects match your search criteria.",
   "clear_filters": "Clear Filters",
-  "create_new_project": "Create New Project"
+  "create_new_project": "Create New Project",
+  "signed_by_required": "Signed By is required",
+  "position_required": "Position is required",
+  "amount_required": "Amount is required",
+  "organization_required": "Organization is required",
+  "place_required": "Place is required",
+  "date_required": "Date is required"
 }

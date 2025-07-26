@@ -260,12 +260,12 @@ const ContractProjectListTable = ({
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6">
                       <span className="block font-medium text-secondary-100 text-sm text-nowrap truncate">
-                        {data.projectId}
+                        {data.projectId|| "-"}
                       </span>
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6">
                       <span className="block font-medium text-secondary-100 text-sm text-nowrap truncate">
-                        {data.projectName}
+                        {data.projectName || "-"}
                       </span>
                     </TableCell>
 
@@ -290,8 +290,8 @@ const ContractProjectListTable = ({
                       </span>
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6">
-                      <span className="block font-medium text-secondary-100 text-sm">
-                        {data.projectManager}
+                      <span className={`block font-medium text-secondary-100 text-sm ${data.projectManager?.trim()?"":"text-center"}`}>
+                        {data.projectManager?.trim() || "-"}
                       </span>
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-sm">

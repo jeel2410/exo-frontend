@@ -63,7 +63,6 @@ const ContractDetails = () => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const datePickerRef = useRef<HTMLDivElement>(null);
   const [contractData, setContractData] = useState<ContractProps>();
-  console.log(contractData, "contractData");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -142,7 +141,6 @@ const ContractDetails = () => {
       setLoading(false);
     },
   });
-  console.log(contractData, "contract data");
 
   const requestMutation = useMutation({
     mutationFn: async (data: { projectId: string; contractId: string }) => {
@@ -154,13 +152,19 @@ const ContractDetails = () => {
         ...(range.endDate && { end_date: range.endDate }),
       };
       const response = await requestService.getAllRequestList(payload);
-
-      console.log(response, "response");
+      return response.data      
     },
     onError: async (error) => {
       console.log(error);
     },
   });
+
+
+  const documents = Array.isArray(contractData?.documents)
+    ? contractData.documents
+    : contractData?.documents
+    ? [contractData.documents]
+    : [];
 
   useEffect(() => {
     if (contractId) {
@@ -451,16 +455,19 @@ const ContractDetails = () => {
                   Uploaded Files :
                 </Typography>
                 <div className="flex-1">
-                  <a
-                    key={1}
-                    // href={doc.file}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-blue-600 hover:underline break-all text-sm sm:text-base"
-                  >
-                    <PdfIcon width={16} height={16} />
-                    {"test.pdf"}
-                  </a>
+                  {documents.length?documents.map((doc:any)=>
+                    <a
+                      key={1}
+                      href={doc.file}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-blue-600 hover:underline break-all text-sm sm:text-base">
+                      <PdfIcon width={16} height={16} />
+                      {doc?.original_name}
+                    </a>                    
+                  ) : (
+                    "-"
+                  )}
                 </div>
               </div>
             </div>

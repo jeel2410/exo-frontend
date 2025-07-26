@@ -422,17 +422,23 @@ const ProjectDetails = () => {
                   >
                     Uploaded Files :
                   </Typography>
-
-                  <a
-                    key={1}
-                    // href={doc.file}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-blue-600 hover:underline break-all"
-                  >
-                    <PdfIcon width={16} height={16} />
-                    {"test.pdf"}
-                  </a>
+                  {projectData?.documents.length ? (
+                    <>
+                      {projectData?.documents.map((doc) => (
+                        <a
+                          key={1}
+                          href={doc.file}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-blue-600 hover:underline break-all">
+                          <PdfIcon width={16} height={16} />
+                          {doc.original_name}
+                        </a>
+                      ))}
+                    </>
+                  ) : (
+                    "-"
+                  )}
                 </div>
               </div>
             </motion.div>

@@ -125,6 +125,9 @@ const ContractCreatePage = () => {
 
   const contractCreateMutation = useMutation({
     mutationFn: async (data: any) => {
+      const files = data.contractFiles;
+      const filesData = Array.isArray(files) ? files : files ? [files] : [];
+
       const payload = new FormData();
       payload.append("signed_by", data.signedBy);
       payload.append("position", data.position);
@@ -136,7 +139,7 @@ const ContractCreatePage = () => {
         "date_of_signing",
         moment(data.dateOfSigning, "DD-MM-YYYY").format("YYYY-MM-DD")
       );
-      payload.append("document_ids", data.contractFiles.join(","));
+      payload.append("document_ids",filesData.map((file:any) => file.id).join(","));
       if (projectId) {
         payload.append("project_id", projectId);
       }
@@ -223,10 +226,14 @@ const ContractCreatePage = () => {
         } = response.data.data;
         setEditProjectId(contractData.project_id);
         fetchProject(contractData.project_id);
+        
+      const files = response.data.data.documents;
+      const filesData = Array.isArray(files) ? files : files ? [files] : [];
+      
         setFormData((prev: FormDataProps) => ({
           ...prev,
           amount: parseFloat(contractData.amount).toString(),
-          contractFiles: response.data.data.documents || [],
+          contractFiles: filesData || [],
           currency: contractData.currency,
           dateOfSigning: contractData.date_of_signing,
           organization: contractData.organization,

@@ -51,10 +51,16 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
 
   const renderFileList = (files: any[] | undefined) => {
     if (!files || files.length === 0) return "-";
-
+  const filesData = Array.isArray(files)
+    ? files
+    : files
+    ? [files]
+    : [];
+    console.log(filesData,"filesData");
+    
     return (
       <div className="flex flex-wrap gap-2">
-        {files.map((file, index) => (
+        {filesData.map((file, index) => (
           <div
             key={index}
             className="inline-flex items-center bg-white border border-gray-200 rounded-full py-1 pl-2 pr-3"
@@ -75,7 +81,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
                 </svg>
               </div>
               <span className="text-xs text-secondary-100">
-                {file.file.name}
+                {file.file.name||file.original_name}
               </span>
             </div>
           </div>
