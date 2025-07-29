@@ -425,11 +425,11 @@ const handleSubmit = () => {
   const getRequestData = async (requestId: string) => {
     const response = await requestMutaion.mutateAsync(requestId);
     if (response.status === 200) {
-      const { project_id, request_letter, entities, address } = response.data;
-
+      const { project_id, request_letter, entities, address,files } = response.data;      
       updateEntitys(entities);
       setProjectId(project_id);
       setRequestLetter(request_letter);
+      setUploadedFiles(files)
       const res = await fetchProjectAddressesAsync(project_id);
       if (res.status === 200) {
         setSelectedAddress(address.id);

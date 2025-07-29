@@ -1,6 +1,7 @@
 import Input, { InputProps } from "./Input";
 import { useState, useEffect } from "react";
 import Typography from "./Typography";
+import CustomDropdown from "./CustomDropdown";
 
 type CurrencyOption = {
   value: string;
@@ -32,7 +33,6 @@ const CurrencyInput = ({
   const [selectedCurrency, setSelectedCurrency] = useState(
     currency || options[0]?.value || "USD"
   );
-  const [isOpen, setIsOpen] = useState(false);
 
   // Update selected currency when currency prop changes
   useEffect(() => {
@@ -50,7 +50,6 @@ const CurrencyInput = ({
 
   const handleCurrencyChange = (currency: string) => {
     setSelectedCurrency(currency);
-    setIsOpen(false);
     onChange?.(value, currency);
   };
 
@@ -72,50 +71,21 @@ const CurrencyInput = ({
             : "border border-secondary-30 focus-within:border-secondary-50"
         } ${className}`}
       >
-        <div className="relative">
-          <button
-            type="button"
-            className={`flex items-center gap-2 px-3 py-2 focus:outline-none ${
-              currencyDisabled 
-                ? "cursor-not-allowed opacity-50" 
-                : "cursor-pointer"
-            }`}
-            onClick={() => !currencyDisabled && setIsOpen(!isOpen)}
+        <div className="min-w-[100px]">
+          <CustomDropdown
+            options={options.map(option => ({
+              value: option.value,
+              label: option.label,
+              flag: option.flag
+            }))}
+            value={selectedCurrency}
+            onChange={handleCurrencyChange}
+            placeholder="Currency"
             disabled={currencyDisabled}
-          >
-            <div className="w-5 h-4">{selectedOption?.flag}</div>
-            <span className="text-sm font-medium">{selectedOption?.value}</span>
-            {!currencyDisabled && (
-              <svg
-                className={`w-4 h-4 transition-transform ${
-                  isOpen ? "rotate-180" : ""
-                }`}
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
-          </button>
-          {isOpen && !currencyDisabled && (
-            <div className="absolute top-full left-0 mt-1 w-full bg-white border border-secondary-30 rounded-lg shadow-lg z-10">
-              {options.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className="flex items-center gap-2 w-full px-3 py-2 hover:bg-secondary-10 focus:outline-none"
-                  onClick={() => handleCurrencyChange(option.value)}
-                >
-                  <div className="w-5 h-4">{option.flag}</div>
-                  <span className="text-sm">{option.value}</span>
-                </button>
-              ))}
-            </div>
-          )}
+            className="border-none bg-transparent focus:ring-0 focus:border-transparent"
+            showFlag={true}
+            error={error}
+          />
         </div>
         <div className="h-6 w-px bg-secondary-30" />
         <Input

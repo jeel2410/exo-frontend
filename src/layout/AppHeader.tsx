@@ -53,7 +53,7 @@ const AppHeader: React.FC = () => {
           <div className="lg:flex gap-4 hidden">
             <Button
               variant="outline"
-              className={`border-none text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 ${
+              className={`border-none text-nowrap text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 ${
                 pathname === "/project-dashboard"
                   ? "hover:bg-primary-10"
                   : "hover:text-primary-150"

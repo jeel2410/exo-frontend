@@ -84,9 +84,64 @@ const UploadFile: React.FC<FileUploadProps> = ({
   const [removingFile, setRemovingFile] = useState<boolean>(false);
   const [renamingFiles, setRenamingFiles] = useState<Set<string>>(new Set());
 
+  // useEffect(() => {
+  //   if (files && files.length > 0) {
+  //     // Handle existing files - for now just notify parent
+  //     onFilesSelect?.(files);
+  //   }
+  // }, [files]);
+
   useEffect(() => {
     if (files && files.length > 0) {
-      // Handle existing files - for now just notify parent
+      // Create a copy of the initial mandatoryDocs to avoid mutating the initial state
+      let updatedMandatoryDocs = [...mandatoryDocs];
+      let remainingFiles = [...files];
+
+      // Try to match files to mandatory documents
+      updatedMandatoryDocs = updatedMandatoryDocs.map((doc) => {
+        // Find a file that could match this mandatory document (e.g., by name or index)
+        const matchedFile = remainingFiles.find(
+          (file) =>
+            file.original_name?.toLowerCase().includes(doc.name.toLowerCase()) ||
+            file.id === doc.id
+        );
+
+        if (matchedFile) {
+          // Remove the matched file from remainingFiles
+          remainingFiles = remainingFiles.filter((f) => f.id !== matchedFile.id);
+          return {
+            ...doc,
+            uploadedFile: matchedFile,
+            isUploaded: true,
+            name: doc.name, // Keep the predefined name for mandatory docs
+          };
+        }
+        return doc;
+      });
+
+      // Create additionalDocs for any remaining files
+      const newAdditionalDocs = remainingFiles.map((file, index) => ({
+        id: file.id || `additional_${Date.now()}_${index}`,
+        name: file.original_name || `Additional Document ${index + 1}`,
+        uploadedFile: file,
+        isUploaded: true,
+        isMandatory: false,
+        isNameEditable: true,
+      }));
+
+      // Update state
+      setMandatoryDocs(updatedMandatoryDocs);
+      setAdditionalDocs(newAdditionalDocs.length > 0 ? newAdditionalDocs : [
+        {
+          id: `additional_${Date.now()}`,
+          name: "",
+          isUploaded: false,
+          isMandatory: false,
+          isNameEditable: true,
+        },
+      ]);
+
+      // Notify parent component
       onFilesSelect?.(files);
     }
   }, [files]);
@@ -734,6 +789,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
             <div className="mt-4">
               <button
                 onClick={addMoreRow}
+                type="button"
                 className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
               >
                 <svg

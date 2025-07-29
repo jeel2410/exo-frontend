@@ -310,7 +310,7 @@ const ListDashBoard = () => {
                     />
                   ),
                   count: totalAmountProjectUSD,
-                  title: t("total_amount_of_project"),
+                  title: t("total_amount"),
                 },
                 // {
                 //   icon: (
@@ -332,7 +332,7 @@ const ListDashBoard = () => {
                     />
                   ),
                   count: totalAmountProjectCDF,
-                  title: t("total_amount_requested"),
+                  title: t("total_amount"),
                 },
               ].map((card, index) => (
                 <motion.div key={index} transition={{ duration: 0.3 }}>

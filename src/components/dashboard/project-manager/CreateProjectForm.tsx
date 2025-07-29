@@ -154,7 +154,7 @@ const CreateProjectForm = () => {
                 })
               )
             : [],
-        files: [],
+        files: projectData.documents,
         status: projectData.status,
       };
       setFormValue(newData);
