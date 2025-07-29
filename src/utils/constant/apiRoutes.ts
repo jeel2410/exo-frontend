@@ -14,6 +14,7 @@ export const ApiRoutes = {
   CREATE_PROJECT: "/project/create",
   UPLOAD_FILE: "/upload-file",
   REMOVE_FILE: "/delete-file",
+  RENAME_FILE: "/document/change-name",
   REQUEST_DETAILS: "/request/view",
   DELETE_REQUEST: "/request/delete",
   DELETE_PROJECT: "/project/delete",

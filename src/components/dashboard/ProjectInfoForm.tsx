@@ -420,6 +420,20 @@ ProjectInfoFormProps) => {
     }
     return { status: false };
   };
+
+  const handleRenameFile = async (
+    newName: string,
+    documentId: string
+  ) => {
+    try {
+      const response = await projectService.changeDocumentName(newName, documentId);
+      console.log("File renamed successfully:", response);
+      return { status: true };
+    } catch (error) {
+      console.error("Failed to rename file:", error);
+      return { status: false };
+    }
+  };
   return (
     <Formik
       initialValues={initialValues || defaultInitialValues}
@@ -836,6 +850,7 @@ ProjectInfoFormProps) => {
                     setFieldValue("files", files)
                   }
                   files={values.files}
+                  context="create-project"
                   onUploadFile={handleUploadFile}
                   onDeleteFile={async (fileId: string) => {
                     return handleDeleteFile(
@@ -844,6 +859,7 @@ ProjectInfoFormProps) => {
                       values.files
                     );
                   }}
+                  onRenameFile={handleRenameFile}
                 />
               </div>
             </div>

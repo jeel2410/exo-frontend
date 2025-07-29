@@ -348,6 +348,7 @@ const ContractInfoForm = ({
               files={values.contractFiles}
               onFilesSelect={(files) => setFieldValue("contractFiles", files)}
               onUploadFile={handleUploadFile}
+              context="create-contract"
               // onUploadFile={async (file, onProgress) => {
               //   return new Promise((res) => {
               //     setTimeout(() => {

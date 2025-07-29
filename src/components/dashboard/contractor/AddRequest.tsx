@@ -11,6 +11,7 @@ import Typography from "../../../lib/components/atoms/Typography";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import projectService from "../../../services/project.service";
+import contractService from "../../../services/contract.service";
 import TextEditor from "../../../lib/components/atoms/TextEditor";
 import Button from "../../../lib/components/atoms/Button";
 import CreateRequestTable, { Order } from "../../table/CreateRequestTable.tsx";
@@ -46,18 +47,6 @@ interface Entity {
   vat_included: number;
 }
 
-interface ApiFile {
-  id: string;
-  object_id: string;
-  extension: string;
-  file: string;
-  object_type: string;
-  order_by: number;
-  original_name: string;
-  size: number;
-  type: string;
-}
-
 interface CreateRequestPayload {
   project_id: string;
   contract_id: string;
@@ -68,53 +57,61 @@ interface CreateRequestPayload {
   request_id?: string;
 }
 
-const financialAuthorityList: { name: string; value: string }[] = [
-  { name: "DGI: Invoice Files", value: "DGI" },
-  { name: "DGDA: DGDA Files", value: "DGDA" },
-  { name: "DGRAD: DGRAD Files", value: "DGRAD" },
+const financialAuthorityList: {
+  name: string;
+  value: string;
+  shortName: string;
+  bgColor: string;
+  textColor: string;
+}[] = [
+  {
+    name: "Location acquisition",
+    value: "location_acquisition",
+    shortName: "D",
+    bgColor: "bg-green-500",
+    textColor: "text-white",
+  },
+  {
+    name: "Importation",
+    value: "importation",
+    shortName: "R",
+    bgColor: "bg-teal-500",
+    textColor: "text-white",
+  },
 ];
 
 const AddRequest = () => {
   const { t } = useTranslation();
-  const { contractId, projectId, requestId } = useParams();
-  const navigate = useNavigate();
-  const { getRoute } = useRoleRoute();
+  const navigate = useNavigate();  
   const { pathname } = useLocation();
 
-  const [selectedAddress, setSelectedAddress] = useState<string>("");
-  const [requestLetter, setRequestLetter] = useState("");
+  const { requestId,contractId, projectId: newProjectId } = useParams();
+
   const [data, setData] = useState<Order[]>([]);
-  const [autoEditId, setAutoEditId] = useState<number | null>(null);
+  const [userData, setUserData] = useState<{ token: string } | undefined>();
+  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [requestLetter, setRequestLetter] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  const handleAddressChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedAddress(event.target.value);
-  };
-
-  const [currentProjectId, setCurrentProjectId] = useState<string>("");
-
-  const {
-    mutate: fetchProjectAddresses,
-    mutateAsync: fetchProjectAddressesAsync,
-    data: addressData,
-    isPending: isLoadingAddresses,
-  } = useMutation({
-    mutationFn: async (projectId: string) => {
-      const res = await projectService.getAddressList(projectId);
-      return res.data;
-    },
-  });
-
-  const [financialAuthority, setFinancialAuthority] = useState<string>("DGI");
+  const [projectId, setProjectId] = useState<string>("");
   const [totals, setTotals] = useState({
     totalEntity: 0,
     totalAmount: 0,
     totalTaxAmount: 0,
     totalAmountWithTax: 0,
   });
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-
-  const [userData, setUserData] = useState<{ token: string } | undefined>();
+  const { getRoute } = useRoleRoute();
+  const [financialAuthority, setFinancialAuthority] = useState<string>("location_acquisition");
+  const [validationErrors, setValidationErrors] = useState<{
+    address?: string;
+    requestLetter?: string;
+    contractAmount?: string;
+    fileUpload?: string;
+  }>({});
+  const [contractData, setContractData] = useState<{
+    amount?: string | number;
+    currency?: string;
+  }>({});
 
   const pathName: string = pathname.split("/")[1];
 
@@ -132,50 +129,44 @@ const AddRequest = () => {
     setUserData(JSON.parse(user));
   }, []);
 
-  useEffect(() => {
-    if (!data || data.length === 0) {
-      setTotals({
-        totalEntity: 0,
-        totalAmount: 0,
-        totalTaxAmount: 0,
-        totalAmountWithTax: 0,
-      });
-      return;
-    }
+  // let projectId = localStorageService.getProjectId() || null;
 
-    const totalEntity = data.length;
-    const totalAmount = data.reduce((sum, row) => sum + (row.total || 0), 0);
-    const totalTaxAmount = data.reduce(
-      (sum, row) => sum + (row.taxAmount || 0),
-      0
-    );
-    const totalAmountWithTax = data.reduce(
-      (sum, row) => sum + (row.vatIncluded || 0),
-      0
-    );
-
-    setTotals({
-      totalEntity,
-      totalAmount,
-      totalTaxAmount,
-      totalAmountWithTax,
-    });
-  }, [data]);
-
-  const handleFinancialAuthority = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setFinancialAuthority(event.target.value);
-  };
-
-  useEffect(() => {
-    if (currentProjectId && currentProjectId !== "") {
-      fetchProjectAddresses(currentProjectId);
-    }
-    if (projectId && projectId !== "") {
-      fetchProjectAddresses(projectId);
-    }
-  }, [currentProjectId, projectId]);
+  // const { data: addressData, isLoading: isLoadingAddresses } = useQuery<any>({
+  //   queryKey: [`project-${projectId}-address`],
+  //   enabled: !!projectId && !!userData?.token,
+  //   queryFn: async () => {
+  //     const res = await axios.post(
+  //       "https://exotrack.makuta.cash/api/V1/project/list-address",
+  //       { project_id: projectId },
+  //       {
+  //         headers: {
+  //           VAuthorization: `Bearer ${userData?.token}`,
+  //         },
+  //       }
+  //     );
+  //     return res.data;
+  //   },
+  // });
+  const {
+    mutate: fetchProjectAddresses,
+    mutateAsync: fetchProjectAddressesAsync,
+    data: addressData,
+    isPending: isLoadingAddresses,
+  } = useMutation({
+    mutationFn: async (projectId: string) => {
+      const res = await projectService.getAddressList(projectId);
+      // const res = await axios.post(
+      //   "https://exotrack.makuta.cash/api/V1/project/list-address",
+      //   { project_id: projectId },
+      //   {
+      //     headers: {
+      //       VAuthorization: `Bearer ${userData?.token}`,
+      //     },
+      //   }
+      // );
+      return res.data;
+    },
+  });
 
   const recalculateTableData = (tableData: Order[]): Order[] => {
     return tableData.map((row) => {
@@ -194,6 +185,7 @@ const AddRequest = () => {
   const handleAddEntity = () => {
     const newOrder: Order = {
       id: new Date().getTime(),
+      // id: data.length + 1,
       label: "",
       quantity: 1,
       unitPrice: 0,
@@ -201,10 +193,9 @@ const AddRequest = () => {
       taxRate: 0,
       taxAmount: 0,
       vatIncluded: 0,
-      financialAuthority: "DGDA",
+      financialAuthority: financialAuthority,
     };
     setData(recalculateTableData([...data, newOrder]));
-    setAutoEditId(newOrder.id);
   };
 
   const updateEntitys = (entitys: Entity[]) => {
@@ -220,15 +211,52 @@ const AddRequest = () => {
       financialAuthority: entity.financial_authority,
     }));
     setFinancialAuthority(
-      entitys.length !== 0 ? entitys[0]?.financial_authority : "DGI"
+      entitys.length !== 0 ? entitys[0]?.financial_authority : "location_acquisition"
     );
-    setData(recalculateTableData(newOrder));
+    setData(recalculateTableData([...data, ...newOrder]));
+  };
+
+  const handleAddressChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedAddress(event.target.value);
   };
 
   const handleTableDataChange = (newData: Order[]) => {
     setData(recalculateTableData(newData));
   };
 
+  // const totalEntity = data.length;
+  // const totalAmount = data.reduce((sum, row) => sum + (row.total || 0), 0);
+  // const totalTaxAmount = data.reduce(
+  //   (sum, row) => sum + (row.taxAmount || 0),
+  //   0
+  // );
+  // const totalAmountWithTax = data.reduce(
+  //   (sum, row) => sum + (row.vatIncluded || 0),
+  //   0
+  // );
+
+  // --- Contract Details Mutation ---
+  const contractMutation = useMutation({
+    mutationFn: async (contractId: string) => {
+      const formData = new FormData();
+      formData.append("contract_id", contractId);
+      const response = await contractService.getContractDetails(formData);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      if (data?.data) {
+        setContractData({
+          amount: data.data.amount,
+          currency: data.data.currency,
+        });
+      }
+    },
+    onError: (error) => {
+      console.error("Failed to fetch contract details:", error);
+    },
+  });
+
+  // --- Create Request Mutation with correct types ---
   const createRequestMutation = useMutation({
     mutationFn: async (data: CreateRequestPayload) => {
       return await axios.post(
@@ -242,16 +270,41 @@ const AddRequest = () => {
       );
     },
     onSuccess: () => {
-      toast.success(t("request_submitted_successfully"));
-      navigate(getRoute("dashboard"));
+      toast.success(t("request_updated_successfully"));
+      navigate("/contract-project-list");
     },
-    onError: () => {},
+    onError: (error: unknown) => {
+      const errorMessage =
+        error && typeof error === "object" && "error" in error
+          ? (error as { error: { message: string } }).error.message
+          : "Failed to upload file.";
+      toast.error(errorMessage);
+    },
   });
 
-  const handleSubmit = () => {
+const handleSubmit = () => {
+    const errors: { address?: string; requestLetter?: string; contractAmount?: string; fileUpload?: string } = {};
+    if (!selectedAddress) {
+      errors.address = t("address_is_required");
+    }
+    if (!requestLetter || requestLetter.trim() === "") {
+      errors.requestLetter = t("request_letter_is_required");
+    }
+    console.log(uploadedFiles)
+    if (uploadedFiles.length < 3) {
+      errors.fileUpload = t("at_least_three_files_required");
+    }
+    if (contractData.amount !== undefined && totals.totalAmount > Number(contractData.amount)) {
+      errors.contractAmount = t("contract_amount_exceeded");
+    }
+    setValidationErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     const apiData: CreateRequestPayload = {
-      project_id: requestId ? currentProjectId : projectId || "",
-      contract_id: contractId || "",
+      project_id: projectId,
       address_id: selectedAddress,
       request_letter: requestLetter,
       document_ids:
@@ -271,74 +324,10 @@ const AddRequest = () => {
         }))
       ),
       ...(requestId && { request_id: requestId }),
+      contract_id: contractId || "",
     };
-
     createRequestMutation.mutate(apiData);
   };
-
-  const requestDetailsMutation = useMutation({
-    mutationFn: async (requestId: string) => {
-      const res = await projectService.requestDetails({
-        request_id: requestId,
-      });
-      setIsLoading(false);
-      return res.data;
-    },
-    onSuccess: () => {
-      setIsLoading(false);
-    },
-    onError: (error) => {
-      setIsLoading(false);
-      console.error(error);
-    },
-  });
-
-  const getRequestData = async (requestId: string) => {
-    const response = await requestDetailsMutation.mutateAsync(requestId);
-    if (response.status === 200) {
-      const { project_id, request_letter, entities, address, files } =
-        response.data;
-
-      console.log(files, "files");
-
-      updateEntitys(entities);
-      setRequestLetter(request_letter);
-      setCurrentProjectId(project_id);
-
-      // Set uploaded files from API response
-      if (files && files.length > 0) {
-        const existingFiles: UploadedFile[] = files.map((file: ApiFile) => ({
-          id: file.id,
-          original_name: file.original_name,
-          url: file.file,
-          size: file.size,
-          type: file.type,
-          extension: file.extension,
-        }));
-        setUploadedFiles(existingFiles);
-      }
-
-      const res = await fetchProjectAddressesAsync(project_id);
-      if (res.status === 200) {
-        setSelectedAddress(address.id);
-      }
-    }
-  };
-
-  console.log(uploadedFiles, "uploaded files");
-
-  useEffect(() => {
-    if (requestId && requestId !== "") {
-      getRequestData(requestId);
-    } else {
-      setIsLoading(false);
-    }
-  }, [requestId]);
-
-  const handleFilesSelect = (files: UploadedFile[]) => {
-    setUploadedFiles(files);
-  };
-
   const fileUploadMutation = async ({
     file,
     onProgress,
@@ -346,10 +335,11 @@ const AddRequest = () => {
     file: File;
     onProgress: (percent: number) => void;
   }): Promise<{ id: string; url: string }> => {
+    console.log("Inside mutation file:", file);
     const formData = new FormData();
     formData.append("file", file);
     formData.append("type", "document");
-    formData.append("object_type", "request");
+    formData.append("object_type", "project");
 
     const response = await projectService.uploadFile(formData, {
       headers: {
@@ -367,6 +357,7 @@ const AddRequest = () => {
     return {
       id: response.data.data?.id ?? Date.now().toString(),
       url: response.data.data?.url ?? "",
+      // file:response.data.data ?? ""
     };
   };
 
@@ -414,60 +405,176 @@ const AddRequest = () => {
     return { status: false };
   };
 
+  const requestMutaion = useMutation({
+    mutationFn: async (requestId: string) => {
+      const res = await projectService.requestDetails({
+        request_id: requestId,
+      });
+      setIsLoading(false);
+      return res.data;
+    },
+    onSuccess: () => {
+      setIsLoading(false);
+    },
+    onError: (error) => {
+      setIsLoading(false);
+      console.error(error);
+    },
+  });
+
+  const getRequestData = async (requestId: string) => {
+    const response = await requestMutaion.mutateAsync(requestId);
+    if (response.status === 200) {
+      const { project_id, request_letter, entities, address } = response.data;
+
+      updateEntitys(entities);
+      setProjectId(project_id);
+      setRequestLetter(request_letter);
+      const res = await fetchProjectAddressesAsync(project_id);
+      if (res.status === 200) {
+        setSelectedAddress(address.id);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (newProjectId && newProjectId !== "") {
+      fetchProjectAddresses(newProjectId);
+      setProjectId(newProjectId);
+    }
+  }, [newProjectId]);
+
+  useEffect(() => {
+    if (requestId && requestId !== "") {
+      getRequestData(requestId);
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Fetch contract details when contractId is available
+  useEffect(() => {
+    if (contractId && contractId !== "") {
+      contractMutation.mutate(contractId);
+    }
+  }, [contractId]);
+
+  useEffect(() => {
+    if (!data || data.length === 0) {
+      setTotals({
+        totalEntity: 0,
+        totalAmount: 0,
+        totalTaxAmount: 0,
+        totalAmountWithTax: 0,
+      });
+      return;
+    }
+
+    const totalEntity = data.length;
+    const totalAmount = data.reduce((sum, row) => sum + (row.total || 0), 0);
+
+    const totalTaxAmount = data.reduce(
+      (sum, row) => sum + (row.taxAmount || 0),
+      0
+    );
+
+    const totalAmountWithTax = data.reduce(
+      (sum, row) => sum + (row.vatIncluded || 0),
+      0
+    );
+
+    setTotals({
+      totalEntity,
+      totalAmount,
+      totalTaxAmount,
+      totalAmountWithTax,
+    });
+  }, [data]);
+  const handleFilesSelect = (files: UploadedFile[]) => {
+    setUploadedFiles(files);
+  };
+  const handleFinancialAuthority = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newFinancialAuthority = event.target.value;
+    setFinancialAuthority(newFinancialAuthority);
+    
+    // Update all existing entities with the new financial authority
+    if (data.length > 0) {
+      const updatedData = data.map(item => ({
+        ...item,
+        financialAuthority: newFinancialAuthority
+      }));
+      setData(updatedData);
+    }
+  };
   if (isLoading) return <Loader />;
 
   return (
     <div>
-      <Breadcrumbs crumbs={crumbs} />
-      <Typography
-        size="xl_2"
-        weight="extrabold"
-        className="text-secondary-100 text-2xl md:text-3xl"
-      >
-        {requestId ? t("edit_request") : t("create_request")}
-      </Typography>
-
-      <div className="mt-4 md:mt-6">
-        <Label htmlFor="address">{t("address")}</Label>
-        <select
-          id="address"
-          name="address"
-          value={selectedAddress}
-          onChange={handleAddressChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-30 focus:border-transparent"
-          disabled={isLoadingAddresses}
+      <div className="px-4 md:px-0">
+        <Breadcrumbs crumbs={crumbs} />
+        <Typography
+          size="xl_2"
+          weight="extrabold"
+          className="text-secondary-100 text-2xl md:text-3xl"
         >
-          <option value="">
-            {isLoadingAddresses ? t("loading") : t("select_address")}
-          </option>
-          {addressData?.data?.map((address: AddressData) => (
-            <option key={address.id} value={address.id}>
-              {`${address.city}, ${address.municipality}, ${address.country}`}
+          {requestId ? t("edit_request") : t("create_request")}
+        </Typography>
+
+        {/* Form Fields */}
+        <div className="mt-4 md:mt-6">
+          <Label htmlFor="address">{t("address")}</Label>
+          <select
+            id="address"
+            name="address"
+            value={selectedAddress}
+            onChange={handleAddressChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-30 focus:border-transparent"
+            disabled={isLoadingAddresses}
+          >
+            <option value="">
+              {isLoadingAddresses ? t("loading") : t("select_address")}
             </option>
-          ))}
-        </select>
-      </div>
+            {addressData?.data?.map((address: AddressData) => (
+              <option key={address.id} value={address.id}>
+                {`${address.city}, ${address.municipality}, ${address.country}`}
+              </option>
+            ))}
+          </select>
+          {validationErrors.address && (
+            <Typography size="sm" className="text-red-500 mt-1">
+              {validationErrors.address}
+            </Typography>
+          )}
+        </div>
 
-      <div className="mt-4 md:mt-6">
-        <Label htmlFor="requestLetter">{t("request_letter")}</Label>
-        <TextEditor
-          placeholder="Write here..."
-          maxLength={100}
-          initialValue={requestLetter}
-          onChange={(value) => {
-            setRequestLetter(value);
-          }}
-        />
-      </div>
+        <div className="mt-4 md:mt-6">
+          <Label htmlFor="requestLetter">{t("request_letter")}</Label>
+          <TextEditor
+            placeholder="Write here..."
+            maxLength={100}
+            initialValue={requestLetter}
+            onChange={(value) => {
+              setRequestLetter(value);
+            }}
+          />
+          {validationErrors.requestLetter && (
+            <Typography size="sm" className="text-red-500 mt-1">
+              {validationErrors.requestLetter}
+            </Typography>
+          )}
+        </div>
 
-      <div className="mb-3 md:mb-5 flex gap-2 justify-end">
-        <div className="mt-4 w-full md:w-fit">
+        <div>
+          <Label htmlFor="address">{t("tax_category")}</Label>
           <select
             id="financialAuthority"
             name="financialAuthority"
             value={financialAuthority}
             onChange={handleFinancialAuthority}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-30 focus:border-transparent"
+            disabled={isLoadingAddresses}
           >
             {financialAuthorityList.map(
               (list: { name: string; value: string }) => (
@@ -478,81 +585,94 @@ const AddRequest = () => {
             )}
           </select>
         </div>
-        <Button
-          variant="secondary"
-          className="flex items-center w-full md:w-fit gap-1 py-2 mt-4 justify-center"
-          onClick={handleAddEntity}
-        >
-          <PlusBlueIcon />
-          <Typography>{t("add_entity")}</Typography>
-        </Button>
-      </div>
 
-      <div>
-        <Typography size="base" weight="normal" className="text-secondary-60">
-          {t("entity")}
-        </Typography>
-
-        {/* Dashboard Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mt-3 md:mt-5">
-          <DashBoardCard
-            icon={<FileVioletIcon width={44} height={44} />}
-            count={totals.totalEntity}
-            title={t("total_entity")}
-          />
-          <DashBoardCard
-            icon={<UsdGreenIcon width={44} height={44} />}
-            count={totals.totalAmount}
-            title={t("total_amount")}
-          />
-          <DashBoardCard
-            icon={<UsdVioletIcon width={44} height={44} />}
-            count={totals.totalTaxAmount}
-            title={t("total_tax_amount")}
-          />
-          <DashBoardCard
-            icon={<UsdOrangeIcon width={44} height={44} />}
-            count={totals.totalAmountWithTax}
-            title={t("total_amount_with_tax")}
-          />
+        {/* Add Entity Button */}
+        <div className="mb-3 md:mb-5 flex gap-2 justify-end">
+          <Button
+            variant="secondary"
+            className="flex items-center w-full md:w-fit gap-1 py-2 mt-4 justify-center"
+            onClick={handleAddEntity}
+          >
+            <PlusBlueIcon />
+            <Typography>{t("add_entity")}</Typography>
+          </Button>
         </div>
 
-        {/* Table Section */}
-        <div className="mt-3 md:mt-5 mb-2">
-          <CreateRequestTable
-            data={data}
-            onDataChange={handleTableDataChange}
-            autoEditId={autoEditId}
-            onEditComplete={() => setAutoEditId(null)}
-          />
-        </div>
-
-        {/* Upload Section */}
+        {/* Entity Section */}
         <div>
-          <div className="mt-5 md:mt-7 mb-4 md:mb-6">
-            <Label>{t("invoice_files")}</Label>
-            <UploadFile
-              maxSize={10}
-              acceptedFormats={[".pdf", ".doc", ".txt", ".ppt"]}
-              files={uploadedFiles}
-              onFilesSelect={handleFilesSelect}
-              onUploadFile={handleUploadFile}
-              onDeleteFile={handleDeleteFile}
+          <Typography size="base" weight="normal" className="text-secondary-60">
+            {t("entity")}
+          </Typography>
+
+          {/* Dashboard Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mt-3 md:mt-5">
+            <DashBoardCard
+              icon={<FileVioletIcon width={44} height={44} />}
+              count={totals.totalEntity}
+              title={t("total_entity")}
+            />
+            <DashBoardCard
+              icon={<UsdGreenIcon width={44} height={44} />}
+              count={totals.totalAmount}
+              title={t("total_amount")}
+            />
+            <DashBoardCard
+              icon={<UsdVioletIcon width={44} height={44} />}
+              count={totals.totalTaxAmount}
+              title={t("total_tax_amount")}
+            />
+            <DashBoardCard
+              icon={<UsdOrangeIcon width={44} height={44} />}
+              count={totals.totalAmountWithTax}
+              title={t("total_amount_with_tax")}
             />
           </div>
+
+          {/* Table Section */}
+          <div className="mt-3 md:mt-5 mb-2">
+            <CreateRequestTable
+              data={data}
+              onDataChange={handleTableDataChange}
+            />
+            {validationErrors.contractAmount && (
+              <Typography size="sm" className="text-red-500 mt-2">
+                {validationErrors.contractAmount}
+              </Typography>
+            )}
+          </div>
+
+          {/* Upload Section */}
+          <div>
+            <div className="mt-5 md:mt-7 mb-4 md:mb-6">
+              <Label>{t("invoice_files")}</Label>
+              <UploadFile
+                maxSize={10}
+                acceptedFormats={[".pdf", ".doc", ".txt", ".ppt"]}
+                files={uploadedFiles}
+                onFilesSelect={handleFilesSelect}
+                onUploadFile={handleUploadFile}
+                onDeleteFile={handleDeleteFile}
+              />
+              {validationErrors.fileUpload && (
+                <Typography size="sm" className="text-red-500 mt-1">
+                  {validationErrors.fileUpload}
+                </Typography>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="mb-3 md:mb-5 flex justify-end">
-        <Button
-          type="submit"
-          onClick={handleSubmit}
-          disable={createRequestMutation.isPending}
-          loading={createRequestMutation.isPending}
-          variant="primary"
-          className="flex items-center w-full md:w-fit gap-1 py-2 mt-4 justify-center"
-        >
-          {requestId ? t("update_request") : t("submit_request")}
-        </Button>
+        <div className="mb-3 md:mb-5 flex justify-end">
+          <Button
+            type="submit"
+            onClick={handleSubmit}
+            disable={createRequestMutation.isPending}
+            loading={createRequestMutation.isPending}
+            variant="primary"
+            className="flex items-center w-full md:w-fit gap-1 py-2 mt-4 justify-center"
+          >
+            {requestId ? t("update_request") : t("submit_request")}
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -37,6 +37,7 @@ interface ContractProps {
   documents: [];
   requests_data: [];
   currency: "USD" | "CDF";
+  amount?: string | number;
 }
 
 // Define the type for request data from API
