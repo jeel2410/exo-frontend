@@ -278,5 +278,12 @@
   "amount_of_contract": "Montant du contrat",
   "number_of_equests": "Nombre de demandes",
   "actions": "Actions",
-  "profile_updated_successfully":"Profil mis à jour avec succès"
+  "profile_updated_successfully":"Profil mis à jour avec succès",
+  "project_id": "ID du projet",
+  "funded_by": "Financé par",
+  "currency": "Devise",
+  "rename": "Renommer",
+  "delete": "Supprimer",
+  "upload": "Téléverser",
+  "tax_category": "Tax Category"
 }

@@ -16,7 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import StatusBadge, { StatusCode } from "../common/StatusBadge.tsx";
 import moment from "moment";
-
+import { useTranslation } from "react-i18next";
 export interface Data {
   id: number;
   projectId: string;
@@ -46,6 +46,7 @@ const ListDashBoardTable = ({
 
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleClickOutside = (event: Event) => {
@@ -185,23 +186,23 @@ const ListDashBoardTable = ({
       className: "w-10", // Fixed width for checkbox
     },
     {
-      content: <div className="text-nowrap">Sr No</div>,
+      content: <div className="text-nowrap">{t("sr_no")}</div>,
       className: "w-16",
     },
     {
-      content: <div className="text-nowrap">Project ID</div>,
+      content: <div className="text-nowrap">{t("project_id")}</div>,
       className: "min-w-[120px]",
     },
     {
-      content: <div className="text-nowrap">Project Name</div>,
+      content: <div className="text-nowrap">{t("project_name")}</div>,
       className: "min-w-[120px]",
     },
     {
-      content: <div className="text-nowrap">Funded By</div>,
+      content: <div className="text-nowrap">{t("funded_by")}</div>,
       className: "w-24",
     },
     {
-      content: <div className="text-nowrap">Currency</div>,
+      content: <div className="text-nowrap">{t("currency")}</div>,
       className: "min-w-[120px]",
     },
 
