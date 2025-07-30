@@ -26,7 +26,11 @@ class AuthService extends ApiBaseService {
     return await this.authorizedRequest.get(ApiRoutes.USER_PROFILE);
   }
   async editProfile(data: any) {
-    return await this.authorizedRequest.put(ApiRoutes.EDIT_PROFILE, data);
+    return await this.authorizedRequest.put(ApiRoutes.EDIT_PROFILE, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
   }
 
   async changeEmail(data: any) {
