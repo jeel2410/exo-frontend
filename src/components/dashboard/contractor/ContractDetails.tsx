@@ -65,6 +65,7 @@ const ContractDetails = () => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const datePickerRef = useRef<HTMLDivElement>(null);
   const [contractData, setContractData] = useState<ContractProps>();
+  const [requestsData, setRequestsData] = useState<RequestApiData[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -125,6 +126,11 @@ const ContractDetails = () => {
       const card = response.data.summary;
 
       setCardData(card);
+      
+      // Set initial requests data from contract
+      if (contract.requests_data && Array.isArray(contract.requests_data)) {
+        setRequestsData(contract.requests_data);
+      }
 
       requestMutation.mutate({
         contractId: contract.id,
@@ -154,6 +160,12 @@ const ContractDetails = () => {
       };
       const response = await requestService.getAllRequestList(payload);
       return response.data;
+    },
+    onSuccess: async (data) => {
+      // Update the requests data with the filtered/searched results
+      if (data && data.data) {
+        setRequestsData(data.data);
+      }
     },
     onError: async (error) => {
       console.log(error);
@@ -287,7 +299,7 @@ const ContractDetails = () => {
                   className="sm:w-11 sm:h-11"
                 />
               }
-              count={contractData?.requests_data.length || 0}
+              count={requestsData.length || 0}
               title={t("number_of_request")}
             />
           </motion.div>
@@ -356,7 +368,7 @@ const ContractDetails = () => {
                   className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
                   weight="semibold"
                 >
-                  Signed By :
+                  {t("signed_by")}:
                 </Typography>
                 <Typography
                   className="text-gray-900 break-words text-sm sm:text-base"
@@ -370,7 +382,7 @@ const ContractDetails = () => {
                   className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
                   weight="semibold"
                 >
-                  Organization :
+                  {t("organization")}:
                 </Typography>
                 <Typography
                   className="text-gray-900 break-words text-sm sm:text-base"
@@ -384,7 +396,7 @@ const ContractDetails = () => {
                   className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
                   weight="semibold"
                 >
-                  Date Created :
+                  {t("date_created")}:
                 </Typography>
                 <Typography
                   className="text-gray-900 break-words text-sm sm:text-base"
@@ -398,7 +410,7 @@ const ContractDetails = () => {
                   className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
                   weight="semibold"
                 >
-                  No of Request :
+                  {t("no_of_request")}:
                 </Typography>
                 <Typography
                   className="text-gray-900 break-words text-sm sm:text-base"
@@ -430,7 +442,7 @@ const ContractDetails = () => {
                   className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
                   weight="semibold"
                 >
-                  Position :
+                  {t("position")}:
                 </Typography>
                 <Typography
                   className="text-gray-900 break-words text-sm sm:text-base"
@@ -439,28 +451,40 @@ const ContractDetails = () => {
                   {contractData?.position}
                 </Typography>
               </div>
-              <div className="flex flex-col sm:flex-row sm:gap-4">
+              <div className="flex flex-col gap-2">
                 <Typography
-                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
+                  className="text-gray-600 text-sm"
                   weight="semibold"
                 >
-                  Uploaded Files :
+                  {t("uploaded_files")}
                 </Typography>
                 <div className="flex-1">
-                  {documents.length
-                    ? documents.map((doc: any) => (
+                  {documents.length ? (
+                    <div className="flex flex-wrap gap-2">
+                      {documents.map((doc: any, index: number) => (
                         <a
-                          key={1}
+                          key={index}
                           href={doc.file}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-blue-600 hover:underline break-all text-sm sm:text-base"
+                          className="inline-flex items-center gap-1 text-blue-600 hover:underline hover:bg-blue-50 px-2 py-1 rounded-md border border-gray-200 text-sm max-w-full"
+                          title={doc?.original_name}
                         >
-                          <PdfIcon width={16} height={16} />
-                          {doc?.original_name}
+                          <PdfIcon width={14} height={14} className="flex-shrink-0" />
+                          <span className="truncate max-w-[200px]">
+                            {doc?.original_name}
+                          </span>
                         </a>
-                      ))
-                    : "-"}
+                      ))}
+                    </div>
+                  ) : (
+                    <Typography
+                      className="text-gray-500 text-sm"
+                      weight="normal"
+                    >
+                      -
+                    </Typography>
+                  )}
                 </div>
               </div>
             </div>
@@ -506,7 +530,13 @@ const ContractDetails = () => {
                     placeholder="Search by request no..."
                     className="pl-10 pr-4 bg-white border-gray-200 text-sm w-full h-10 focus:border-blue-500 focus:ring-blue-500"
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    value={searchTerm}
                   />
+                  {requestMutation.isPending && (
+                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
 
@@ -562,11 +592,25 @@ const ContractDetails = () => {
             </div>
 
             {/* Table */}
-            <div>
+            <div className="relative">
+              {requestMutation.isPending && (
+                <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-lg">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <Typography
+                      className="text-gray-600"
+                      size="sm"
+                      weight="normal"                                            
+                    >
+                      Searching requests...
+                    </Typography>
+                  </div>
+                </div>
+              )}
               <RequestTable
                 data={
-                  Array.isArray(contractData?.requests_data)
-                    ? (contractData.requests_data as RequestApiData[]).map(
+                  Array.isArray(requestsData)
+                    ? (requestsData as RequestApiData[]).map(
                         (req, idx) => ({
                           id: idx + 1,
                           requestNo: req.request_unique_number
@@ -580,7 +624,7 @@ const ContractDetails = () => {
                             : "",
                           status: req.current_status || "",
                           request_id: req.id || "",
-                          contract_id: contractData.id,
+                          contract_id: contractData?.id || "",
                         })
                       )
                     : []

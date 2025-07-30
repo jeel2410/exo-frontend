@@ -15,12 +15,15 @@ import { useMutation } from "@tanstack/react-query";
 import projectService from "../../services/project.service";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../../lib/components/atoms/Button";
+import CustomDropdown from "../../lib/components/atoms/CustomDropdown";
 
 interface ProjectInfoFormProps {
   initialValues?: ProjectFormValues;
   onSubmit: (values: ProjectFormValues, resetForm?: () => void) => void;
   children?: ReactNode;
   loading?: boolean;
+  referenceError?: string | null;
+  onClearReferenceError?: () => void;
 }
 
 interface Address {
@@ -39,7 +42,7 @@ interface ProjectFormValues {
   currency: string;
   beginDate: string | Date;
   endDate: string | Date;
-  description: string;
+  description: string | null;
   addresses: Address[];
   files: UploadedFile[];
   status: "publish" | "draft";
@@ -68,6 +71,8 @@ const ProjectInfoForm = ({
   initialValues,
   onSubmit,
   loading,
+  referenceError,
+  onClearReferenceError,
 }: // children,
 ProjectInfoFormProps) => {
   const { t } = useTranslation();
@@ -135,7 +140,7 @@ ProjectInfoFormProps) => {
       .required(t("project_name_is_required"))
       .min(3, t("project_name_must_be_at_least_3_characters")),
     fundedBy: Yup.string()
-      .required(t("funded_by_is_required"))
+      .required(t("finance_by_is_required"))
       .min(2, t("finance_by_must_be_at_least_2_characters")),
     projectReference: Yup.string().required(t("project_reference_is_required")),
     amount: Yup.string()
@@ -309,46 +314,6 @@ ProjectInfoFormProps) => {
     const response = await uploadMutation.mutateAsync({ file, onProgress });
     return response;
   };
-  const CustomSelect = ({
-    value,
-    options,
-    onChange,
-    onBlur,
-    onKeyDown,
-    placeholder = "Select...",
-    autoFocus = false,
-    disabled = false,
-  }: {
-    value: string;
-    options: { value: string; label: string }[];
-    onChange: (value: string) => void;
-    onBlur: () => void;
-    onKeyDown: (e: React.KeyboardEvent<HTMLSelectElement>) => void;
-    placeholder?: string;
-    autoFocus?: boolean;
-    disabled?: boolean;
-  }) => (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      onBlur={onBlur}
-      onKeyDown={onKeyDown}
-      autoFocus={autoFocus}
-      disabled={disabled || options.length === 0}
-      className={`w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-        disabled || options.length === 0 ? "bg-gray-100 cursor-not-allowed" : ""
-      }`}
-    >
-      <option value="">
-        {options.length === 0 ? "No options available" : placeholder}
-      </option>
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  );
 
   //  const fileUploadMutation = async ({
   //    file,
@@ -510,14 +475,26 @@ ProjectInfoFormProps) => {
                     name="projectReference"
                     placeholder="PRJ-2023-001"
                     error={
-                      touched.projectReference && !!errors.projectReference
+                      (touched.projectReference && !!errors.projectReference) || !!referenceError
                     }
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setFieldValue("projectReference", e.target.value);
+                      // Clear reference error when user starts typing
+                      if (referenceError && onClearReferenceError) {
+                        onClearReferenceError();
+                      }
+                    }}
                   />
                   <ErrorMessage
                     name="projectReference"
                     component="p"
                     className="mt-1 text-sm text-red-500"
                   />
+                  {referenceError && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {referenceError}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -665,22 +642,23 @@ ProjectInfoFormProps) => {
                           {/* Country */}
                           <td className="p-2">
                             {isFieldEditing(address.id, "country") ? (
-                              <CustomSelect
-                                value={address.country}
+                              <CustomDropdown
                                 options={locationData.countries}
-                                onChange={(value) =>
+                                value={address.country}
+                                onChange={(value) => {
                                   updateAddress(
                                     setFieldValue,
                                     values.addresses,
                                     address.id,
                                     "country",
                                     value
-                                  )
-                                }
+                                  );
+                                  stopEditing();
+                                }}
                                 onBlur={stopEditing}
-                                onKeyDown={handleKeyDown}
                                 placeholder="Select country"
                                 autoFocus
+                                className="text-sm"
                               />
                             ) : (
                               <div
@@ -697,23 +675,24 @@ ProjectInfoFormProps) => {
                           {/* Province */}
                           <td className="p-2">
                             {isFieldEditing(address.id, "province") ? (
-                              <CustomSelect
-                                value={address.province}
+                              <CustomDropdown
                                 options={locationData.provinces}
-                                onChange={(value) =>
+                                value={address.province}
+                                onChange={(value) => {
                                   updateAddress(
                                     setFieldValue,
                                     values.addresses,
                                     address.id,
                                     "province",
                                     value
-                                  )
-                                }
+                                  );
+                                  stopEditing();
+                                }}
                                 onBlur={stopEditing}
-                                onKeyDown={handleKeyDown}
                                 placeholder="Select province"
                                 disabled={!address.country}
                                 autoFocus
+                                className="text-sm"
                               />
                             ) : (
                               <div
@@ -735,23 +714,24 @@ ProjectInfoFormProps) => {
                           {/* City */}
                           <td className="p-2">
                             {isFieldEditing(address.id, "city") ? (
-                              <CustomSelect
-                                value={address.city}
+                              <CustomDropdown
                                 options={locationData.cities}
-                                onChange={(value) =>
+                                value={address.city}
+                                onChange={(value) => {
                                   updateAddress(
                                     setFieldValue,
                                     values.addresses,
                                     address.id,
                                     "city",
                                     value
-                                  )
-                                }
+                                  );
+                                  stopEditing();
+                                }}
                                 onBlur={stopEditing}
-                                onKeyDown={handleKeyDown}
                                 placeholder="Select city"
                                 disabled={!address.province}
                                 autoFocus
+                                className="text-sm"
                               />
                             ) : (
                               <div
@@ -773,23 +753,24 @@ ProjectInfoFormProps) => {
                           {/* Municipality */}
                           <td className="p-2">
                             {isFieldEditing(address.id, "municipality") ? (
-                              <CustomSelect
-                                value={address.municipality}
+                              <CustomDropdown
                                 options={locationData.municipalities}
-                                onChange={(value) =>
+                                value={address.municipality}
+                                onChange={(value) => {
                                   updateAddress(
                                     setFieldValue,
                                     values.addresses,
                                     address.id,
                                     "municipality",
                                     value
-                                  )
-                                }
+                                  );
+                                  stopEditing();
+                                }}
                                 onBlur={stopEditing}
-                                onKeyDown={handleKeyDown}
                                 placeholder="Select municipality"
                                 disabled={!address.city}
                                 autoFocus
+                                className="text-sm"
                               />
                             ) : (
                               <div

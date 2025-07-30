@@ -21,7 +21,7 @@ interface ProjectFormValues {
   currency: string;
   beginDate: string | Date;
   endDate: string | Date;
-  description: string;
+  description: string | null;
   addresses: Array<{
     id: number;
     country: string;
@@ -54,6 +54,7 @@ const CreateProjectForm = () => {
   const [formValue, setFormValue] = useState<ProjectFormValues>(initialValues);
   const { projectId } = useParams();
   const { setLoading, loading } = useLoading();
+  const [referenceError, setReferenceError] = useState<string | null>(null);
 
   const createProjectMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -62,6 +63,7 @@ const CreateProjectForm = () => {
     onSuccess: () => {
       openModal();
       setFormValue(initialValues); // Clear the form after successful creation
+      setReferenceError(null); // Clear any existing reference error
     },
     onError: async (error: any) => {
       let errorMessage = "Failed to create project.";
@@ -79,14 +81,19 @@ const CreateProjectForm = () => {
       console.error("Error during project creation:", errorMessage);
 
       if(errorMessage==="The reference has already been taken."){
-        
-        return toast.error(i18n.language==="en"?Errors.en:Errors.fr);
+        const translatedError = i18n.language==="en"?Errors.en:Errors.fr;
+        setReferenceError(translatedError);
+        return toast.error(translatedError);
       }
+      setReferenceError(null); // Clear reference error for other errors
       return toast.error(t(errorMessage||"failed_to_create_project"));
     },
   });    
 
   const createProject = (values: ProjectFormValues, resetForm?: () => void) => {
+    // Clear any existing reference error when submitting
+    setReferenceError(null);
+    
     const payload = {
       name: values.projectName,
       funded_by: values.fundedBy,
@@ -141,7 +148,7 @@ const CreateProjectForm = () => {
         currency: projectData.currency,
         beginDate: moment(projectData.begin_date, "YYYY-MM-DD").toDate(),
         endDate: moment(projectData.end_date, "YYYY-MM-DD").toDate(),
-        description: projectData.description,
+        description: projectData.description || "",
         addresses:
           projectData.address && projectData.address?.length
             ? [...(projectData.address && projectData.address)]?.map(
@@ -154,7 +161,7 @@ const CreateProjectForm = () => {
                 })
               )
             : [],
-        files: [],
+        files: projectData.documents,
         status: projectData.status,
       };
       setFormValue(newData);
@@ -207,6 +214,8 @@ const CreateProjectForm = () => {
                 initialValues={formValue}
                 onSubmit={handleSubmit}
                 loading={createProjectMutation.isPending}
+                referenceError={referenceError}
+                onClearReferenceError={() => setReferenceError(null)}
               />
             )}
           </div>

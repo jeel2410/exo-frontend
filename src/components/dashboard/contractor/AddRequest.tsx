@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   FileVioletIcon,
   PlusBlueIcon,
@@ -91,6 +91,8 @@ const AddRequest = () => {
   const [userData, setUserData] = useState<{ token: string } | undefined>();
   const [selectedAddress, setSelectedAddress] = useState<string>("");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [mandatoryFiles, setMandatoryFiles] = useState<UploadedFile[]>([]);
+  const [additionalFiles, setAdditionalFiles] = useState<UploadedFile[]>([]);
   const [requestLetter, setRequestLetter] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [projectId, setProjectId] = useState<string>("");
@@ -290,10 +292,22 @@ const handleSubmit = () => {
     if (!requestLetter || requestLetter.trim() === "") {
       errors.requestLetter = t("request_letter_is_required");
     }
-    console.log(uploadedFiles)
-    if (uploadedFiles.length < 3) {
-      errors.fileUpload = t("at_least_three_files_required");
+    
+    // Check for mandatory files (minimum 3 mandatory files required)
+    const mandatoryDocNames = [
+      "Letter de transport, note de fret, note d'assurance",
+      "De`claration pour I'importation Conditionnelle <<IC>>",
+      "Facture e`mise par le fournisseur"
+    ];
+    
+    const mandatoryFilesUploaded = uploadedFiles.filter(file => 
+      mandatoryDocNames.includes(file.original_name || "")
+    );
+    
+    if (mandatoryFilesUploaded.length < 3) {
+      errors.fileUpload = t("at_least_three_mandatory_files_required");
     }
+    
     if (contractData.amount !== undefined && totals.totalAmount > Number(contractData.amount)) {
       errors.contractAmount = t("contract_amount_exceeded");
     }
@@ -425,11 +439,24 @@ const handleSubmit = () => {
   const getRequestData = async (requestId: string) => {
     const response = await requestMutaion.mutateAsync(requestId);
     if (response.status === 200) {
-      const { project_id, request_letter, entities, address } = response.data;
+      const { project_id, request_letter, entities, address, files } = response.data;
 
       updateEntitys(entities);
       setProjectId(project_id);
       setRequestLetter(request_letter);
+      
+      // Handle existing documents
+      if (files && files.length > 0) {
+        const existingFiles = files.map((doc: any) => ({
+          id: doc.id,
+          url: doc.url,
+          original_name: doc.original_name || doc.name,
+          size: doc.size,
+          file: undefined,
+        }));
+        setUploadedFiles(existingFiles);
+      }
+      
       const res = await fetchProjectAddressesAsync(project_id);
       if (res.status === 200) {
         setSelectedAddress(address.id);
@@ -490,9 +517,28 @@ const handleSubmit = () => {
       totalAmountWithTax,
     });
   }, [data]);
-  const handleFilesSelect = (files: UploadedFile[]) => {
-    setUploadedFiles(files);
-  };
+  const handleFilesSelect = useCallback((newFiles: UploadedFile[]) => {
+    setUploadedFiles(currentFiles => {
+      if (newFiles.length !== currentFiles.length) {
+        return newFiles;
+      }
+
+      const currentFileIds = new Set(currentFiles.map(f => f.id));
+      const newFileIds = new Set(newFiles.map(f => f.id));
+
+      if (currentFileIds.size !== newFileIds.size) {
+        return newFiles;
+      }
+      
+      for (const id of currentFileIds) {
+        if (!newFileIds.has(id)) {
+          return newFiles;
+        }
+      }
+
+      return currentFiles;
+    });
+  }, []);
   const handleFinancialAuthority = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {

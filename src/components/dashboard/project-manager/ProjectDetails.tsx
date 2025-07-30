@@ -318,7 +318,7 @@ const ProjectDetails = () => {
                     size="sm"
                     weight="normal"
                   >
-                    Project Name :
+                    {t("project_name")}:
                   </Typography>
                   <Typography
                     className="text-secondary-100 break-words"
@@ -334,7 +334,7 @@ const ProjectDetails = () => {
                     size="sm"
                     weight="normal"
                   >
-                    Funded By :
+                    {t("funded_by")}:
                   </Typography>
                   <Typography
                     className="text-secondary-100 break-words"
@@ -350,7 +350,7 @@ const ProjectDetails = () => {
                     size="sm"
                     weight="normal"
                   >
-                    Amount :
+                    {t("amount")}:
                   </Typography>
                   <Typography
                     className="text-secondary-100 break-words"
@@ -369,7 +369,7 @@ const ProjectDetails = () => {
                     size="sm"
                     weight="normal"
                   >
-                    Project End Date :
+                    {t("project_end_date")}:
                   </Typography>
                   <Typography
                     className="text-secondary-100 break-words"
@@ -387,7 +387,7 @@ const ProjectDetails = () => {
                     size="sm"
                     weight="normal"
                   >
-                    Project Reference :
+                    {t("project_reference")}:
                   </Typography>
                   <Typography
                     className="text-secondary-100 break-words"
@@ -403,7 +403,7 @@ const ProjectDetails = () => {
                     size="sm"
                     weight="normal"
                   >
-                    Project Begin Date :
+                    {t("project_begin_date")}
                   </Typography>
                   <Typography
                     className="text-secondary-100 break-words"
@@ -419,7 +419,7 @@ const ProjectDetails = () => {
                     size="sm"
                     weight="normal"
                   >
-                    Description :
+                    {t("description")}:
                   </Typography>
                   <Typography
                     className="text-secondary-100 break-words"
@@ -436,32 +436,43 @@ const ProjectDetails = () => {
                     )}
                   </Typography>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:gap-4">
+                <div className="flex flex-col gap-2">
                   <Typography
-                    className="text-secondary-60 min-w-[140px]"
+                    className="text-secondary-60"
                     size="sm"
                     weight="normal"
                   >
-                    Uploaded Files :
+                    {t("uploaded_files")}
                   </Typography>
-                  {projectData?.documents.length ? (
-                    <>
-                      {projectData?.documents.map((doc) => (
-                        <a
-                          key={1}
-                          href={doc.file}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-blue-600 hover:underline break-all"
-                        >
-                          <PdfIcon width={16} height={16} />
-                          {doc.original_name}
-                        </a>
-                      ))}
-                    </>
-                  ) : (
-                    "-"
-                  )}
+                  <div className="flex-1">
+                    {projectData?.documents.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {projectData?.documents.map((doc, index) => (
+                          <a
+                            key={index}
+                            href={doc.file}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-blue-600 hover:underline hover:bg-blue-50 px-2 py-1 rounded-md border border-gray-200 text-sm max-w-full"
+                            title={doc?.original_name}
+                          >
+                            <PdfIcon width={14} height={14} className="flex-shrink-0" />
+                            <span className="truncate max-w-[200px]">
+                              {doc?.original_name}
+                            </span>
+                          </a>
+                        ))}
+                      </div>
+                    ) : (
+                      <Typography
+                        className="text-secondary-60"
+                        size="sm"
+                        weight="normal"
+                      >
+                        -
+                      </Typography>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

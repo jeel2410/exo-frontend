@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import Input, { InputProps } from "./Input";
+import CustomDropdown from "./CustomDropdown";
 
 type Options = {
   value: string;
@@ -28,8 +29,7 @@ const PhoneInput = ({
   console.log(countryCode, "countryCode in PhoneInput");
 
   // Handle country code change
-  const handleCountryCodeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedCountryCode = e.target.value;
+  const handleCountryCodeChange = (selectedCountryCode: string) => {
     onOptionChange?.(selectedCountryCode); // Pass the selected country code to the parent
   };
 
@@ -82,28 +82,26 @@ const PhoneInput = ({
             : "border-secondary-30 focus-within:border-secondary-50"
         }`}
       >
-        <div className="pl-1">
-          <select
-            className={`focus-visible:border-none focus-visible:outline-none ${
-              error ? "text-error-500" : ""
-            }`}
+        <div className="min-w-[80px]">
+          <CustomDropdown
+            options={options.map(opt => ({
+              value: opt.value,
+              label: opt.label
+            }))}
+            value={countryCode || ""}
             onChange={handleCountryCodeChange}
-            value={countryCode} // Add onChange handler
-          >
-            {options.map((opt, index) => (
-              <option key={index} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            placeholder="Code"
+            className="border-none bg-transparent focus:ring-0 focus:border-transparent"
+            error={error}
+          />
         </div>
-        <div className="h-3 w-px bg-secondary-30"></div>
+        <div className="h-6 w-px bg-secondary-30"></div>
         <Input
           value={value}
           type="tel"
           maxLength={10}
           placeholder={t("phone_number")}
-          className="border-none"
+          className="border-none flex-1"
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           onChange={handleChange}

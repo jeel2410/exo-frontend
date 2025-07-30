@@ -132,8 +132,8 @@
   "please_review_all_the_details_from_the_previous_steps_before_submitting": "Veuillez vérifier toutes les informations des étapes précédentes avant de soumettre.",
   "project_begin_date": "Date de début du projet :",
   "no_addresses_added": "Aucune adresse ajoutée",
-  "signed_by": "Signé par :",
-  "organization": "Organisation :",
+  "signed_by": "Signé par ",
+  "organization": "Organisation ",
   "create_project": "Créer un projet",
   "next": "Suivant",
   "congratulations": "Félicitations !",
@@ -285,5 +285,7 @@
   "rename": "Renommer",
   "delete": "Supprimer",
   "upload": "Téléverser",
-  "tax_category": "Tax Category"
+  "tax_category": "Tax Category",
+  "uploaded_files": "Fichiers téléversés :",
+  "at_least_three_mandatory_files_required": "Au moins trois fichiers obligatoires sont requis."
 }
