@@ -286,5 +286,6 @@
   "delete": "Supprimer",
   "upload": "Téléverser",
   "tax_category": "Tax Category",
-  "uploaded_files": "Fichiers téléversés :"
+  "uploaded_files": "Fichiers téléversés :",
+  "at_least_three_mandatory_files_required": "Au moins trois fichiers obligatoires sont requis."
 }

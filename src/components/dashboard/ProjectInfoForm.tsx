@@ -22,6 +22,8 @@ interface ProjectInfoFormProps {
   onSubmit: (values: ProjectFormValues, resetForm?: () => void) => void;
   children?: ReactNode;
   loading?: boolean;
+  referenceError?: string | null;
+  onClearReferenceError?: () => void;
 }
 
 interface Address {
@@ -40,7 +42,7 @@ interface ProjectFormValues {
   currency: string;
   beginDate: string | Date;
   endDate: string | Date;
-  description: string;
+  description: string | null;
   addresses: Address[];
   files: UploadedFile[];
   status: "publish" | "draft";
@@ -69,6 +71,8 @@ const ProjectInfoForm = ({
   initialValues,
   onSubmit,
   loading,
+  referenceError,
+  onClearReferenceError,
 }: // children,
 ProjectInfoFormProps) => {
   const { t } = useTranslation();
@@ -136,7 +140,7 @@ ProjectInfoFormProps) => {
       .required(t("project_name_is_required"))
       .min(3, t("project_name_must_be_at_least_3_characters")),
     fundedBy: Yup.string()
-      .required(t("funded_by_is_required"))
+      .required(t("finance_by_is_required"))
       .min(2, t("finance_by_must_be_at_least_2_characters")),
     projectReference: Yup.string().required(t("project_reference_is_required")),
     amount: Yup.string()
@@ -471,14 +475,26 @@ ProjectInfoFormProps) => {
                     name="projectReference"
                     placeholder="PRJ-2023-001"
                     error={
-                      touched.projectReference && !!errors.projectReference
+                      (touched.projectReference && !!errors.projectReference) || !!referenceError
                     }
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setFieldValue("projectReference", e.target.value);
+                      // Clear reference error when user starts typing
+                      if (referenceError && onClearReferenceError) {
+                        onClearReferenceError();
+                      }
+                    }}
                   />
                   <ErrorMessage
                     name="projectReference"
                     component="p"
                     className="mt-1 text-sm text-red-500"
                   />
+                  {referenceError && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {referenceError}
+                    </p>
+                  )}
                 </div>
 
                 <div>

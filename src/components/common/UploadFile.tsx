@@ -1,4 +1,4 @@
-import React, { useState, useEffect, JSX } from "react";
+import React, { useState, useEffect, JSX, useMemo, useRef } from "react";
 export interface UploadedFile {
   file: File | undefined;
   id: string;
@@ -84,6 +84,14 @@ const UploadFile: React.FC<FileUploadProps> = ({
   const [removingFile, setRemovingFile] = useState<boolean>(false);
   const [renamingFiles, setRenamingFiles] = useState<Set<string>>(new Set());
 
+  const filesDep = useMemo(
+    () => files?.map((f) => f.id).join(","),
+    [files]
+  );
+
+  const isInitialMount = useRef(true);
+  const lastNotifiedFiles = useRef<string>("");
+
   // useEffect(() => {
   //   if (files && files.length > 0) {
   //     // Handle existing files - for now just notify parent
@@ -93,58 +101,75 @@ const UploadFile: React.FC<FileUploadProps> = ({
 
   useEffect(() => {
     if (files && files.length > 0) {
-      // Create a copy of the initial mandatoryDocs to avoid mutating the initial state
-      let updatedMandatoryDocs = [...mandatoryDocs];
-      let remainingFiles = [...files];
+      const newMandatoryDocs = [...mandatoryDocs];
+      const newAdditionalDocs: DocumentRow[] = [];
+      const mandatoryDocNames = newMandatoryDocs.map((doc) => doc.name);
 
-      // Try to match files to mandatory documents
-      updatedMandatoryDocs = updatedMandatoryDocs.map((doc) => {
-        // Find a file that could match this mandatory document (e.g., by name or index)
-        const matchedFile = remainingFiles.find(
-          (file) =>
-            file.original_name?.toLowerCase().includes(doc.name.toLowerCase()) ||
-            file.id === doc.id
+      files.forEach((file) => {
+        const mandatoryIndex = mandatoryDocNames.indexOf(
+          file.original_name || ""
         );
-
-        if (matchedFile) {
-          // Remove the matched file from remainingFiles
-          remainingFiles = remainingFiles.filter((f) => f.id !== matchedFile.id);
-          return {
-            ...doc,
-            uploadedFile: matchedFile,
+        if (mandatoryIndex !== -1) {
+          newMandatoryDocs[mandatoryIndex] = {
+            ...newMandatoryDocs[mandatoryIndex],
             isUploaded: true,
-            name: doc.name, // Keep the predefined name for mandatory docs
+            uploadedFile: file,
           };
+        } else {
+          newAdditionalDocs.push({
+            id: file.id,
+            name: file.original_name || "",
+            file: undefined,
+            uploadedFile: file,
+            isUploaded: true,
+            isMandatory: false,
+            isNameEditable: true,
+          });
         }
-        return doc;
       });
 
-      // Create additionalDocs for any remaining files
-      const newAdditionalDocs = remainingFiles.map((file, index) => ({
-        id: file.id || `additional_${Date.now()}_${index}`,
-        name: file.original_name || `Additional Document ${index + 1}`,
-        uploadedFile: file,
-        isUploaded: true,
-        isMandatory: false,
-        isNameEditable: true,
-      }));
-
-      // Update state
-      setMandatoryDocs(updatedMandatoryDocs);
-      setAdditionalDocs(newAdditionalDocs.length > 0 ? newAdditionalDocs : [
-        {
+      if (newAdditionalDocs.length === 0) {
+        newAdditionalDocs.push({
           id: `additional_${Date.now()}`,
           name: "",
           isUploaded: false,
           isMandatory: false,
           isNameEditable: true,
-        },
-      ]);
+        });
+      }
 
-      // Notify parent component
-      onFilesSelect?.(files);
+      setMandatoryDocs(newMandatoryDocs);
+      setAdditionalDocs(newAdditionalDocs);
     }
-  }, [files]);
+  }, [filesDep]);
+
+  useEffect(() => {
+    const allUploadedFiles = [
+      ...mandatoryDocs
+        .filter((d) => d.isUploaded)
+        .map((d) => d.uploadedFile!),
+      ...additionalDocs
+        .filter((d) => d.isUploaded)
+        .map((d) => d.uploadedFile!),
+    ].filter(Boolean);
+    
+    // Create a stable string representation of the files to compare
+    const currentFilesSignature = allUploadedFiles
+      .map((f) => `${f.id}-${f.original_name}`)
+      .sort()
+      .join("|");
+    
+    // Only call onFilesSelect if this is not the initial mount and files have actually changed
+    if (!isInitialMount.current && currentFilesSignature !== lastNotifiedFiles.current) {
+      lastNotifiedFiles.current = currentFilesSignature;
+      onFilesSelect?.(allUploadedFiles);
+    }
+    
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      lastNotifiedFiles.current = currentFilesSignature;
+    }
+  }, [mandatoryDocs, additionalDocs, onFilesSelect]);
 
   const validateFile = (file: File): boolean => {
     if (file.size > maxSize * 1024 * 1024) {
@@ -168,10 +193,20 @@ const UploadFile: React.FC<FileUploadProps> = ({
     setUploadingFiles((prev) => new Set(prev).add(rowId));
     setUploadProgress((prev) => ({ ...prev, [rowId]: 0 }));
 
+    const isMandatoryRow = mandatoryDocs.some((doc) => doc.id === rowId);
+
     try {
+      let fileToUpload = file;
+      const mandatoryRowData = mandatoryDocs.find((doc) => doc.id === rowId);
+      if (mandatoryRowData) {
+        fileToUpload = new File([file], mandatoryRowData.name, {
+          type: file.type,
+        });
+      }
+
       let uploaded: { id: string; url: string };
       if (onUploadFile) {
-        uploaded = await onUploadFile(file, (percent) => {
+        uploaded = await onUploadFile(fileToUpload, (percent) => {
           setUploadProgress((prev) => ({ ...prev, [rowId]: percent }));
         });
       } else {
@@ -190,7 +225,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
         file,
         id: uploaded.id,
         url: uploaded.url,
-        original_name: file.name,
+        original_name: fileToUpload.name,
         size: file.size,
       };
 
@@ -207,16 +242,11 @@ const UploadFile: React.FC<FileUploadProps> = ({
         return row;
       };
 
-      setMandatoryDocs((prev) => prev.map(updateRow));
-      setAdditionalDocs((prev) => prev.map(updateRow));
-
-      // Notify parent component
-      const allUploaded = [...mandatoryDocs, ...additionalDocs]
-        .filter((row) => row.isUploaded || row.id === rowId)
-        .map((row) => (row.id === rowId ? uploadedFile : row.uploadedFile!))
-        .filter((file): file is UploadedFile => Boolean(file));
-
-      onFilesSelect?.(allUploaded);
+      if (isMandatoryRow) {
+        setMandatoryDocs((prev) => prev.map(updateRow));
+      } else {
+        setAdditionalDocs((prev) => prev.map(updateRow));
+      }
     } catch (err) {
       console.error(err);
       setError(`Failed to upload ${file.name}`);

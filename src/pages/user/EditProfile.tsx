@@ -85,9 +85,19 @@ const EditProfile = () => {
           last_name: res.data.data.last_name,
           company_name: res.data.data.company_name,
           profile_picture: res.data.data.profile_picture,
+          profile_image: res.data.data.profile_image,
           mobile: res.data.data.mobile,
         };
       });
+      localStorageService.setUser(JSON.stringify({
+          ...userData,
+          first_name: res.data.data.first_name,
+          last_name: res.data.data.last_name,
+          company_name: res.data.data.company_name,
+          profile_picture: res.data.data.profile_picture,
+          profile_image: res.data.data.profile_image,
+          mobile: res.data.data.mobile,
+        }))
       return res.data as ProfileData;
     },
   });
@@ -183,7 +193,7 @@ const EditProfile = () => {
                 firstName: userData.first_name || "",
                 lastName: userData.last_name || "",
               }}
-              imageUrl={userData.profile_picture}
+              imageUrl={userData.profile_image || userData.profile_picture}
               onImageUpload={handleImageUpload}
               isUploading={isUploadingImage}
             />

@@ -291,5 +291,6 @@
   "delete": "Delete",
   "upload": "Upload",
   "tax_category": "Tax Category",
-  "uploaded_files": "Uploaded Files:"
+  "uploaded_files": "Uploaded Files:",
+  "at_least_three_mandatory_files_required": "At least three mandatory files are required."
 }
