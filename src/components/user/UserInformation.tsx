@@ -33,6 +33,7 @@ interface FormValues {
 interface UserInformationProps {
   userData: UserData;
   onProfileUpdate?: () => void;
+  file: any;
 }
 
 // 📌 Fixed Validation Schema - field names now match form fields
@@ -46,10 +47,13 @@ const validationSchema = Yup.object().shape({
     .matches(/^\d{10}$/, "Enter a valid 10-digit mobile number"),
 });
 
-const UserInformation = ({ userData, onProfileUpdate }: UserInformationProps) => {
+const UserInformation = ({
+  userData,
+  onProfileUpdate,
+  file,
+}: UserInformationProps) => {
   const { t } = useTranslation();
 
-  // 🔥 HOOK MUST BE CALLED BEFORE ANY EARLY RETURNS
   const updateProfileMutation = useMutation({
     mutationFn: async (formData: FormData) => {
       const res = await authService.editProfile(formData);
@@ -58,7 +62,7 @@ const UserInformation = ({ userData, onProfileUpdate }: UserInformationProps) =>
     onSuccess: (res) => {
       console.log("Profile updated successfully:", res);
       toast.success(t("profile_updated_successfully"));
-      
+
       // Trigger profile refresh
       if (onProfileUpdate) {
         onProfileUpdate();
@@ -95,20 +99,25 @@ const UserInformation = ({ userData, onProfileUpdate }: UserInformationProps) =>
     mobile: userData.mobile || "",
   };
 
-const handleSubmit = async (
+  const handleSubmit = async (
     values: FormValues,
     { setSubmitting }: FormikHelpers<FormValues>
   ) => {
+    console.log(file, "file");
+
     try {
       const formData = new FormData();
 
       // Append form data
       Object.entries(values).forEach(([key, value]) => {
-        if (key !== 'profile_image' && value !== undefined && value !== null) {
-          formData.append(key, value as string);
-        }
+        console.log(key, value, "key and value");
+
+        formData.append(key, value as string);
+        // if (key !== "profile_image" && value !== undefined && value !== null) {
+        // }
       });
-      
+      formData.append("profile_image", file);
+      console.log(formData, "FormData before submission");
 
       await updateProfileMutation.mutateAsync(formData);
       console.log("FormData submitted:", formData);
@@ -193,7 +202,6 @@ const handleSubmit = async (
                 className="text-red-500 text-sm"
               />
             </div>
-
 
             {/* Mobile Number with Country Code */}
             <div className="mt-6">

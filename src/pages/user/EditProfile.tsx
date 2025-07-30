@@ -54,6 +54,7 @@ const EditProfile = () => {
   const { setLoading } = useLoading();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     try {
@@ -84,7 +85,7 @@ const EditProfile = () => {
           last_name: res.data.data.last_name,
           company_name: res.data.data.company_name,
           profile_picture: res.data.data.profile_picture,
-          mobile:res.data.data.mobile
+          mobile: res.data.data.mobile,
         };
       });
       return res.data as ProfileData;
@@ -137,8 +138,9 @@ const EditProfile = () => {
       return;
     }
 
-    setIsUploadingImage(true);
-    uploadProfilePictureMutation.mutate(file);
+    // setIsUploadingImage(true);
+    setFile(file);
+    // uploadProfilePictureMutation.mutate(file);
   };
 
   const {
@@ -231,7 +233,7 @@ const EditProfile = () => {
           {userData && (
             <>
               {isActiveButton === "info" ? (
-                <UserInformation userData={userData as any} />
+                <UserInformation userData={userData as any} file={file} />
               ) : (
                 <Security
                   userData={userData as any}
