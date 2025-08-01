@@ -19,6 +19,7 @@ export const ApiRoutes = {
   DELETE_REQUEST: "/request/delete",
   DELETE_PROJECT: "/project/delete",
   ADDRESS_LIST: "project/list-address",
+  ARCHIVE_PROJECT: "/project/delete",
   // contract routes
   LIST_ALL_PPROJECT: "/project/get-list-all",
   CONTRACT_DETAILS: "/contract/view",

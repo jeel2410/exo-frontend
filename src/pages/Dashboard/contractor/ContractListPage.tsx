@@ -34,6 +34,7 @@ export interface ContractData {
   dateOfSigning: string;
   numberOfRequests: number;
   contractId: string;
+  created_at: string | Date; // Assuming this is a date string
 }
 export interface ContractDetails {
   id: string;
@@ -127,6 +128,7 @@ const ContractListPage = () => {
           dateOfSigning: moment(contract.date_of_signing).format("YYYY/MM/DD"),
           numberOfRequests: contract.requests_data_count,
           contractId: contract.id,
+          created_at: contract.created_at,
         })
       );
       setData(newContractData);

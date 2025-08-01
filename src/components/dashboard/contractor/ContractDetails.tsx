@@ -172,12 +172,6 @@ const ContractDetails = () => {
     },
   });
 
-  const documents = Array.isArray(contractData?.documents)
-    ? contractData.documents
-    : contractData?.documents
-    ? [contractData.documents]
-    : [];
-
   useEffect(() => {
     if (contractId) {
       contractMutation.mutate();
@@ -459,9 +453,9 @@ const ContractDetails = () => {
                   {t("uploaded_files")}
                 </Typography>
                 <div className="flex-1">
-                  {documents.length ? (
+                  {contractData?.documents.length ? (
                     <div className="flex flex-wrap gap-2">
-                      {documents.map((doc: any, index: number) => (
+                      {contractData?.documents.map((doc: any, index: number) => (
                         <a
                           key={index}
                           href={doc.file}

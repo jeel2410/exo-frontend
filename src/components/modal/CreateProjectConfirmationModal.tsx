@@ -73,7 +73,11 @@ const CreateProjectConfirmationModal = ({
             <Button
               variant="primary"
               className="w-full md:w-fit py-2.5 md:py-3 px-4 md:px-[35px]"
-              onClick={() => onClose()}
+              onClick={() => {
+                const formResetEvent = new CustomEvent('form-reset');
+                window.dispatchEvent(formResetEvent);
+                onClose();
+              }}
             >
               {t("create_another_project")}
             </Button>

@@ -189,35 +189,35 @@ const ContractProjectListTable = ({
     //   className: "w-10", // Fixed width for checkbox
     // },
     {
-      content: <div className="text-nowrap">Sr No</div>,
+      content: <div className="text-nowrap">{t("sr_no")}</div>,
       className: "w-16",
     },
     {
-      content: <div className="text-nowrap">Project ID</div>,
+      content: <div className="text-nowrap">{t("project_id")}</div>,
       className: "min-w-[120px]",
     },
     {
-      content: <div className="text-nowrap">Project Name</div>,
+      content: <div className="text-nowrap">{t("project_name")}</div>,
       className: "min-w-[120px]",
     },
     {
-      content: <div className="text-nowrap">Currency</div>,
+      content: <div className="text-nowrap">{t("currency")}</div>,
       className: "min-w-[120px]",
     },
     {
-      content: <div>End Date</div>,
+      content: <div>{t("created_date")}</div>,
       className: "w-24",
     },
     {
-      content: <div>Status</div>,
+      content: <div>{t("status")}</div>,
       className: "w-24",
     },
     {
-      content: <div className="text-nowrap">Project Manager</div>,
+      content: <div className="text-nowrap">{t("project_manager")}</div>,
       className: "w-24",
     },
     {
-      content: <div>Actions</div>,
+      content: <div>{t("actions")}</div>,
       className: "w-20",
     },
   ];
@@ -281,7 +281,7 @@ const ContractProjectListTable = ({
 
                     <TableCell className="px-5 py-4 sm:px-6">
                       <span className="block font-medium text-secondary-100 text-sm text-nowrap">
-                        {moment(data.endDate).format("YYYY/MM/DD")}
+                        {moment(data.createdDate).format("YYYY/MM/DD")}
                       </span>
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6">

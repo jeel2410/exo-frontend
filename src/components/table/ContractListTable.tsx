@@ -86,6 +86,7 @@ export interface ContractData {
   numberOfRequests: number;
   contractId: string;
   projectId?: string;
+  created_at: string | Date; // Assuming this is a date string
 }
 
 const ContractListTable = ({
@@ -174,7 +175,7 @@ const ContractListTable = ({
       className: "w-24",
     },
     {
-      content: <div className="text-nowrap">{t("date_of_signing")}</div>,
+      content: <div className="text-nowrap">{t("created_date")}</div>,
       className: "w-24",
     },
     {
@@ -267,7 +268,7 @@ const ContractListTable = ({
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6">
                       <span className="block font-medium text-secondary-100 text-sm text-nowrap">
-                        {moment(data.dateOfSigning).format("YYYY/MM/DD")}
+                        {moment(data.created_at).format("YYYY/MM/DD")}
                       </span>
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6">

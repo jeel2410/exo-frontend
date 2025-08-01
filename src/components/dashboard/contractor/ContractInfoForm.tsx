@@ -162,11 +162,46 @@ const ContractInfoForm = ({
       const filteredFiles = files.filter(
         (file: UploadedFile) => file.id !== fileId
       );
-      setFieldValue("files", filteredFiles);
+      setFieldValue("contractFiles", filteredFiles);
       return { status: true };
     }
     return { status: false };
   };
+
+  const handleRenameFile = async (
+    fileId: string,
+    newName: string,
+    setFieldValue: FormikHelpers<ContractFormValues>["setFieldValue"],
+    files: UploadedFile[]
+  ) => {
+    try {
+      const response = await projectService.changeDocumentName(newName, fileId);
+      console.log("File renamed successfully:", response);
+      
+      // Update the file name in the local state
+      const updatedFiles = files.map((file: UploadedFile) => {
+        if (file.id === fileId) {
+          return {
+            ...file,
+            file: {
+              ...file.file,
+              name: response.data?.new_name || newName
+            },
+            original_name: response.data?.new_name || newName
+          };
+        }
+        return file;
+      });
+      
+      setFieldValue("contractFiles", updatedFiles);
+      
+      return { status: true, newName: response.data?.new_name || newName };
+    } catch (error) {
+      console.error("Failed to rename file:", error);
+      return { status: false };
+    }
+  };
+  
   console.log("Initial values:", initialValues);
 
   return (
@@ -321,15 +356,15 @@ const ContractInfoForm = ({
               }
               onChange={(selectedDates: Date[]) => {
                 if (selectedDates[0]) {
+                  const year = selectedDates[0].getFullYear();
+                  const month = (selectedDates[0].getMonth() + 1)
+                    .toString()
+                    .padStart(2, "0");
                   const day = selectedDates[0]
                     .getDate()
                     .toString()
                     .padStart(2, "0");
-                  const month = (selectedDates[0].getMonth() + 1)
-                    .toString()
-                    .padStart(2, "0");
-                  const year = selectedDates[0].getFullYear();
-                  const formattedDate = `${day}-${month}-${year}`;
+                  const formattedDate = `${year}-${month}-${day}`;
                   setFieldValue("dateOfSigning", formattedDate);
                 }
               }}
@@ -349,17 +384,13 @@ const ContractInfoForm = ({
               onFilesSelect={(files) => setFieldValue("contractFiles", files)}
               onUploadFile={handleUploadFile}
               context="create-contract"
-              // onUploadFile={async (file, onProgress) => {
-              //   return new Promise((res) => {
-              //     setTimeout(() => {
-              //       onProgress(100);
-              //       res({
-              //         id: Date.now().toString(),
-              //         url: URL.createObjectURL(file),
-              //       });
-              //     }, 800);
-              //   });
-              // }}
+              onRenameFile={async (fileId: string, newName: string) => {
+                console.log("Renaming file:", fileId, newName);
+                // if (!newName) {
+                  // return { status: false, newName: "" };
+                // }
+                return await handleRenameFile(fileId, newName, setFieldValue, values.contractFiles);
+              }}
               onDeleteFile={async (fileId: string) => {
                 return handleDeleteFile(
                   fileId,
@@ -367,13 +398,6 @@ const ContractInfoForm = ({
                   values.contractFiles
                 );
               }}
-              // onDeleteFile={async (id) => {
-              //   const updated = values.contractFiles.filter(
-              //     (file) => file.id !== id
-              //   );
-              //   setFieldValue("contractFiles", updated);
-              //   return { status: true };
-              // }}
               maxSize={5}
               acceptedFormats={[".pdf", ".doc"]}
             />

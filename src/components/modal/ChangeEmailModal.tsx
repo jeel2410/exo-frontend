@@ -8,11 +8,12 @@ import Typography from "../../lib/components/atoms/Typography";
 
 interface ChangeEmailModalProps {
   isOpen: boolean;
-  loading?:boolean
+  loading?: boolean;
   onClose: () => void;
-  sendOtp:()=>void;
-  onChange:(e:React.ChangeEvent<HTMLInputElement>)=>void;
-  fieldValue:{email:string,password:string,otp:string}
+  sendOtp: () => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  fieldValue: { email: string; otp: string };
+  // fieldValue: { email: string; password: string; otp: string };
 }
 
 const ChangeEmailModal = ({ isOpen, onClose,sendOtp,onChange,fieldValue,loading }: ChangeEmailModalProps) => {
@@ -36,10 +37,10 @@ const ChangeEmailModal = ({ isOpen, onClose,sendOtp,onChange,fieldValue,loading 
             <Label>{t("new_email")}</Label>
             <Input placeholder={t("enter_email_address")} name="email" onChange={onChange} value={fieldValue.email} />
           </div>
-          <div className="mt-6">
+          {/* <div className="mt-6">
             <Label>{t("current_password")}</Label>
             <Password name="password" onChange={onChange} value={fieldValue.password} />
-          </div>
+          </div> */}
         </div>
         <div className="w-full flex gap-4 justify-end mt-6">
           <Button

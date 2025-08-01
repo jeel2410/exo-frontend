@@ -419,6 +419,20 @@ const handleSubmit = () => {
     return { status: false };
   };
 
+  const handleRenameFile = async (
+    fileId: string,
+    newName: string
+  ) => {
+    try {
+      const response = await projectService.changeDocumentName(newName, fileId);
+      console.log("File renamed successfully:", response);
+      return { status: true, newName: response.data?.new_name || newName };
+    } catch (error) {
+      console.error("Failed to rename file:", error);
+      return { status: false };
+    }
+  };
+
   const requestMutaion = useMutation({
     mutationFn: async (requestId: string) => {
       const res = await projectService.requestDetails({
@@ -698,6 +712,7 @@ const handleSubmit = () => {
                 onFilesSelect={handleFilesSelect}
                 onUploadFile={handleUploadFile}
                 onDeleteFile={handleDeleteFile}
+                onRenameFile={handleRenameFile}
               />
               {validationErrors.fileUpload && (
                 <Typography size="sm" className="text-red-500 mt-1">
