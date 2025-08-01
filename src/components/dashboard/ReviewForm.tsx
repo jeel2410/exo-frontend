@@ -74,7 +74,7 @@ const ReviewForm = ({ projectData }: ReviewFormProps) => {
                 </svg>
               </div>
               <span className="text-xs text-secondary-100">
-                {file.file.name}
+{file.original_name || file.file.name}
               </span>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -34,9 +34,15 @@ export interface Data {
 const ListDashBoardTable = ({
   data,
   onDataChange,
+  onSelectedProjectsChange,
+  onSingleArchive,
+  isArchiving = false,
 }: {
   data: Data[];
   onDataChange?: (newData: Data[]) => void;
+  onSelectedProjectsChange?: (selectedProjectUuids: string[]) => void;
+  onSingleArchive?: (projectUuid: string) => void;
+  isArchiving?: boolean;
 }) => {
   const [tableData, setTableData] = useState<Data[]>(data);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
@@ -45,6 +51,7 @@ const ListDashBoardTable = ({
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const selectAllRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -63,6 +70,8 @@ const ListDashBoardTable = ({
 
   useEffect(() => {
     setTableData(data);
+    // Clear selections when data changes (e.g., after archive)
+    setSelectedRows([]);
   }, [data]);
 
   const handleMenuToggle = (orderId: number) => {
@@ -167,6 +176,21 @@ const ListDashBoardTable = ({
     });
   };
 
+  // Memoize selected project UUIDs to prevent unnecessary re-renders
+  const selectedProjectUuids = useMemo(() => {
+    return selectedRows
+      .map((rowId) => {
+        const project = tableData.find((item) => item.id === rowId);
+        return project?.projectUuid;
+      })
+      .filter(Boolean) as string[];
+  }, [selectedRows, tableData]);
+
+  // Notify parent when selection changes
+  useEffect(() => {
+    onSelectedProjectsChange?.(selectedProjectUuids);
+  }, [selectedProjectUuids, onSelectedProjectsChange]);
+
   // Handler for viewing project details
   const handleViewProject = (projectId: string = "") => {
     navigate(`/project-details/${projectId}`);
@@ -177,7 +201,7 @@ const ListDashBoardTable = ({
       content: (
         <input
           type="checkbox"
-          checked={tableData && selectedRows.length === tableData.length}
+          checked={tableData && tableData.length > 0 && selectedRows.length === tableData.length}
           onChange={handleSelectAll}
           className="w-4 h-4 rounded border-secondary-30 text-blue-600 focus:ring-blue-500"
           aria-label="Select all rows"
@@ -225,19 +249,19 @@ const ListDashBoardTable = ({
     //   className: "w-24",
     // },
     {
-      content: <div>End Date</div>,
+      content: <div>{t("created_date")}</div>,
       className: "w-24",
     },
     {
-      content: <div>Status</div>,
+      content: <div>{t("status")}</div>,
       className: "w-24",
     },
     {
-      content: <div>Actions</div>,
+      content: <div>{t("actions")}</div>,
       className: "w-20",
     },
   ];
-  console.log(tableData, "tableData");
+  
 
   return (
     <div className="relative rounded-lg bg-white ">
@@ -421,7 +445,7 @@ const ListDashBoardTable = ({
 
                     <TableCell className="px-5 py-4 sm:px-6">
                       <span className="block font-medium text-secondary-100 text-sm text-nowrap">
-                        {moment(data.endDate).format("YYYY/MM/DD")}
+                        {moment(data.createdDate).format("YYYY/MM/DD")}
                       </span>
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6">
@@ -503,14 +527,16 @@ const ListDashBoardTable = ({
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // handleArchive(data.id);
+                                  onSingleArchive?.(data.projectUuid);
+                                  setOpenMenuId(null);
                                 }}
-                                className="rounded-sm flex items-center gap-2 w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                                className="rounded-sm flex items-center gap-2 w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors disabled:opacity-50"
                                 role="menuitem"
                                 aria-label="Archive"
+                                disabled={isArchiving}
                               >
                                 <ArchiveIconDark />
-                                Archive
+                                {isArchiving ? "Archiving..." : "Archive"}
                               </button>
 
                               {/* <button

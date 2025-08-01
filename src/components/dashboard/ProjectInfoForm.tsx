@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import Input from "../../lib/components/atoms/Input";
@@ -85,6 +85,19 @@ ProjectInfoFormProps) => {
     field: null,
   });
   const [formResetKey, setFormResetKey] = useState(Date.now().toString());
+  const [isFormResetRequested, setIsFormResetRequested] = useState(false);
+
+  useEffect(() => {
+    const resetFilesListener = () => {
+      setIsFormResetRequested(true);
+    };
+
+    window.addEventListener('form-reset', resetFilesListener);
+
+    return () => {
+      window.removeEventListener('form-reset', resetFilesListener);
+    };
+  }, []);
 
   const locationData = {
     countries: [{ value: "RD Congo", label: "RD Congo" }],
@@ -160,8 +173,9 @@ ProjectInfoFormProps) => {
         function (value) {
           const { beginDate } = this.parent;
           if (!value || !beginDate) return false;
-          const endDate = new Date(value.split("-").reverse().join("-"));
-          const startDate = new Date(beginDate.split("-").reverse().join("-"));
+          // Handle both formats: YYYY-MM-DD and DD-MM-YYYY
+          const endDate = new Date(value);
+          const startDate = new Date(beginDate);
           return endDate > startDate;
         }
       ),
@@ -178,11 +192,12 @@ ProjectInfoFormProps) => {
 
   const handleSubmit = (
     values: ProjectFormValues,
-    { resetForm }: FormikHelpers<ProjectFormValues>
+    { resetForm, setFieldValue }: FormikHelpers<ProjectFormValues>
   ) => {
     onSubmit(values, () => {
       resetForm();
       setFormResetKey(Date.now().toString());
+      setFieldValue("files", []);
     });
   };
 
@@ -391,7 +406,7 @@ ProjectInfoFormProps) => {
     documentId: string
   ) => {
     try {
-      const response = await projectService.changeDocumentName(newName, documentId);
+      const response = await projectService.changeDocumentName(documentId,newName);
       console.log("File renamed successfully:", response);
       return { status: true };
     } catch (error) {
@@ -406,7 +421,17 @@ ProjectInfoFormProps) => {
       onSubmit={handleSubmit}
       enableReinitialize={true}
     >
-      {({ values, setFieldValue, errors, touched, handleBlur, submitForm }) => (
+      {({ values, setFieldValue, errors, touched, handleBlur, submitForm, resetForm }) => {
+        useEffect(() => {
+          if (isFormResetRequested) {
+            resetForm();
+            setFieldValue("files", []);
+            setFormResetKey(Date.now().toString());
+            setIsFormResetRequested(false);
+          }
+        }, [isFormResetRequested, resetForm, setFieldValue]);
+
+        return (
         <Form>
           <div>
             <div className="mb-6">
@@ -535,19 +560,19 @@ ProjectInfoFormProps) => {
                     }
                     onChange={(selectedDates: Date[]) => {
                       if (selectedDates[0]) {
+                        const year = selectedDates[0].getFullYear();
+                        const month = (selectedDates[0].getMonth() + 1)
+                          .toString()
+                          .padStart(2, "0");
                         const day = selectedDates[0]
                           .getDate()
                           .toString()
                           .padStart(2, "0");
-                        const month = (selectedDates[0].getMonth() + 1)
-                          .toString()
-                          .padStart(2, "0");
-                        const year = selectedDates[0].getFullYear();
-                        const formattedDate = `${day}-${month}-${year}`;
+                        const formattedDate = `${year}-${month}-${day}`;
                         setFieldValue("beginDate", formattedDate);
                       }
                     }}
-                    placeholder="01-06-2025"
+                    placeholder="2025-07-13"
                     error={
                       touched.beginDate && errors.beginDate
                         ? errors.beginDate
@@ -569,19 +594,19 @@ ProjectInfoFormProps) => {
                     }
                     onChange={(selectedDates: Date[]) => {
                       if (selectedDates[0]) {
+                        const year = selectedDates[0].getFullYear();
+                        const month = (selectedDates[0].getMonth() + 1)
+                          .toString()
+                          .padStart(2, "0");
                         const day = selectedDates[0]
                           .getDate()
                           .toString()
                           .padStart(2, "0");
-                        const month = (selectedDates[0].getMonth() + 1)
-                          .toString()
-                          .padStart(2, "0");
-                        const year = selectedDates[0].getFullYear();
-                        const formattedDate = `${day}-${month}-${year}`;
+                        const formattedDate = `${year}-${month}-${day}`;
                         setFieldValue("endDate", formattedDate);
                       }
                     }}
-                    placeholder="31-12-2025"
+                    placeholder="2025-07-13"
                     error={
                       touched.endDate && errors.endDate ? errors.endDate : false
                     }
@@ -884,7 +909,8 @@ ProjectInfoFormProps) => {
           </div>
           {/* {children && <>{children}</>} */}
         </Form>
-      )}
+        );
+      }}
     </Formik>
   );
 };

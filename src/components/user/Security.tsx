@@ -32,13 +32,13 @@ interface UserInformationProps {
 
 interface ChangeEmailFields {
   email: string;
-  password: string;
+  // password: string;
   otp: string;
 }
 
 const initialChangeEmailFields: ChangeEmailFields = {
   email: "",
-  password: "",
+  // password: "",
   otp: "",
 };
 const Security = ({ userData,setUserDate }: UserInformationProps) => {
