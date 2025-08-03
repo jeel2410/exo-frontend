@@ -60,7 +60,7 @@ const CurrencyInput = ({
     }
   };
 
-  const selectedOption = options.find((opt) => opt.value === selectedCurrency);
+  // const selectedOption = options.find((opt) => opt.value === selectedCurrency);
 
   return (
     <div className="flex flex-col gap-1 w-full bg-secondary-10">
@@ -73,10 +73,10 @@ const CurrencyInput = ({
       >
         <div className="min-w-[100px]">
           <CustomDropdown
-            options={options.map(option => ({
+            options={options.map((option) => ({
               value: option.value,
               label: option.label,
-              flag: option.flag
+              flag: option.flag,
             }))}
             value={selectedCurrency}
             onChange={handleCurrencyChange}

@@ -82,17 +82,17 @@ const financialAuthorityList: {
 
 const AddRequest = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();  
+  const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const { requestId,contractId, projectId: newProjectId } = useParams();
+  const { requestId, contractId, projectId: newProjectId } = useParams();
 
   const [data, setData] = useState<Order[]>([]);
   const [userData, setUserData] = useState<{ token: string } | undefined>();
   const [selectedAddress, setSelectedAddress] = useState<string>("");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [mandatoryFiles, setMandatoryFiles] = useState<UploadedFile[]>([]);
-  const [additionalFiles, setAdditionalFiles] = useState<UploadedFile[]>([]);
+  // const [mandatoryFiles, setMandatoryFiles] = useState<UploadedFile[]>([]);
+  // const [additionalFiles, setAdditionalFiles] = useState<UploadedFile[]>([]);
   const [requestLetter, setRequestLetter] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [projectId, setProjectId] = useState<string>("");
@@ -103,7 +103,9 @@ const AddRequest = () => {
     totalAmountWithTax: 0,
   });
   const { getRoute } = useRoleRoute();
-  const [financialAuthority, setFinancialAuthority] = useState<string>("location_acquisition");
+  const [financialAuthority, setFinancialAuthority] = useState<string>(
+    "location_acquisition"
+  );
   const [validationErrors, setValidationErrors] = useState<{
     address?: string;
     requestLetter?: string;
@@ -213,7 +215,9 @@ const AddRequest = () => {
       financialAuthority: entity.financial_authority,
     }));
     setFinancialAuthority(
-      entitys.length !== 0 ? entitys[0]?.financial_authority : "location_acquisition"
+      entitys.length !== 0
+        ? entitys[0]?.financial_authority
+        : "location_acquisition"
     );
     setData(recalculateTableData([...data, ...newOrder]));
   };
@@ -284,31 +288,39 @@ const AddRequest = () => {
     },
   });
 
-const handleSubmit = () => {
-    const errors: { address?: string; requestLetter?: string; contractAmount?: string; fileUpload?: string } = {};
+  const handleSubmit = () => {
+    const errors: {
+      address?: string;
+      requestLetter?: string;
+      contractAmount?: string;
+      fileUpload?: string;
+    } = {};
     if (!selectedAddress) {
       errors.address = t("address_is_required");
     }
     if (!requestLetter || requestLetter.trim() === "") {
       errors.requestLetter = t("request_letter_is_required");
     }
-    
+
     // Check for mandatory files (minimum 3 mandatory files required)
     const mandatoryDocNames = [
       "Letter de transport, note de fret, note d'assurance",
       "De`claration pour I'importation Conditionnelle <<IC>>",
-      "Facture e`mise par le fournisseur"
+      "Facture e`mise par le fournisseur",
     ];
-    
-    const mandatoryFilesUploaded = uploadedFiles.filter(file => 
+
+    const mandatoryFilesUploaded = uploadedFiles.filter((file) =>
       mandatoryDocNames.includes(file.original_name || "")
     );
-    
+
     if (mandatoryFilesUploaded.length < 3) {
       errors.fileUpload = t("at_least_three_mandatory_files_required");
     }
-    
-    if (contractData.amount !== undefined && totals.totalAmount > Number(contractData.amount)) {
+
+    if (
+      contractData.amount !== undefined &&
+      totals.totalAmount > Number(contractData.amount)
+    ) {
       errors.contractAmount = t("contract_amount_exceeded");
     }
     setValidationErrors(errors);
@@ -419,10 +431,7 @@ const handleSubmit = () => {
     return { status: false };
   };
 
-  const handleRenameFile = async (
-    fileId: string,
-    newName: string
-  ) => {
+  const handleRenameFile = async (fileId: string, newName: string) => {
     try {
       const response = await projectService.changeDocumentName(newName, fileId);
       console.log("File renamed successfully:", response);
@@ -453,12 +462,13 @@ const handleSubmit = () => {
   const getRequestData = async (requestId: string) => {
     const response = await requestMutaion.mutateAsync(requestId);
     if (response.status === 200) {
-      const { project_id, request_letter, entities, address, files } = response.data;
+      const { project_id, request_letter, entities, address, files } =
+        response.data;
 
       updateEntitys(entities);
       setProjectId(project_id);
       setRequestLetter(request_letter);
-      
+
       // Handle existing documents
       if (files && files.length > 0) {
         const existingFiles = files.map((doc: any) => ({
@@ -470,7 +480,7 @@ const handleSubmit = () => {
         }));
         setUploadedFiles(existingFiles);
       }
-      
+
       const res = await fetchProjectAddressesAsync(project_id);
       if (res.status === 200) {
         setSelectedAddress(address.id);
@@ -532,18 +542,18 @@ const handleSubmit = () => {
     });
   }, [data]);
   const handleFilesSelect = useCallback((newFiles: UploadedFile[]) => {
-    setUploadedFiles(currentFiles => {
+    setUploadedFiles((currentFiles) => {
       if (newFiles.length !== currentFiles.length) {
         return newFiles;
       }
 
-      const currentFileIds = new Set(currentFiles.map(f => f.id));
-      const newFileIds = new Set(newFiles.map(f => f.id));
+      const currentFileIds = new Set(currentFiles.map((f) => f.id));
+      const newFileIds = new Set(newFiles.map((f) => f.id));
 
       if (currentFileIds.size !== newFileIds.size) {
         return newFiles;
       }
-      
+
       for (const id of currentFileIds) {
         if (!newFileIds.has(id)) {
           return newFiles;
@@ -558,12 +568,12 @@ const handleSubmit = () => {
   ) => {
     const newFinancialAuthority = event.target.value;
     setFinancialAuthority(newFinancialAuthority);
-    
+
     // Update all existing entities with the new financial authority
     if (data.length > 0) {
-      const updatedData = data.map(item => ({
+      const updatedData = data.map((item) => ({
         ...item,
-        financialAuthority: newFinancialAuthority
+        financialAuthority: newFinancialAuthority,
       }));
       setData(updatedData);
     }

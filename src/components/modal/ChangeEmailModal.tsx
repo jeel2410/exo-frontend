@@ -3,7 +3,7 @@ import Button from "../../lib/components/atoms/Button";
 import Input from "../../lib/components/atoms/Input";
 import Label from "../../lib/components/atoms/Label";
 import Modal from "../../lib/components/atoms/Modal";
-import Password from "../../lib/components/atoms/Password";
+// import Password from "../../lib/components/atoms/Password";
 import Typography from "../../lib/components/atoms/Typography";
 
 interface ChangeEmailModalProps {
@@ -16,7 +16,14 @@ interface ChangeEmailModalProps {
   // fieldValue: { email: string; password: string; otp: string };
 }
 
-const ChangeEmailModal = ({ isOpen, onClose,sendOtp,onChange,fieldValue,loading }: ChangeEmailModalProps) => {
+const ChangeEmailModal = ({
+  isOpen,
+  onClose,
+  sendOtp,
+  onChange,
+  fieldValue,
+  loading,
+}: ChangeEmailModalProps) => {
   const { t } = useTranslation();
   return (
     <div className="w-fit">
@@ -35,7 +42,12 @@ const ChangeEmailModal = ({ isOpen, onClose,sendOtp,onChange,fieldValue,loading 
         <div className="mt-7">
           <div>
             <Label>{t("new_email")}</Label>
-            <Input placeholder={t("enter_email_address")} name="email" onChange={onChange} value={fieldValue.email} />
+            <Input
+              placeholder={t("enter_email_address")}
+              name="email"
+              onChange={onChange}
+              value={fieldValue.email}
+            />
           </div>
           {/* <div className="mt-6">
             <Label>{t("current_password")}</Label>
@@ -50,7 +62,12 @@ const ChangeEmailModal = ({ isOpen, onClose,sendOtp,onChange,fieldValue,loading 
           >
             {t("cancel")}
           </Button>
-          <Button variant="primary" className="w-fit !py-3" onClick={() => sendOtp()} loading={loading}>
+          <Button
+            variant="primary"
+            className="w-fit !py-3"
+            onClick={() => sendOtp()}
+            loading={loading}
+          >
             {t("send_otp")}
           </Button>
         </div>

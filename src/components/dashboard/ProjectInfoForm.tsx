@@ -92,10 +92,10 @@ ProjectInfoFormProps) => {
       setIsFormResetRequested(true);
     };
 
-    window.addEventListener('form-reset', resetFilesListener);
+    window.addEventListener("form-reset", resetFilesListener);
 
     return () => {
-      window.removeEventListener('form-reset', resetFilesListener);
+      window.removeEventListener("form-reset", resetFilesListener);
     };
   }, []);
 
@@ -275,11 +275,11 @@ ProjectInfoFormProps) => {
     return editingState.addressId === id && editingState.field === field;
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLSelectElement>) => {
-    if (e.key === "Enter" || e.key === "Escape") {
-      stopEditing();
-    }
-  };
+  // const handleKeyDown = (e: React.KeyboardEvent<HTMLSelectElement>) => {
+  //   if (e.key === "Enter" || e.key === "Escape") {
+  //     stopEditing();
+  //   }
+  // };
 
   const fileUploadMutation = async ({
     file,
@@ -401,12 +401,12 @@ ProjectInfoFormProps) => {
     return { status: false };
   };
 
-  const handleRenameFile = async (
-    newName: string,
-    documentId: string
-  ) => {
+  const handleRenameFile = async (newName: string, documentId: string) => {
     try {
-      const response = await projectService.changeDocumentName(documentId,newName);
+      const response = await projectService.changeDocumentName(
+        documentId,
+        newName
+      );
       console.log("File renamed successfully:", response);
       return { status: true };
     } catch (error) {
@@ -421,7 +421,15 @@ ProjectInfoFormProps) => {
       onSubmit={handleSubmit}
       enableReinitialize={true}
     >
-      {({ values, setFieldValue, errors, touched, handleBlur, submitForm, resetForm }) => {
+      {({
+        values,
+        setFieldValue,
+        errors,
+        touched,
+        handleBlur,
+        submitForm,
+        resetForm,
+      }) => {
         useEffect(() => {
           if (isFormResetRequested) {
             resetForm();
@@ -432,483 +440,491 @@ ProjectInfoFormProps) => {
         }, [isFormResetRequested, resetForm, setFieldValue]);
 
         return (
-        <Form>
-          <div>
-            <div className="mb-6">
-              <Typography
-                size="lg"
-                weight="semibold"
-                className="text-secondary-100"
-              >
-                {t("call_for_tenders")}
-              </Typography>
-              <Typography
-                size="base"
-                weight="normal"
-                className="text-secondary-60"
-              >
-                {t("enter_key_details_about_your_project_to_continue")}
-              </Typography>
-            </div>
-
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="projectName">
-                  {t("project_name")} <span className="text-red-500">*</span>
-                </Label>
-                <Field
-                  as={Input}
-                  id="projectName"
-                  name="projectName"
-                  placeholder={t("renovation_project")}
-                  error={touched.projectName && !!errors.projectName}
-                />
-                <ErrorMessage
-                  name="projectName"
-                  component="p"
-                  className="mt-1 text-sm text-red-500"
-                />
+          <Form>
+            <div>
+              <div className="mb-6">
+                <Typography
+                  size="lg"
+                  weight="semibold"
+                  className="text-secondary-100"
+                >
+                  {t("call_for_tenders")}
+                </Typography>
+                <Typography
+                  size="base"
+                  weight="normal"
+                  className="text-secondary-60"
+                >
+                  {t("enter_key_details_about_your_project_to_continue")}
+                </Typography>
               </div>
 
-              <div>
-                <Label htmlFor="fundedBy">
-                  {t("finance_by")} <span className="text-red-500">*</span>
-                </Label>
-                <Field
-                  as={Input}
-                  id="fundedBy"
-                  name="fundedBy"
-                  placeholder={t("finance_by")}
-                  error={touched.fundedBy && !!errors.fundedBy}
-                />
-                <ErrorMessage
-                  name="fundedBy"
-                  component="p"
-                  className="mt-1 text-sm text-red-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6">
                 <div>
-                  <Label htmlFor="projectReference">
-                    {t("project_reference")}{" "}
-                    <span className="text-red-500">*</span>
+                  <Label htmlFor="projectName">
+                    {t("project_name")} <span className="text-red-500">*</span>
                   </Label>
                   <Field
                     as={Input}
-                    id="projectReference"
-                    name="projectReference"
-                    placeholder="PRJ-2023-001"
-                    error={
-                      (touched.projectReference && !!errors.projectReference) || !!referenceError
-                    }
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setFieldValue("projectReference", e.target.value);
-                      // Clear reference error when user starts typing
-                      if (referenceError && onClearReferenceError) {
-                        onClearReferenceError();
-                      }
-                    }}
+                    id="projectName"
+                    name="projectName"
+                    placeholder={t("renovation_project")}
+                    error={touched.projectName && !!errors.projectName}
                   />
                   <ErrorMessage
-                    name="projectReference"
-                    component="p"
-                    className="mt-1 text-sm text-red-500"
-                  />
-                  {referenceError && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {referenceError}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="amount">
-                    {t("amount")} <span className="text-red-500">*</span>
-                  </Label>
-                  <CurrencyInput
-                    id="amount"
-                    value={values.amount}
-                    currency={values.currency}
-                    options={currencyOptions}
-                    onChange={(value: string, currency: string) => {
-                      setFieldValue("amount", value);
-                      setFieldValue("currency", currency);
-                    }}
-                    onBlur={() => handleBlur("amount")}
-                    error={touched.amount && !!errors.amount}
-                  />
-                  <ErrorMessage
-                    name="amount"
+                    name="projectName"
                     component="p"
                     className="mt-1 text-sm text-red-500"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="beginDate">
-                    {t("project_start_date")}{" "}
-                    <span className="text-red-500">*</span>
+                  <Label htmlFor="fundedBy">
+                    {t("finance_by")} <span className="text-red-500">*</span>
                   </Label>
-                  <DatePicker
-                    key={`beginDate-${formResetKey}`}
-                    id="beginDate"
-                    defaultDate={
-                      values.beginDate ? new Date(values.beginDate) : undefined
-                    }
-                    onChange={(selectedDates: Date[]) => {
-                      if (selectedDates[0]) {
-                        const year = selectedDates[0].getFullYear();
-                        const month = (selectedDates[0].getMonth() + 1)
-                          .toString()
-                          .padStart(2, "0");
-                        const day = selectedDates[0]
-                          .getDate()
-                          .toString()
-                          .padStart(2, "0");
-                        const formattedDate = `${year}-${month}-${day}`;
-                        setFieldValue("beginDate", formattedDate);
+                  <Field
+                    as={Input}
+                    id="fundedBy"
+                    name="fundedBy"
+                    placeholder={t("finance_by")}
+                    error={touched.fundedBy && !!errors.fundedBy}
+                  />
+                  <ErrorMessage
+                    name="fundedBy"
+                    component="p"
+                    className="mt-1 text-sm text-red-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="projectReference">
+                      {t("project_reference")}{" "}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <Field
+                      as={Input}
+                      id="projectReference"
+                      name="projectReference"
+                      placeholder="PRJ-2023-001"
+                      error={
+                        (touched.projectReference &&
+                          !!errors.projectReference) ||
+                        !!referenceError
                       }
-                    }}
-                    placeholder="2025-07-13"
-                    error={
-                      touched.beginDate && errors.beginDate
-                        ? errors.beginDate
-                        : false
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setFieldValue("projectReference", e.target.value);
+                        // Clear reference error when user starts typing
+                        if (referenceError && onClearReferenceError) {
+                          onClearReferenceError();
+                        }
+                      }}
+                    />
+                    <ErrorMessage
+                      name="projectReference"
+                      component="p"
+                      className="mt-1 text-sm text-red-500"
+                    />
+                    {referenceError && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {referenceError}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="amount">
+                      {t("amount")} <span className="text-red-500">*</span>
+                    </Label>
+                    <CurrencyInput
+                      id="amount"
+                      value={values.amount}
+                      currency={values.currency}
+                      options={currencyOptions}
+                      onChange={(value: string, currency: string) => {
+                        setFieldValue("amount", value);
+                        setFieldValue("currency", currency);
+                      }}
+                      onBlur={() => handleBlur("amount")}
+                      error={touched.amount && !!errors.amount}
+                    />
+                    <ErrorMessage
+                      name="amount"
+                      component="p"
+                      className="mt-1 text-sm text-red-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="beginDate">
+                      {t("project_start_date")}{" "}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <DatePicker
+                      key={`beginDate-${formResetKey}`}
+                      id="beginDate"
+                      defaultDate={
+                        values.beginDate
+                          ? new Date(values.beginDate)
+                          : undefined
+                      }
+                      onChange={(selectedDates: Date[]) => {
+                        if (selectedDates[0]) {
+                          const year = selectedDates[0].getFullYear();
+                          const month = (selectedDates[0].getMonth() + 1)
+                            .toString()
+                            .padStart(2, "0");
+                          const day = selectedDates[0]
+                            .getDate()
+                            .toString()
+                            .padStart(2, "0");
+                          const formattedDate = `${year}-${month}-${day}`;
+                          setFieldValue("beginDate", formattedDate);
+                        }
+                      }}
+                      placeholder="2025-07-13"
+                      error={
+                        touched.beginDate && errors.beginDate
+                          ? errors.beginDate
+                          : false
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="endDate">
+                      {t("project_end_date")}{" "}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <DatePicker
+                      key={`beginDate-${formResetKey}`}
+                      id="endDate"
+                      defaultDate={
+                        values.endDate ? new Date(values.endDate) : undefined
+                      }
+                      onChange={(selectedDates: Date[]) => {
+                        if (selectedDates[0]) {
+                          const year = selectedDates[0].getFullYear();
+                          const month = (selectedDates[0].getMonth() + 1)
+                            .toString()
+                            .padStart(2, "0");
+                          const day = selectedDates[0]
+                            .getDate()
+                            .toString()
+                            .padStart(2, "0");
+                          const formattedDate = `${year}-${month}-${day}`;
+                          setFieldValue("endDate", formattedDate);
+                        }
+                      }}
+                      placeholder="2025-07-13"
+                      error={
+                        touched.endDate && errors.endDate
+                          ? errors.endDate
+                          : false
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="description">{t("description")}</Label>
+                  <TextEditor
+                    key={`description-${formResetKey}`}
+                    placeholder={t("write_here")}
+                    maxLength={100}
+                    initialValue={values.description || ""}
+                    onChange={(value: string) =>
+                      setFieldValue("description", value)
                     }
+                  />
+                  <ErrorMessage
+                    name="description"
+                    component="p"
+                    className="mt-1 text-sm text-red-500"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="endDate">
-                    {t("project_end_date")}{" "}
-                    <span className="text-red-500">*</span>
-                  </Label>
-                  <DatePicker
-                    key={`beginDate-${formResetKey}`}
-                    id="endDate"
-                    defaultDate={
-                      values.endDate ? new Date(values.endDate) : undefined
-                    }
-                    onChange={(selectedDates: Date[]) => {
-                      if (selectedDates[0]) {
-                        const year = selectedDates[0].getFullYear();
-                        const month = (selectedDates[0].getMonth() + 1)
-                          .toString()
-                          .padStart(2, "0");
-                        const day = selectedDates[0]
-                          .getDate()
-                          .toString()
-                          .padStart(2, "0");
-                        const formattedDate = `${year}-${month}-${day}`;
-                        setFieldValue("endDate", formattedDate);
+                  <div className="flex justify-between items-center mb-3">
+                    <Label>{t("address")}</Label>
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 text-primary-150 text-sm font-medium px-3 py-1 border border-primary-150 rounded-lg hover:bg-blue-50"
+                      onClick={() =>
+                        addAddress(setFieldValue, values.addresses)
                       }
-                    }}
-                    placeholder="2025-07-13"
-                    error={
-                      touched.endDate && errors.endDate ? errors.endDate : false
-                    }
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="description">{t("description")}</Label>
-                <TextEditor
-                  key={`description-${formResetKey}`}
-                  placeholder={t("write_here")}
-                  maxLength={100}
-                  initialValue={values.description || ""}
-                  onChange={(value: string) =>
-                    setFieldValue("description", value)
-                  }
-                />
-                <ErrorMessage
-                  name="description"
-                  component="p"
-                  className="mt-1 text-sm text-red-500"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-3">
-                  <Label>{t("address")}</Label>
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 text-primary-150 text-sm font-medium px-3 py-1 border border-primary-150 rounded-lg hover:bg-blue-50"
-                    onClick={() => addAddress(setFieldValue, values.addresses)}
-                  >
-                    <span className="text-base">+</span>
-                    {t("add_address")}
-                  </button>
-                </div>
-                <div className="overflow-x-auto border border-secondary-30 rounded-lg">
-                  <table className="min-w-full">
-                    <thead>
-                      <tr className="bg-gray-50 border-b border-secondary-30 text-xs text-secondary-60">
-                        <th className="p-2 text-left">{t("sr_no")}</th>
-                        <th className="p-2 text-left">{t("country")}</th>
-                        <th className="p-2 text-left">{t("province")}</th>
-                        <th className="p-2 text-left">{t("city")}</th>
-                        <th className="p-2 text-left">{t("municipality")}</th>
-                        <th className="p-2 text-left">{t("action")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {values.addresses.map((address, index) => (
-                        <tr
-                          key={address.id}
-                          className="border-b border-secondary-30 last:border-0"
-                        >
-                          <td className="p-2">{index + 1}</td>
-
-                          {/* Country */}
-                          <td className="p-2">
-                            {isFieldEditing(address.id, "country") ? (
-                              <CustomDropdown
-                                options={locationData.countries}
-                                value={address.country}
-                                onChange={(value) => {
-                                  updateAddress(
-                                    setFieldValue,
-                                    values.addresses,
-                                    address.id,
-                                    "country",
-                                    value
-                                  );
-                                  stopEditing();
-                                }}
-                                onBlur={stopEditing}
-                                placeholder="Select country"
-                                autoFocus
-                                className="text-sm"
-                              />
-                            ) : (
-                              <div
-                                onClick={() =>
-                                  startEditing(address.id, "country")
-                                }
-                                className="cursor-pointer hover:bg-secondary-5 p-1 rounded"
-                              >
-                                {address.country || "—"}
-                              </div>
-                            )}
-                          </td>
-
-                          {/* Province */}
-                          <td className="p-2">
-                            {isFieldEditing(address.id, "province") ? (
-                              <CustomDropdown
-                                options={locationData.provinces}
-                                value={address.province}
-                                onChange={(value) => {
-                                  updateAddress(
-                                    setFieldValue,
-                                    values.addresses,
-                                    address.id,
-                                    "province",
-                                    value
-                                  );
-                                  stopEditing();
-                                }}
-                                onBlur={stopEditing}
-                                placeholder="Select province"
-                                disabled={!address.country}
-                                autoFocus
-                                className="text-sm"
-                              />
-                            ) : (
-                              <div
-                                onClick={() =>
-                                  address.country &&
-                                  startEditing(address.id, "province")
-                                }
-                                className={`p-1 rounded ${
-                                  address.country
-                                    ? "cursor-pointer hover:bg-secondary-5"
-                                    : "cursor-not-allowed text-gray-400"
-                                }`}
-                              >
-                                {address.province || "—"}
-                              </div>
-                            )}
-                          </td>
-
-                          {/* City */}
-                          <td className="p-2">
-                            {isFieldEditing(address.id, "city") ? (
-                              <CustomDropdown
-                                options={locationData.cities}
-                                value={address.city}
-                                onChange={(value) => {
-                                  updateAddress(
-                                    setFieldValue,
-                                    values.addresses,
-                                    address.id,
-                                    "city",
-                                    value
-                                  );
-                                  stopEditing();
-                                }}
-                                onBlur={stopEditing}
-                                placeholder="Select city"
-                                disabled={!address.province}
-                                autoFocus
-                                className="text-sm"
-                              />
-                            ) : (
-                              <div
-                                onClick={() =>
-                                  address.province &&
-                                  startEditing(address.id, "city")
-                                }
-                                className={`p-1 rounded ${
-                                  address.province
-                                    ? "cursor-pointer hover:bg-secondary-5"
-                                    : "cursor-not-allowed text-gray-400"
-                                }`}
-                              >
-                                {address.city || "—"}
-                              </div>
-                            )}
-                          </td>
-
-                          {/* Municipality */}
-                          <td className="p-2">
-                            {isFieldEditing(address.id, "municipality") ? (
-                              <CustomDropdown
-                                options={locationData.municipalities}
-                                value={address.municipality}
-                                onChange={(value) => {
-                                  updateAddress(
-                                    setFieldValue,
-                                    values.addresses,
-                                    address.id,
-                                    "municipality",
-                                    value
-                                  );
-                                  stopEditing();
-                                }}
-                                onBlur={stopEditing}
-                                placeholder="Select municipality"
-                                disabled={!address.city}
-                                autoFocus
-                                className="text-sm"
-                              />
-                            ) : (
-                              <div
-                                onClick={() =>
-                                  address.city &&
-                                  startEditing(address.id, "municipality")
-                                }
-                                className={`p-1 rounded ${
-                                  address.city
-                                    ? "cursor-pointer hover:bg-secondary-5"
-                                    : "cursor-not-allowed text-gray-400"
-                                }`}
-                              >
-                                {address.municipality || "—"}
-                              </div>
-                            )}
-                          </td>
-
-                          {/* Action */}
-                          <td className="p-2">
-                            <button
-                              type="button"
-                              className="text-red-500 hover:text-red-700"
-                              onClick={() =>
-                                deleteAddress(
-                                  setFieldValue,
-                                  values.addresses,
-                                  address.id
-                                )
-                              }
-                            >
-                              <TrashIcon width={20} height={20} />
-                            </button>
-                          </td>
+                    >
+                      <span className="text-base">+</span>
+                      {t("add_address")}
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto border border-secondary-30 rounded-lg">
+                    <table className="min-w-full">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-secondary-30 text-xs text-secondary-60">
+                          <th className="p-2 text-left">{t("sr_no")}</th>
+                          <th className="p-2 text-left">{t("country")}</th>
+                          <th className="p-2 text-left">{t("province")}</th>
+                          <th className="p-2 text-left">{t("city")}</th>
+                          <th className="p-2 text-left">{t("municipality")}</th>
+                          <th className="p-2 text-left">{t("action")}</th>
                         </tr>
-                      ))}
-                      {values.addresses.length === 0 && (
-                        <tr>
-                          <td
-                            colSpan={6}
-                            className="p-4 text-center text-secondary-60"
+                      </thead>
+                      <tbody>
+                        {values.addresses.map((address, index) => (
+                          <tr
+                            key={address.id}
+                            className="border-b border-secondary-30 last:border-0"
                           >
-                            {t("no_addresses_added_yet")}
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                            <td className="p-2">{index + 1}</td>
 
-              <div>
-                <Label>{t("upload_files")}</Label>
-                <UploadFile
-                  maxSize={10}
-                  acceptedFormats={[".pdf", ".doc", ".txt", ".ppt"]}
-                  onFilesSelect={(files: UploadedFile[]) =>
-                    setFieldValue("files", files)
-                  }
-                  files={values.files}
-                  context="create-project"
-                  onUploadFile={handleUploadFile}
-                  onDeleteFile={async (fileId: string) => {
-                    return handleDeleteFile(
-                      fileId,
-                      setFieldValue,
-                      values.files
-                    );
-                  }}
-                  onRenameFile={handleRenameFile}
-                />
+                            {/* Country */}
+                            <td className="p-2">
+                              {isFieldEditing(address.id, "country") ? (
+                                <CustomDropdown
+                                  options={locationData.countries}
+                                  value={address.country}
+                                  onChange={(value) => {
+                                    updateAddress(
+                                      setFieldValue,
+                                      values.addresses,
+                                      address.id,
+                                      "country",
+                                      value
+                                    );
+                                    stopEditing();
+                                  }}
+                                  onBlur={stopEditing}
+                                  placeholder="Select country"
+                                  autoFocus
+                                  className="text-sm"
+                                />
+                              ) : (
+                                <div
+                                  onClick={() =>
+                                    startEditing(address.id, "country")
+                                  }
+                                  className="cursor-pointer hover:bg-secondary-5 p-1 rounded"
+                                >
+                                  {address.country || "—"}
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Province */}
+                            <td className="p-2">
+                              {isFieldEditing(address.id, "province") ? (
+                                <CustomDropdown
+                                  options={locationData.provinces}
+                                  value={address.province}
+                                  onChange={(value) => {
+                                    updateAddress(
+                                      setFieldValue,
+                                      values.addresses,
+                                      address.id,
+                                      "province",
+                                      value
+                                    );
+                                    stopEditing();
+                                  }}
+                                  onBlur={stopEditing}
+                                  placeholder="Select province"
+                                  disabled={!address.country}
+                                  autoFocus
+                                  className="text-sm"
+                                />
+                              ) : (
+                                <div
+                                  onClick={() =>
+                                    address.country &&
+                                    startEditing(address.id, "province")
+                                  }
+                                  className={`p-1 rounded ${
+                                    address.country
+                                      ? "cursor-pointer hover:bg-secondary-5"
+                                      : "cursor-not-allowed text-gray-400"
+                                  }`}
+                                >
+                                  {address.province || "—"}
+                                </div>
+                              )}
+                            </td>
+
+                            {/* City */}
+                            <td className="p-2">
+                              {isFieldEditing(address.id, "city") ? (
+                                <CustomDropdown
+                                  options={locationData.cities}
+                                  value={address.city}
+                                  onChange={(value) => {
+                                    updateAddress(
+                                      setFieldValue,
+                                      values.addresses,
+                                      address.id,
+                                      "city",
+                                      value
+                                    );
+                                    stopEditing();
+                                  }}
+                                  onBlur={stopEditing}
+                                  placeholder="Select city"
+                                  disabled={!address.province}
+                                  autoFocus
+                                  className="text-sm"
+                                />
+                              ) : (
+                                <div
+                                  onClick={() =>
+                                    address.province &&
+                                    startEditing(address.id, "city")
+                                  }
+                                  className={`p-1 rounded ${
+                                    address.province
+                                      ? "cursor-pointer hover:bg-secondary-5"
+                                      : "cursor-not-allowed text-gray-400"
+                                  }`}
+                                >
+                                  {address.city || "—"}
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Municipality */}
+                            <td className="p-2">
+                              {isFieldEditing(address.id, "municipality") ? (
+                                <CustomDropdown
+                                  options={locationData.municipalities}
+                                  value={address.municipality}
+                                  onChange={(value) => {
+                                    updateAddress(
+                                      setFieldValue,
+                                      values.addresses,
+                                      address.id,
+                                      "municipality",
+                                      value
+                                    );
+                                    stopEditing();
+                                  }}
+                                  onBlur={stopEditing}
+                                  placeholder="Select municipality"
+                                  disabled={!address.city}
+                                  autoFocus
+                                  className="text-sm"
+                                />
+                              ) : (
+                                <div
+                                  onClick={() =>
+                                    address.city &&
+                                    startEditing(address.id, "municipality")
+                                  }
+                                  className={`p-1 rounded ${
+                                    address.city
+                                      ? "cursor-pointer hover:bg-secondary-5"
+                                      : "cursor-not-allowed text-gray-400"
+                                  }`}
+                                >
+                                  {address.municipality || "—"}
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Action */}
+                            <td className="p-2">
+                              <button
+                                type="button"
+                                className="text-red-500 hover:text-red-700"
+                                onClick={() =>
+                                  deleteAddress(
+                                    setFieldValue,
+                                    values.addresses,
+                                    address.id
+                                  )
+                                }
+                              >
+                                <TrashIcon width={20} height={20} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                        {values.addresses.length === 0 && (
+                          <tr>
+                            <td
+                              colSpan={6}
+                              className="p-4 text-center text-secondary-60"
+                            >
+                              {t("no_addresses_added_yet")}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>{t("upload_files")}</Label>
+                  <UploadFile
+                    maxSize={10}
+                    acceptedFormats={[".pdf", ".doc", ".txt", ".ppt"]}
+                    onFilesSelect={(files: UploadedFile[]) =>
+                      setFieldValue("files", files)
+                    }
+                    files={values.files}
+                    context="create-project"
+                    onUploadFile={handleUploadFile}
+                    onDeleteFile={async (fileId: string) => {
+                      return handleDeleteFile(
+                        fileId,
+                        setFieldValue,
+                        values.files
+                      );
+                    }}
+                    onRenameFile={handleRenameFile}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex flex-col-reverse md:flex-row justify-end gap-4 mt-8">
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => {
-                setFieldValue("status", "draft");
-                submitForm();
-              }}
-              loading={loading && values.status === "draft"}
-              className="px-6 py-3 bg-white rounded-lg text-primary-150 font-medium flex items-center justify-center gap-2 shadow-md hover:bg-gray-50 w-full md:w-auto"
-            >
-              <SaveDraftIcon
-                width={20}
-                height={20}
-                className="text-primary-150"
-              />
-              {t("save_as_draft")}
-            </Button>
+            <div className="flex flex-col-reverse md:flex-row justify-end gap-4 mt-8">
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => {
+                  setFieldValue("status", "draft");
+                  submitForm();
+                }}
+                loading={loading && values.status === "draft"}
+                className="px-6 py-3 bg-white rounded-lg text-primary-150 font-medium flex items-center justify-center gap-2 shadow-md hover:bg-gray-50 w-full md:w-auto"
+              >
+                <SaveDraftIcon
+                  width={20}
+                  height={20}
+                  className="text-primary-150"
+                />
+                {t("save_as_draft")}
+              </Button>
 
-            <Button
-              variant="primary"
-              type="button"
-              onClick={() => {
-                setFieldValue("status", "publish");
-                submitForm();
-              }}
-              loading={loading && values.status === "publish"}
-              className="px-6 py-3 bg-primary-150 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary-200 w-full md:w-auto"
-            >
-              {t("submit")}
-              <ArrowRightIconButton
-                width={18}
-                height={18}
-                className="text-white"
-              />
-            </Button>
-          </div>
-          {/* {children && <>{children}</>} */}
-        </Form>
+              <Button
+                variant="primary"
+                type="button"
+                onClick={() => {
+                  setFieldValue("status", "publish");
+                  submitForm();
+                }}
+                loading={loading && values.status === "publish"}
+                className="px-6 py-3 bg-primary-150 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary-200 w-full md:w-auto"
+              >
+                {t("submit")}
+                <ArrowRightIconButton
+                  width={18}
+                  height={18}
+                  className="text-white"
+                />
+              </Button>
+            </div>
+            {/* {children && <>{children}</>} */}
+          </Form>
         );
       }}
     </Formik>

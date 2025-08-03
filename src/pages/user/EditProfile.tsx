@@ -16,9 +16,9 @@ import UserInformation from "../../components/user/UserInformation";
 import Security from "../../components/user/Security";
 import LogoutModal from "../../components/modal/LogoutModal";
 import { useModal } from "../../hooks/useModal";
-import { useQuery, useMutation } from "@tanstack/react-query";
+// import { useQuery, useMutation } from "@tanstack/react-query";
 import localStorageService from "../../services/local.service";
-import authService from "../../services/auth.service";
+// import authService from "../../services/auth.service";
 import { useLoading } from "../../context/LoaderProvider";
 import { toast } from "react-toastify";
 
@@ -37,14 +37,14 @@ interface UserData {
   type?: string;
 }
 
-interface ProfileData {
-  data: {
-    first_name: string;
-    last_name: string;
-    company_name: string;
-    profile_picture?: string;
-  };
-}
+// interface ProfileData {
+//   data: {
+//     first_name: string;
+//     last_name: string;
+//     company_name: string;
+//     profile_picture?: string;
+//   };
+// }
 
 const EditProfile = () => {
   const { t } = useTranslation();
@@ -53,7 +53,7 @@ const EditProfile = () => {
   );
   const { setLoading } = useLoading();
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  // const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
@@ -67,72 +67,74 @@ const EditProfile = () => {
     }
   }, [setLoading]);
 
-  const isTokenAvailable = !!userData?.token;
+  // const isTokenAvailable = !!userData?.token;
 
-  const { refetch } = useQuery({
-    queryKey: ["userProfile", userData?.token],
-    enabled: isTokenAvailable,
-    queryFn: async () => {
-      setLoading(true);
-      const res = await authService.getProfile();
-      console.log(res.data.data, "userProfileData");
-      setLoading(false);
-      setUserData((prev: UserData | null) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          first_name: res.data.data.first_name,
-          last_name: res.data.data.last_name,
-          company_name: res.data.data.company_name,
-          profile_picture: res.data.data.profile_picture,
-          profile_image: res.data.data.profile_image,
-          mobile: res.data.data.mobile,
-        };
-      });
-      localStorageService.setUser(JSON.stringify({
-          ...userData,
-          first_name: res.data.data.first_name,
-          last_name: res.data.data.last_name,
-          company_name: res.data.data.company_name,
-          profile_picture: res.data.data.profile_picture,
-          profile_image: res.data.data.profile_image,
-          mobile: res.data.data.mobile,
-        }))
-      return res.data as ProfileData;
-    },
-  });
+  // const { refetch } = useQuery({
+  //   queryKey: ["userProfile", userData?.token],
+  //   enabled: isTokenAvailable,
+  //   queryFn: async () => {
+  //     setLoading(true);
+  //     const res = await authService.getProfile();
+  //     console.log(res.data.data, "userProfileData");
+  //     setLoading(false);
+  //     setUserData((prev: UserData | null) => {
+  //       if (!prev) return prev;
+  //       return {
+  //         ...prev,
+  //         first_name: res.data.data.first_name,
+  //         last_name: res.data.data.last_name,
+  //         company_name: res.data.data.company_name,
+  //         profile_picture: res.data.data.profile_picture,
+  //         profile_image: res.data.data.profile_image,
+  //         mobile: res.data.data.mobile,
+  //       };
+  //     });
+  //     localStorageService.setUser(
+  //       JSON.stringify({
+  //         ...userData,
+  //         first_name: res.data.data.first_name,
+  //         last_name: res.data.data.last_name,
+  //         company_name: res.data.data.company_name,
+  //         profile_picture: res.data.data.profile_picture,
+  //         profile_image: res.data.data.profile_image,
+  //         mobile: res.data.data.mobile,
+  //       })
+  //     );
+  //     return res.data as ProfileData;
+  //   },
+  // });
 
   // Profile picture upload mutation
-  const uploadProfilePictureMutation = useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("type", "image");
-      return await authService.uploadProfilePicture(formData);
-    },
-    onSuccess: (response) => {
-      const newImageUrl = response.data.data?.url;
-      if (newImageUrl) {
-        setUserData((prev: UserData | null) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            profile_picture: newImageUrl,
-          };
-        });
-        toast.success(t("profile_picture_updated_successfully"));
-        // Refetch profile data
-        refetch();
-      }
-    },
-    onError: (error) => {
-      console.error("Failed to upload profile picture:", error);
-      toast.error(t("failed_to_upload_profile_picture"));
-    },
-    onSettled: () => {
-      setIsUploadingImage(false);
-    },
-  });
+  // const uploadProfilePictureMutation = useMutation({
+  //   mutationFn: async (file: File) => {
+  //     const formData = new FormData();
+  //     formData.append("file", file);
+  //     formData.append("type", "image");
+  //     return await authService.uploadProfilePicture(formData);
+  //   },
+  //   onSuccess: (response) => {
+  //     const newImageUrl = response.data.data?.url;
+  //     if (newImageUrl) {
+  //       setUserData((prev: UserData | null) => {
+  //         if (!prev) return prev;
+  //         return {
+  //           ...prev,
+  //           profile_picture: newImageUrl,
+  //         };
+  //       });
+  //       toast.success(t("profile_picture_updated_successfully"));
+  //       // Refetch profile data
+  //       refetch();
+  //     }
+  //   },
+  //   onError: (error) => {
+  //     console.error("Failed to upload profile picture:", error);
+  //     toast.error(t("failed_to_upload_profile_picture"));
+  //   },
+  //   onSettled: () => {
+  //     setIsUploadingImage(false);
+  //   },
+  // });
 
   const handleImageUpload = async (file: File) => {
     // Validate file type
@@ -195,7 +197,7 @@ const EditProfile = () => {
               }}
               imageUrl={userData.profile_image || userData.profile_picture}
               onImageUpload={handleImageUpload}
-              isUploading={isUploadingImage}
+              // isUploading={isUploadingImage}
             />
           )}
         </div>

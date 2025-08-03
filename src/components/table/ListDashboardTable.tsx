@@ -51,7 +51,7 @@ const ListDashBoardTable = ({
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const selectAllRef = useRef<HTMLInputElement | null>(null);
+  // const selectAllRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -201,7 +201,11 @@ const ListDashBoardTable = ({
       content: (
         <input
           type="checkbox"
-          checked={tableData && tableData.length > 0 && selectedRows.length === tableData.length}
+          checked={
+            tableData &&
+            tableData.length > 0 &&
+            selectedRows.length === tableData.length
+          }
           onChange={handleSelectAll}
           className="w-4 h-4 rounded border-secondary-30 text-blue-600 focus:ring-blue-500"
           aria-label="Select all rows"
@@ -261,7 +265,6 @@ const ListDashBoardTable = ({
       className: "w-20",
     },
   ];
-  
 
   return (
     <div className="relative rounded-lg bg-white ">
