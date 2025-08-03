@@ -287,5 +287,6 @@
   "upload": "Téléverser",
   "tax_category": "Tax Category",
   "uploaded_files": "Fichiers téléversés :",
-  "at_least_three_mandatory_files_required": "Au moins trois fichiers obligatoires sont requis."
+  "at_least_three_mandatory_files_required": "Au moins trois fichiers obligatoires sont requis.",
+  "created_date": "Date de création"
 }

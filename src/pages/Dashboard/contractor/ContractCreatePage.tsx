@@ -100,6 +100,19 @@ const ContractCreatePage = () => {
   const [contractReview, setContractReview] = useState<ContractReviewData>(
     ContractReviewInitialValue
   );
+  
+  useEffect(() => {
+    const resetFilesListener = () => {
+      setFormData(prev => ({ ...prev, contractFiles: [] }));
+      setContractReview(prev => ({ ...prev, contractFiles: [] }));
+    };
+
+    window.addEventListener('form-reset', resetFilesListener);
+
+    return () => {
+      window.removeEventListener('form-reset', resetFilesListener);
+    };
+  }, []);
   const [editProjectId, setEditProjectId] = useState("");
 
   const { projectId, contractId } = useParams();
@@ -231,14 +244,12 @@ const ContractCreatePage = () => {
         fetchProject(contractData.project_id);
 
         console.log(contractData, "contract data");
-
-        const files = response.data.data.documents;
-        const filesData = Array.isArray(files) ? files : files ? [files] : [];
+        
 
         setFormData((prev: FormDataProps) => ({
           ...prev,
           amount: parseFloat(contractData.amount).toString(),
-          contractFiles: filesData || [],
+          contractFiles: contractData.documents || [],
           currency: contractData.currency,
           dateOfSigning: contractData.date_of_signing,
           organization: contractData.organization,

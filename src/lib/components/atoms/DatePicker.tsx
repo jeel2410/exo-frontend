@@ -30,7 +30,7 @@ export default function DatePicker({
       mode: mode || "single",
       static: true,
       monthSelectorType: "static",
-      dateFormat: "d-m-Y",
+      dateFormat: "Y-m-d",
       defaultDate,
       onChange,
     });

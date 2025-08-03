@@ -92,6 +92,66 @@ const UploadFile: React.FC<FileUploadProps> = ({
   const isInitialMount = useRef(true);
   const lastNotifiedFiles = useRef<string>("");
 
+  // Listen for form reset events
+  useEffect(() => {
+    const resetFilesListener = () => {
+      // Reset all document states
+      setMandatoryDocs([
+        {
+          id: "mandatory_1",
+          name: "Letter de transport, note de fret, note d'assurance",
+          isUploaded: false,
+          isMandatory: true,
+          isNameEditable: false,
+        },
+        {
+          id: "mandatory_2",
+          name: "De`claration pour I'importation Conditionnelle <<IC>>",
+          isUploaded: false,
+          isMandatory: true,
+          isNameEditable: false,
+        },
+        {
+          id: "mandatory_3",
+          name: "Facture e`mise par le fournisseur",
+          isUploaded: false,
+          isMandatory: true,
+          isNameEditable: false,
+        },
+      ]);
+      
+      setAdditionalDocs([
+        {
+          id: "additional_1",
+          name: "",
+          isUploaded: false,
+          isMandatory: false,
+          isNameEditable: true,
+        },
+      ]);
+      
+      // Reset other states
+      setError("");
+      setUploadingFiles(new Set());
+      setUploadProgress({});
+      setRemovingFile(false);
+      setRenamingFiles(new Set());
+      
+      // Reset refs
+      isInitialMount.current = true;
+      lastNotifiedFiles.current = "";
+      
+      // Notify parent with empty files array
+      onFilesSelect?.([]);
+    };
+
+    window.addEventListener('form-reset', resetFilesListener);
+
+    return () => {
+      window.removeEventListener('form-reset', resetFilesListener);
+    };
+  }, [onFilesSelect]);
+
   // useEffect(() => {
   //   if (files && files.length > 0) {
   //     // Handle existing files - for now just notify parent
@@ -140,6 +200,41 @@ const UploadFile: React.FC<FileUploadProps> = ({
 
       setMandatoryDocs(newMandatoryDocs);
       setAdditionalDocs(newAdditionalDocs);
+    } else if (files && files.length === 0) {
+      // Reset to initial state when files array is empty
+      setMandatoryDocs([
+        {
+          id: "mandatory_1",
+          name: "Letter de transport, note de fret, note d'assurance",
+          isUploaded: false,
+          isMandatory: true,
+          isNameEditable: false,
+        },
+        {
+          id: "mandatory_2",
+          name: "De`claration pour I'importation Conditionnelle <<IC>>",
+          isUploaded: false,
+          isMandatory: true,
+          isNameEditable: false,
+        },
+        {
+          id: "mandatory_3",
+          name: "Facture e`mise par le fournisseur",
+          isUploaded: false,
+          isMandatory: true,
+          isNameEditable: false,
+        },
+      ]);
+      
+      setAdditionalDocs([
+        {
+          id: "additional_1",
+          name: "",
+          isUploaded: false,
+          isMandatory: false,
+          isNameEditable: true,
+        },
+      ]);
     }
   }, [filesDep]);
 
@@ -677,6 +772,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
               (row.isMandatory || row.isNameEditable) && (
                 <button
                   onClick={() => handleRenameFile(row.id)}
+                  type="button"
                   disabled={renamingFiles.has(row.id)}
                   className="px-3 py-1 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors disabled:opacity-50"
                   title="Rename file"
@@ -740,11 +836,11 @@ const UploadFile: React.FC<FileUploadProps> = ({
   return (
     <div className="w-full bg-white">
       {/* Header */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-2">
           Document Upload
         </h2>
-      </div>
+      </div> */}
 
       {/* Mandatory Documents Section - Only show for create-request */}
       {showMandatoryDocs && (

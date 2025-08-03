@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import AppLayout from "../../layout/AppLayout";
@@ -17,6 +17,7 @@ import {
   UsdGreenIcon,
   CdfCreamIcon,
   WhitePlusIcon,
+  ArchiveIcon,
 } from "../../icons";
 import Typography from "../../lib/components/atoms/Typography.tsx";
 import Input from "../../lib/components/atoms/Input.tsx";
@@ -26,6 +27,8 @@ import { useNavigate } from "react-router";
 import Filter from "../../lib/components/molecules/Filter.tsx";
 import { useLoading } from "../../context/LoaderProvider.tsx";
 import CreateProject from "./project-manager/CreateProject.tsx";
+import projectService from "../../services/project.service.ts";
+import { useMutation } from "@tanstack/react-query";
 
 const ListDashBoard = () => {
   const { t } = useTranslation();
@@ -51,6 +54,7 @@ const ListDashBoard = () => {
     endDate: null,
   });
   const [hasInitialData, setHasInitialData] = useState(false);
+  const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
 
   const datePickerRef = useRef<HTMLDivElement>(null);
 
@@ -66,89 +70,105 @@ const ListDashBoard = () => {
     };
   }, [searchTerm]);
 
-  const formateDate = (date: Date | null) => {
+  const formateDate = useCallback((date: Date | null) => {
     if (!date) return;
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
     const formattedDate = `${year}-${month}-${day}`;
-    // const formattedDate = `${day}-${month}-${year}`;
     return formattedDate;
-  };
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const res = await homeService.getHomeData(
-          limit,
-          offset,
-          debouncedSearchTerm,
-          formateDate(range.startDate),
-          formateDate(range.endDate)
-        );
-        const dataArray = (res.data || []).map(
-          (
-            item: {
-              reference: string;
-              name: string;
-              currency: string;
-              amount: string | number;
-              created_at: string;
-              requests_count: number;
-              id: string;
-              status: string;
-              end_date: string;
-              funded_by: string;
-            },
-            idx: number
-          ) => ({
-            id: idx + 1 + offset,
-            projectId: item.reference || "-",
-            projectName: item.name,
-            currency: item.currency,
-            amount: Number(item.amount),
-            createdDate: item.created_at,
-            noOfRequest: item.requests_count || 0,
-            projectUuid: item.id,
-            status: item.status,
-            endDate: item.end_date,
-            fundedBy: item.funded_by,
-          })
-        );
+  }, []);
 
-        setData(dataArray);
-        setTotal(res.total_project || 0);
-        setTotalProject(res.total_project || 0);
-        setTotalAmountProjectUSD(res.total_usd_amount_project || 0);
-        // setTotalRequest(res.total_request || 0);
-        setTotalAmountProjectCDF(res.total_cdf_amount_project || 0);
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await homeService.getHomeData(
+        limit,
+        offset,
+        debouncedSearchTerm,
+        formateDate(range.startDate),
+        formateDate(range.endDate)
+      );
+      const dataArray = (res.data || []).map(
+        (
+          item: {
+            reference: string;
+            name: string;
+            currency: string;
+            amount: string | number;
+            created_at: string;
+            requests_count: number;
+            id: string;
+            status: string;
+            end_date: string;
+            funded_by: string;
+          },
+          idx: number
+        ) => ({
+          id: idx + 1 + offset,
+          projectId: item.reference || "-",
+          projectName: item.name,
+          currency: item.currency,
+          amount: Number(item.amount),
+          createdDate: item.created_at,
+          noOfRequest: item.requests_count || 0,
+          projectUuid: item.id,
+          status: item.status,
+          endDate: item.end_date,
+          fundedBy: item.funded_by,
+        })
+      );
 
-        // Set hasInitialData to true if we have data or if this is the first load
-        if (
-          !hasInitialData &&
-          (res.total_project > 0 ||
-            debouncedSearchTerm ||
-            range.startDate ||
-            range.endDate)
-        ) {
-          setHasInitialData(true);
-        }
+      setData(dataArray);
+      setTotal(res.total_project || 0);
+      setTotalProject(res.total_project || 0);
+      setTotalAmountProjectUSD(res.total_usd_amount_project || 0);
+      setTotalAmountProjectCDF(res.total_cdf_amount_project || 0);
 
-        if (res.total_project <= 0 && !hasInitialData) {
-          navigate("/project-dashboard");
-        }
-      } catch (e) {
-        console.log(e, "error");
-        setData([]);
-        if (!hasInitialData) {
-          navigate("/project-dashboard");
-        }
-      } finally {
-        setLoading(false);
+      if (
+        !hasInitialData &&
+        (res.total_project > 0 ||
+          debouncedSearchTerm ||
+          range.startDate ||
+          range.endDate)
+      ) {
+        setHasInitialData(true);
       }
-    };
+
+      if (res.total_project <= 0 && !hasInitialData) {
+        navigate("/project-dashboard");
+      }
+    } catch (e) {
+      console.log(e, "error");
+      setData([]);
+      if (!hasInitialData) {
+        navigate("/project-dashboard");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [limit, offset, debouncedSearchTerm, range, hasInitialData, navigate, setLoading, formateDate]);
+  
+  useEffect(() => {
     fetchData();
-  }, [limit, offset, navigate, debouncedSearchTerm, range]);
+  }, [fetchData]);
+
+  // Archive mutation (defined after fetchData to avoid circular dependency)
+  const archiveProjectMutation = useMutation({
+    mutationFn: async (projectIds: string) => {
+      const response = await projectService.archiveProject(projectIds);
+      return response;
+    },
+    onSuccess: async (response: any) => {
+      console.log("Archive successful:", response);
+      // Call fetchData to refresh all the data after successful archive
+      await fetchData();
+    },
+    onError: (error) => {
+      console.error("Archive failed:", error);
+      // You can add toast notification here if needed
+    },
+  });
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const currentPage = Math.floor(offset / limit) + 1;
@@ -184,6 +204,30 @@ const ListDashBoard = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, []);
+
+  // Archive handlers
+  const handleBulkArchive = async () => {
+    if (selectedProjects.length === 0) {
+      alert("Please select projects to archive");
+      return;
+    }
+
+    if (window.confirm(`Are you sure you want to archive ${selectedProjects.length} projects?`)) {
+      const projectIds = selectedProjects.join(",");
+      await archiveProjectMutation.mutateAsync(projectIds);
+      setSelectedProjects([]); // Clear selection after archive
+    }
+  };
+
+  const handleSingleArchive = async (projectUuid: string) => {
+    if (window.confirm("Are you sure you want to archive this project?")) {
+      await archiveProjectMutation.mutateAsync(projectUuid);
+    }
+  };
+
+  const handleSelectionChange = useCallback((selectedProjectUuids: string[]) => {
+    setSelectedProjects(selectedProjectUuids);
   }, []);
 
   // Check if we have any active filters or search
@@ -376,20 +420,31 @@ const ListDashBoard = () => {
                     whileTap={{ scale: 0.95 }}
                     transition={{ duration: 0.2 }}
                   >
-                    {/* <Button
-                    variant="outline"
-                    className="flex justify-center items-center gap-1.5 sm:gap-2 py-2 px-3 sm:py-2.5 sm:px-4 min-w-[90px] sm:min-w-[120px] h-9 sm:h-10"
-                  >
-                    <ArchiveIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                    <Typography
-                      className="text-secondary-60"
-                      element="span"
-                      size="sm"
-                      weight="semibold"
+                    <Button
+                      variant="outline"
+                      className={`flex justify-center items-center gap-1.5 sm:gap-2 py-2 px-3 sm:py-2.5 sm:px-4 min-w-[90px] sm:min-w-[120px] h-9 sm:h-10 ${
+                        selectedProjects.length > 0 
+                          ? "bg-red-50 border-red-200 hover:bg-red-100" 
+                          : ""
+                      }`}
+                      onClick={handleBulkArchive}
+                      disabled={archiveProjectMutation.isPending}
                     >
-                      {t("Archive")}
-                    </Typography>
-                  </Button> */}
+                      <ArchiveIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                      <Typography
+                        className={selectedProjects.length > 0 ? "text-red-600" : "text-secondary-60"}
+                        element="span"
+                        size="sm"
+                        weight="semibold"
+                      >
+                        {archiveProjectMutation.isPending 
+                          ? "Archiving..." 
+                          : selectedProjects.length > 0 
+                            ? `Archive (${selectedProjects.length})` 
+                            : t("Archive")
+                        }
+                      </Typography>
+                    </Button>
                   </motion.div>
 
                   <motion.div
@@ -429,7 +484,12 @@ const ListDashBoard = () => {
               </div>
 
               <div className="sm:mx-0">
-                <ListDashBoardTable data={data} />
+                <ListDashBoardTable 
+                  data={data} 
+                  onSelectedProjectsChange={handleSelectionChange}
+                  onSingleArchive={handleSingleArchive}
+                  isArchiving={archiveProjectMutation.isPending}
+                />
               </div>
 
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-4 sm:px-0">

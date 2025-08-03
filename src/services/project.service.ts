@@ -56,6 +56,11 @@ class ProjectService extends ApiBaseService {
       data: { project_ids: projectIds },
     });
   }
+  async archiveProject(projectIds: string) {
+    return await this.authorizedRequest.delete(ApiRoutes.ARCHIVE_PROJECT,
+      {data:{ project_ids: projectIds }}
+    );
+  }
 
   async getAddressList(projectId: string) {
     return await this.authorizedRequest.post(ApiRoutes.ADDRESS_LIST, {

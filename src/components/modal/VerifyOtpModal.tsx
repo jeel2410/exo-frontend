@@ -7,11 +7,12 @@ import Typography from "../../lib/components/atoms/Typography";
 
 interface ChangeEmailModalProps {
   isOpen: boolean;
-  loading?:boolean;
+  loading?: boolean;
   onClose: () => void;
   verifyOTP: () => void;
-  setOtp:(otp:string)=>void;
-  fieldValue:{email:string,password:string,otp:string}
+  setOtp: (otp: string) => void;
+  fieldValue: { email: string; otp: string };
+  // fieldValue: { email: string; password: string; otp: string };
 }
 
 const VerifyOtpModal = ({ isOpen, onClose,setOtp,fieldValue,verifyOTP,loading }: ChangeEmailModalProps) => {
