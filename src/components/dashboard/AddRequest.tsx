@@ -80,6 +80,7 @@ const AddRequest = () => {
   });
   const { getRoute } = useRoleRoute();
   const [financialAuthority, setFinancialAuthority] = useState<string>("DGI");
+  const [autoEditId, setAutoEditId] = useState<number | null>(null);
   useEffect(() => {
     const user = localStorageService.getUser() || "";
     setUserData(JSON.parse(user));
@@ -139,8 +140,9 @@ const AddRequest = () => {
   };
 
   const handleAddEntity = () => {
+    const newId = new Date().getTime();
     const newOrder: Order = {
-      id: new Date().getTime(),
+      id: newId,
       // id: data.length + 1,
       label: "",
       quantity: 1,
@@ -150,8 +152,10 @@ const AddRequest = () => {
       taxAmount: 0,
       vatIncluded: 0,
       financialAuthority: "DGDA",
+      customDuty: "",
     };
     setData(recalculateTableData([...data, newOrder]));
+    setAutoEditId(newId); // Set the newly added entity to auto-edit mode
   };
 
   const updateEntitys = (entitys: Entity[]) => {
@@ -178,6 +182,10 @@ const AddRequest = () => {
 
   const handleTableDataChange = (newData: Order[]) => {
     setData(recalculateTableData(newData));
+  };
+
+  const handleEditComplete = () => {
+    setAutoEditId(null); // Clear auto-edit mode when editing is complete
   };
 
   // const totalEntity = data.length;
@@ -491,7 +499,7 @@ const AddRequest = () => {
             </select>
           </div>
           <Button
-            variant="secondary"
+            variant="primary"
             className="flex items-center w-full md:w-fit gap-1 py-2 mt-4 justify-center"
             onClick={handleAddEntity}
           >
@@ -535,6 +543,9 @@ const AddRequest = () => {
             <CreateRequestTable
               data={data}
               onDataChange={handleTableDataChange}
+              autoEditId={autoEditId}
+              onEditComplete={handleEditComplete}
+              currentTaxCategory={financialAuthority}
             />
           </div>
 

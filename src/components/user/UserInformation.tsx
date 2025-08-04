@@ -6,6 +6,8 @@ import Input from "../../lib/components/atoms/Input";
 import Label from "../../lib/components/atoms/Label";
 import PhoneInput from "../../lib/components/atoms/PhoneInput";
 import Typography from "../../lib/components/atoms/Typography";
+import CountryPicker from "../../lib/components/atoms/CountryPicker";
+import { countries } from "../../utils/constant/countries";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 
@@ -206,21 +208,36 @@ const UserInformation = ({
             {/* Mobile Number with Country Code */}
             <div className="mt-6">
               <Label htmlFor="mobile">{t("mobile_number")}</Label>
-              <PhoneInput
-                countryCode={values.country_code}
-                value={values.mobile}
-                onOptionChange={(val: string) =>
-                  setFieldValue("country_code", val)
-                }
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFieldValue("mobile", e.target.value)
-                }
-                options={[
-                  { label: "+1", value: "+1" },
-                  { label: "+91", value: "+91" },
-                  { label: "+44", value: "+44" },
-                ]}
-              />
+              <div className="flex gap-2">
+                <div className="flex-shrink-0">
+                  <CountryPicker
+                    value={values.country_code ? 
+                      countries.find(country => country.phoneCode === values.country_code) ? 
+                      {
+                        value: values.country_code,
+                        label: countries.find(country => country.phoneCode === values.country_code)?.name || values.country_code,
+                        code: countries.find(country => country.phoneCode === values.country_code)?.code || '',
+                        phoneCode: values.country_code
+                      } : null
+                      : null
+                    }
+                    onChange={(selectedOption) =>
+                      setFieldValue(
+                        "country_code",
+                        selectedOption ? selectedOption.value : ""
+                      )
+                    }
+                  />
+                </div>
+                <div className="flex-1">
+                  <PhoneInput
+                    value={values.mobile}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setFieldValue("mobile", e.target.value)
+                    }
+                  />
+                </div>
+              </div>
               <ErrorMessage
                 name="country_code"
                 component="div"

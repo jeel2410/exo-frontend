@@ -82,11 +82,13 @@ export interface Order {
   taxAmount: number;
   vatIncluded: number;
   financialAuthority: string;
+  customDuty?: string;
   unit_price?: number;
   tax_rate?: number;
   tax_amount?: number;
   vat_included?: number;
   financial_authority?: string;
+  custom_duty?: string;
 }
 
 type SortOrder = "asc" | "desc" | null;
@@ -98,6 +100,7 @@ const CreateRequestTable = ({
   showActions = true,
   autoEditId,
   onEditComplete,
+  currentTaxCategory,
 }: {
   data: Order[];
   onDataChange?: (newData: Order[]) => void;
@@ -105,6 +108,7 @@ const CreateRequestTable = ({
   showActions?: boolean;
   autoEditId?: number | null;
   onEditComplete?: () => void;
+  currentTaxCategory?: string;
 }) => {
   const [tableData, setTableData] = useState<Order[]>(data);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
@@ -241,6 +245,34 @@ const CreateRequestTable = ({
   };
 
   const handleSaveEdit = (orderId: number) => {
+    // Validation: Check if all required fields are filled
+    const isLabelValid = editFormData.label && editFormData.label.trim() !== "";
+    const isQuantityValid = editFormData.quantity && editFormData.quantity > 0;
+    const isUnitPriceValid = editFormData.unitPrice !== undefined && editFormData.unitPrice >= 0;
+    const isTaxRateValid = editFormData.taxRate !== undefined && editFormData.taxRate >= 0;
+    const isCustomDutyValid = editFormData.customDuty && editFormData.customDuty.trim() !== "";
+
+    if (!isLabelValid) {
+      alert("Label is required and cannot be empty.");
+      return;
+    }
+    if (!isQuantityValid) {
+      alert("Quantity is required and must be greater than 0.");
+      return;
+    }
+    if (!isUnitPriceValid) {
+      alert("Unit Price is required and must be 0 or greater.");
+      return;
+    }
+    if (!isTaxRateValid) {
+      alert("Tax Rate is required and must be 0 or greater.");
+      return;
+    }
+    if (!isCustomDutyValid) {
+      alert("Custom Duty selection is required.");
+      return;
+    }
+
     setTableData((prev) => {
       const newData = prev.map((order) => {
         if (order.id === orderId) {
@@ -257,6 +289,7 @@ const CreateRequestTable = ({
             vatIncluded,
             financialAuthority:
               editFormData.financialAuthority || order.financialAuthority,
+            customDuty: editFormData.customDuty || order.customDuty,
           };
         }
         return order;
@@ -271,6 +304,22 @@ const CreateRequestTable = ({
   };
 
   const handleCancelEdit = () => {
+    // If we're canceling the edit of a newly added entity (autoEditId), remove it from the table
+    if (editingId === autoEditId && autoEditId) {
+      // Check if the entity is essentially empty (no meaningful data entered)
+      const isEmptyEntity = 
+        (!editFormData.label || editFormData.label.trim() === "") &&
+        (!editFormData.unitPrice || editFormData.unitPrice === 0) &&
+        (!editFormData.taxRate || editFormData.taxRate === 0) &&
+        (!editFormData.customDuty || editFormData.customDuty.trim() === "");
+
+      if (isEmptyEntity) {
+        // Remove the empty entity from the table
+        setTableData((prev) => prev.filter((order) => order.id !== autoEditId));
+        onDataChange?.(tableData.filter((order) => order.id !== autoEditId));
+      }
+    }
+    
     setEditingId(null);
     setEditFormData({});
     onEditComplete?.();
@@ -338,6 +387,25 @@ const CreateRequestTable = ({
     return "↕️";
   };
 
+  // Dynamic custom duty options based on tax category
+  const getCustomDutyOptions = () => {
+    if (currentTaxCategory === "location_acquisition") {
+      return [
+        { value: "tva", label: "TVA" },
+      ];
+    } else if (currentTaxCategory === "importation") {
+      return [
+        { value: "droits_de_douanes", label: "Droits de douanes" },
+        { value: "taxes_dgrad_importation", label: "Taxes DGRAD à l'importation" },
+        { value: "tva_importation", label: "TVA à l'importation" },
+      ];
+    }
+    // Default fallback for DGI, DGDA, DGRAD (legacy values)
+    return [
+      { value: "tva", label: "TVA" },
+    ];
+  };
+
   const tableHeader: TableHeader[] = [
     // {
     //   content: (
@@ -388,6 +456,10 @@ const CreateRequestTable = ({
     {
       content: <div>VAT Included</div>,
       className: "w-28",
+    },
+    {
+      content: <div>Custom Duties</div>,
+      className: "w-32",
     },
     ...(!showActions
       ? [
@@ -452,8 +524,12 @@ const CreateRequestTable = ({
                         onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleInputChange("label", e.target.value)
                         }
-                        className="block w-full px-2 py-1 text-sm rounded-md bg-secondary-10 focus:border focus:outline-none border-secondary-30"
-                        placeholder="Add Label"
+                        className={`block w-full px-2 py-1 text-sm rounded-md bg-secondary-10 focus:border focus:outline-none ${
+                          editFormData.label && editFormData.label.trim() !== "" 
+                            ? "border-secondary-30" 
+                            : "border-red-500"
+                        }`}
+                        placeholder="Add Label *"
                         aria-label="Label"
                       />
                     </div>
@@ -499,8 +575,12 @@ const CreateRequestTable = ({
                         onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleInputChange("unitPrice", e.target.value)
                         }
-                        className="block w-full px-2 py-1 text-sm rounded-md bg-secondary-10 focus:border focus:outline-none border-secondary-30"
-                        placeholder="Add Price"
+                        className={`block w-full px-2 py-1 text-sm rounded-md bg-secondary-10 focus:border focus:outline-none ${
+                          editFormData.unitPrice !== undefined && editFormData.unitPrice >= 0 
+                            ? "border-secondary-30" 
+                            : "border-red-500"
+                        }`}
+                        placeholder="Add Price *"
                         aria-label="Unit Price"
                       />
                     </div>
@@ -536,8 +616,12 @@ const CreateRequestTable = ({
                         onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleInputChange("taxRate", e.target.value)
                         }
-                        className="block w-full px-2 py-1 text-sm rounded-md bg-secondary-10 focus:border focus:outline-none border-secondary-30"
-                        placeholder="Add Tax Rate"
+                        className={`block w-full px-2 py-1 text-sm rounded-md bg-secondary-10 focus:border focus:outline-none ${
+                          editFormData.taxRate !== undefined && editFormData.taxRate >= 0 
+                            ? "border-secondary-30" 
+                            : "border-red-500"
+                        }`}
+                        placeholder="Add Tax Rate *"
                         aria-label="Tax Rate"
                       />
                     </div>
@@ -578,6 +662,35 @@ const CreateRequestTable = ({
                   ) : (
                     <span className="block font-medium text-secondary-100 text-sm">
                       {order.vatIncluded || order.vat_included}
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className="px-5 py-4 sm:px-6">
+                  {editingId === order.id ? (
+                    <div className="flex flex-col gap-1">
+                      <select
+                        value={editFormData.customDuty ?? ""}
+                        onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                          handleInputChange("customDuty", e.target.value)
+                        }
+                        className={`px-2 py-1 text-sm border rounded-md bg-white ${
+                          editFormData.customDuty && editFormData.customDuty.trim() !== "" 
+                            ? "border-gray-300" 
+                            : "border-red-500"
+                        }`}
+                        aria-label="Custom Duty"
+                      >
+                        <option value="">Select Custom Duty</option>
+                        {getCustomDutyOptions().map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <span className="block font-medium text-secondary-100 text-sm">
+                      {getCustomDutyOptions().find(opt => opt.value === (order.customDuty || order.custom_duty))?.label || "-"}
                     </span>
                   )}
                 </TableCell>

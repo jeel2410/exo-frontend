@@ -8,7 +8,7 @@ import CurrencyInput from "../../lib/components/atoms/CurrencyInput";
 import Typography from "../../lib/components/atoms/Typography";
 import TextEditor from "../../lib/components/atoms/TextEditor";
 import UploadFile, { UploadedFile } from "../common/UploadFile";
-import { ArrowRightIconButton, SaveDraftIcon, TrashIcon } from "../../icons";
+import { ArrowRightIconButton, SaveDraftIcon, TrashIcon, WhitePlusIcon } from "../../icons";
 import { USFlag, CDFFlag } from "../../icons";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
@@ -649,27 +649,28 @@ ProjectInfoFormProps) => {
                 <div>
                   <div className="flex justify-between items-center mb-3">
                     <Label>{t("address")}</Label>
-                    <button
+                    <Button
                       type="button"
-                      className="flex items-center gap-1 text-primary-150 text-sm font-medium px-3 py-1 border border-primary-150 rounded-lg hover:bg-blue-50"
+                      variant="primary"
+                      className="flex items-center gap-1 text-white text-sm font-medium px-3 py-2 rounded-lg w-auto"
                       onClick={() =>
                         addAddress(setFieldValue, values.addresses)
                       }
                     >
-                      <span className="text-base">+</span>
+                      <WhitePlusIcon width={16} height={16} />
                       {t("add_address")}
-                    </button>
+                    </Button>
                   </div>
                   <div className="overflow-x-auto border border-secondary-30 rounded-lg">
                     <table className="min-w-full">
                       <thead>
                         <tr className="bg-gray-50 border-b border-secondary-30 text-xs text-secondary-60">
-                          <th className="p-2 text-left">{t("sr_no")}</th>
-                          <th className="p-2 text-left">{t("country")}</th>
-                          <th className="p-2 text-left">{t("province")}</th>
-                          <th className="p-2 text-left">{t("city")}</th>
-                          <th className="p-2 text-left">{t("municipality")}</th>
-                          <th className="p-2 text-left">{t("action")}</th>
+                          <th className="p-2 text-left w-16">{t("sr_no")}</th>
+                          <th className="p-2 text-left w-1/5">{t("country")}</th>
+                          <th className="p-2 text-left w-1/5">{t("province")}</th>
+                          <th className="p-2 text-left w-1/5">{t("city")}</th>
+                          <th className="p-2 text-left w-1/5">{t("municipality")}</th>
+                          <th className="p-2 text-left w-16">{t("action")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -694,7 +695,10 @@ ProjectInfoFormProps) => {
                                       "country",
                                       value
                                     );
-                                    stopEditing();
+                                    // Auto-open next dropdown (province)
+                                    setTimeout(() => {
+                                      startEditing(address.id, "province");
+                                    }, 100);
                                   }}
                                   onBlur={stopEditing}
                                   placeholder="Select country"
@@ -727,7 +731,10 @@ ProjectInfoFormProps) => {
                                       "province",
                                       value
                                     );
-                                    stopEditing();
+                                    // Auto-open next dropdown (city)
+                                    setTimeout(() => {
+                                      startEditing(address.id, "city");
+                                    }, 100);
                                   }}
                                   onBlur={stopEditing}
                                   placeholder="Select province"
@@ -766,7 +773,10 @@ ProjectInfoFormProps) => {
                                       "city",
                                       value
                                     );
-                                    stopEditing();
+                                    // Auto-open next dropdown (municipality)
+                                    setTimeout(() => {
+                                      startEditing(address.id, "municipality");
+                                    }, 100);
                                   }}
                                   onBlur={stopEditing}
                                   placeholder="Select city"

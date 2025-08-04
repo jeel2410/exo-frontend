@@ -7,6 +7,8 @@ import Typography from "../lib/components/atoms/Typography";
 import Button from "../lib/components/atoms/Button";
 
 import PhoneInput from "../lib/components/atoms/PhoneInput";
+import CountryPicker from "../lib/components/atoms/CountryPicker";
+import { countries } from "../utils/constant/countries";
 import { useTranslation } from "react-i18next";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -259,19 +261,38 @@ const SignUpForm = () => {
           </div>
           <div className="w-full mt-4 lg:mt-0">
             <Label htmlFor="phoneNumber">{t("mobile_number")}</Label>
-            <PhoneInput
-              options={mobileCountryCode}
-              name="mobile"
-              value={formik.values.mobile}
-              onChange={(e) => formik.setFieldValue("mobile", e.target.value)}
-              onOptionChange={(value) =>
-                formik.setFieldValue("country_code", value)
-              }
-              countryCode={formik.values.country_code}
-              onBlur={formik.handleBlur}
-              error={formik.touched.mobile && Boolean(formik.errors.mobile)}
-              hint={formik.touched.mobile ? formik.errors.mobile : undefined}
-            />
+            <div className="flex gap-2">
+              <div className="flex-shrink-0">
+                <CountryPicker
+                  value={formik.values.country_code ? 
+                    countries.find(country => country.phoneCode === formik.values.country_code) ? 
+                    {
+                      value: formik.values.country_code,
+                      label: countries.find(country => country.phoneCode === formik.values.country_code)?.name || formik.values.country_code,
+                      code: countries.find(country => country.phoneCode === formik.values.country_code)?.code || '',
+                      phoneCode: formik.values.country_code
+                    } : null
+                    : null
+                  }
+                  onChange={(selectedOption) =>
+                    formik.setFieldValue(
+                      "country_code",
+                      selectedOption ? selectedOption.value : ""
+                    )
+                  }
+                />
+              </div>
+              <div className="flex-1">
+                <PhoneInput
+                  name="mobile"
+                  value={formik.values.mobile}
+                  onChange={(e) => formik.setFieldValue("mobile", e.target.value)}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.mobile && Boolean(formik.errors.mobile)}
+                  hint={formik.touched.mobile ? formik.errors.mobile : undefined}
+                />
+              </div>
+            </div>
           </div>
         </motion.div>
 

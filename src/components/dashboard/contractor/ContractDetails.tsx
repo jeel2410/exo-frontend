@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import {
-  ArchiveIcon,
   BlueNoteIcon,
   FilterIcon,
   GreenRightIcon,
@@ -20,7 +19,7 @@ import { useMutation } from "@tanstack/react-query";
 import contractService from "../../../services/contract.service";
 import moment from "moment";
 import { useLoading } from "../../../context/LoaderProvider";
-import { useAuth } from "../../../context/AuthContext";
+// import { useAuth } from "../../../context/AuthContext";
 import requestService from "../../../services/request.service";
 import { useRoleRoute } from "../../../hooks/useRoleRoute";
 import Breadcrumbs from "../../common/Breadcrumbs";
@@ -60,7 +59,7 @@ interface CardDateProps {
 
 const ContractDetails = () => {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const datePickerRef = useRef<HTMLDivElement>(null);
@@ -126,7 +125,7 @@ const ContractDetails = () => {
       const card = response.data.summary;
 
       setCardData(card);
-      
+
       // Set initial requests data from contract
       if (contract.requests_data && Array.isArray(contract.requests_data)) {
         setRequestsData(contract.requests_data);
@@ -446,30 +445,33 @@ const ContractDetails = () => {
                 </Typography>
               </div>
               <div className="flex flex-col gap-2">
-                <Typography
-                  className="text-gray-600 text-sm"
-                  weight="semibold"
-                >
+                <Typography className="text-gray-600 text-sm" weight="semibold">
                   {t("uploaded_files")}
                 </Typography>
                 <div className="flex-1">
                   {contractData?.documents.length ? (
                     <div className="flex flex-wrap gap-2">
-                      {contractData?.documents.map((doc: any, index: number) => (
-                        <a
-                          key={index}
-                          href={doc.file}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-blue-600 hover:underline hover:bg-blue-50 px-2 py-1 rounded-md border border-gray-200 text-sm max-w-full"
-                          title={doc?.original_name}
-                        >
-                          <PdfIcon width={14} height={14} className="flex-shrink-0" />
-                          <span className="truncate max-w-[200px]">
-                            {doc?.original_name}
-                          </span>
-                        </a>
-                      ))}
+                      {contractData?.documents.map(
+                        (doc: any, index: number) => (
+                          <a
+                            key={index}
+                            href={doc.file}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-blue-600 hover:underline hover:bg-blue-50 px-2 py-1 rounded-md border border-gray-200 text-sm max-w-full"
+                            title={doc?.original_name}
+                          >
+                            <PdfIcon
+                              width={14}
+                              height={14}
+                              className="flex-shrink-0"
+                            />
+                            <span className="truncate max-w-[200px]">
+                              {doc?.original_name}
+                            </span>
+                          </a>
+                        )
+                      )}
                     </div>
                   ) : (
                     <Typography
@@ -594,7 +596,7 @@ const ContractDetails = () => {
                     <Typography
                       className="text-gray-600"
                       size="sm"
-                      weight="normal"                                            
+                      weight="normal"
                     >
                       Searching requests...
                     </Typography>
@@ -604,23 +606,21 @@ const ContractDetails = () => {
               <RequestTable
                 data={
                   Array.isArray(requestsData)
-                    ? (requestsData as RequestApiData[]).map(
-                        (req, idx) => ({
-                          id: idx + 1,
-                          requestNo: req.request_unique_number
-                            ? String(req.request_unique_number)
-                            : String(idx + 1),
-                          amount: req.total_amount
-                            ? String(req.total_amount)
-                            : "0",
-                          createdDate: req.created_at
-                            ? moment(req.created_at).format("YYYY-MM-DD")
-                            : "",
-                          status: req.current_status || "",
-                          request_id: req.id || "",
-                          contract_id: contractData?.id || "",
-                        })
-                      )
+                    ? (requestsData as RequestApiData[]).map((req, idx) => ({
+                        id: idx + 1,
+                        requestNo: req.request_unique_number
+                          ? String(req.request_unique_number)
+                          : String(idx + 1),
+                        amount: req.total_amount
+                          ? String(req.total_amount)
+                          : "0",
+                        createdDate: req.created_at
+                          ? moment(req.created_at).format("YYYY-MM-DD")
+                          : "",
+                        status: req.current_status || "",
+                        request_id: req.id || "",
+                        contract_id: contractData?.id || "",
+                      }))
                     : []
                 }
               />

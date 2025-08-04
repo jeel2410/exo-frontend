@@ -535,37 +535,36 @@ const UploadFile: React.FC<FileUploadProps> = ({
         {/* File Upload */}
         <td className="py-4 px-4">
           {row.isUploaded && !row.isMandatory ? (
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-700 text-sm min-w-[100px] h-[38px]">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-gray-500 flex-shrink-0"
-                >
-                  <path
-                    d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M14 2V8H20"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="truncate text-xs">
-                  {row.uploadedFile?.original_name ||
-                    row.uploadedFile?.file?.name ||
-                    "Uploaded File"}
-                </span>
-              </div>
+            <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-700 text-sm min-w-[100px] h-[38px]">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-gray-500 flex-shrink-0"
+              >
+                <path
+                  d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M14 2V8H20"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="truncate text-xs flex-1">
+                {row.uploadedFile?.original_name ||
+                  row.uploadedFile?.file?.name ||
+                  "Uploaded File"}
+              </span>
+              {/* Edit Icon */}
               <div className="relative">
                 <input
                   type="file"
@@ -581,7 +580,8 @@ const UploadFile: React.FC<FileUploadProps> = ({
                 />
                 <label
                   htmlFor={`file-replace-additional-${row.id}`}
-                  className="flex items-center justify-center space-x-2 px-3 py-1 bg-white border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors text-blue-600 font-medium text-xs min-w-[100px] h-[30px]"
+                  className="flex items-center justify-center p-1 cursor-pointer hover:bg-gray-200 rounded transition-colors"
+                  title="Replace file"
                 >
                   <svg
                     width="14"
@@ -589,66 +589,57 @@ const UploadFile: React.FC<FileUploadProps> = ({
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    className="text-blue-600"
+                    className="text-gray-600 hover:text-blue-600"
                   >
                     <path
-                      d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15"
+                      d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V18C2 18.5304 2.21071 19.0391 2.58579 19.4142C2.96086 19.7893 3.46957 20 4 20H16C16.5304 20 17.0391 19.7893 17.4142 19.4142C17.7893 19.0391 18 18.5304 18 18V11"
                       stroke="currentColor"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
                     <path
-                      d="M17 8L12 3L7 8"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M12 3V15"
+                      d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z"
                       stroke="currentColor"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <span>Replace</span>
                 </label>
               </div>
             </div>
           ) : row.isUploaded && row.isMandatory ? (
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center space-x-2 px-3 py-2 bg-green-50 border border-green-200 rounded-md text-green-700 text-sm min-w-[100px] h-[38px]">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-green-500 flex-shrink-0"
-                >
-                  <path
-                    d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M14 2V8H20"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="truncate text-xs">
-                  {row.uploadedFile?.original_name ||
-                    row.uploadedFile?.file?.name ||
-                    "Uploaded File"}
-                </span>
-              </div>
+            <div className="flex items-center space-x-2 px-3 py-2 bg-green-50 border border-green-200 rounded-md text-green-700 text-sm min-w-[100px] h-[38px]">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-green-500 flex-shrink-0"
+              >
+                <path
+                  d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M14 2V8H20"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="truncate text-xs flex-1">
+                {row.uploadedFile?.original_name ||
+                  row.uploadedFile?.file?.name ||
+                  "Uploaded File"}
+              </span>
+              {/* Edit Icon */}
               <div className="relative">
                 <input
                   type="file"
@@ -664,7 +655,8 @@ const UploadFile: React.FC<FileUploadProps> = ({
                 />
                 <label
                   htmlFor={`file-replace-${row.id}`}
-                  className="flex items-center justify-center space-x-2 px-3 py-1 bg-white border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors text-blue-600 font-medium text-xs min-w-[100px] h-[30px]"
+                  className="flex items-center justify-center p-1 cursor-pointer hover:bg-green-100 rounded transition-colors"
+                  title="Replace file"
                 >
                   <svg
                     width="14"
@@ -672,31 +664,23 @@ const UploadFile: React.FC<FileUploadProps> = ({
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    className="text-blue-600"
+                    className="text-green-600 hover:text-blue-600"
                   >
                     <path
-                      d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15"
+                      d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V18C2 18.5304 2.21071 19.0391 2.58579 19.4142C2.96086 19.7893 3.46957 20 4 20H16C16.5304 20 17.0391 19.7893 17.4142 19.4142C17.7893 19.0391 18 18.5304 18 18V11"
                       stroke="currentColor"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
                     <path
-                      d="M17 8L12 3L7 8"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M12 3V15"
+                      d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z"
                       stroke="currentColor"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <span>Replace</span>
                 </label>
               </div>
             </div>
@@ -726,7 +710,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
               />
               <label
                 htmlFor={`file-${row.id}`}
-                className="flex items-center justify-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors text-blue-600 font-medium text-sm min-w-[100px] h-[38px]"
+                className="flex items-center justify-center gap-1 text-white text-sm font-medium px-3 py-2 rounded-lg bg-primary-150 hover:bg-primary-200 hover:shadow-lg active:bg-primary-100 cursor-pointer transition-all duration-300 ease-in-out transform active:scale-95 min-w-[80px]"
               >
                 <svg
                   width="16"
@@ -734,24 +718,17 @@ const UploadFile: React.FC<FileUploadProps> = ({
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="text-blue-600"
+                  className="text-white"
                 >
                   <path
-                    d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15"
+                    d="M12 5V19"
                     stroke="currentColor"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <path
-                    d="M17 8L12 3L7 8"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 3V15"
+                    d="M5 12H19"
                     stroke="currentColor"
                     strokeWidth="2"
                     strokeLinecap="round"
