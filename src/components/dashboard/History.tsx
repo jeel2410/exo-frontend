@@ -127,7 +127,9 @@ const History: React.FC<HistoryProps> = ({ items }) => {
                         size="xs"
                         className="text-gray-500 border-gray-200 bg-secondary-10 py-2 pl-3 rounded-sm"
                       >
-                        {item.description}
+{item.description ? item.description.split('\n').map((line, index) => (
+                            <span key={index}>{line}<br /></span>
+                          )) : ''}
                       </Typography>
                     </motion.div>
                   )}

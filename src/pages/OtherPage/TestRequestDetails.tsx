@@ -23,6 +23,7 @@ import RequestDetailModal from "../../components/modal/RequestDetailModal";
 import History from "../../components/dashboard/History";
 import moment from "moment";
 import { useLoading } from "../../context/LoaderProvider";
+import { transformTracksToHistory, TrackItem } from "../../utils/historyUtils";
 import { useRoleRoute } from "../../hooks/useRoleRoute";
 import Breadcrumbs from "../../components/common/Breadcrumbs";
 interface UserData {
@@ -74,7 +75,7 @@ export interface RequestDetails {
   entities: RequestEntity[];
   amount_summary: AmountSummary;
   files?: any[];
-  tracks: any[]; // Use a specific interface if `tracks` has a defined shape
+  tracks: TrackItem[];
 }
 export interface ProgressStep {
   id: number;
@@ -89,14 +90,15 @@ interface CommentProps {
 }
 
 export const progressSteps: ProgressStep[] = [
-  { id: 1, title: "Secretariat Review", status: "current" },
-  { id: 2, title: "Coordinator Review", status: "pending" },
-  { id: 3, title: "Financial Review", status: "pending" },
-  { id: 4, title: "Draft Report Preparation", status: "pending" },
-  { id: 5, title: "Transmission Letter Drafting", status: "pending" },
-  { id: 6, title: "Minister Validation", status: "pending" },
-  { id: 7, title: "Document Generation", status: "pending" },
-  { id: 8, title: "Final Delivery", status: "pending" },
+  { id: 1, title: "Application Submission", status: "current" },
+  { id: 2, title: "Secretariat Review", status: "pending" },
+  { id: 3, title: "Coordinator Review", status: "pending" },
+  { id: 4, title: "Financial Review", status: "pending" },
+  { id: 5, title: "FO Preparation", status: "pending" },
+  { id: 6, title: "Transmission to Secretariat", status: "pending" },
+  { id: 7, title: "Coordinator Final Validation", status: "pending" },
+  { id: 8, title: "Ministerial Review", status: "pending" },
+  { id: 9, title: "Title Generation", status: "pending" },
 ];
 export const comments: CommentProps[] = [
   {
@@ -161,19 +163,22 @@ const TestRequestDetails = () => {
       const newSteps: ProgressStep[] = steps.map((step, index) => {
         let status: ProgressStep["status"];
 
+        // Check if this step is completed (track exists and not rejected)
         if (index < trackLength) {
-          status = "completed";
-        } else if (
-          index === trackLength &&
-          tracks[trackLength]?.status !== "Rejected"
-        ) {
+          const currentTrack = tracks[index];
+          if (currentTrack?.status === "Rejected") {
+            status = "pending"; // If rejected, mark as pending
+          } else {
+            status = "completed"; // Otherwise completed
+          }
+        } else if (index === trackLength) {
+          // This is the current step (next step to be processed)
           status = "current";
         } else {
+          // Future steps are pending
           status = "pending";
         }
-        if (tracks[index]?.status === "Rejected") {
-          status = "pending";
-        }
+
         return {
           ...step,
           status,
@@ -188,12 +193,7 @@ const TestRequestDetails = () => {
   useEffect(() => {
     if (!requestData?.tracks) return;
 
-    const res = requestData.tracks.map((t, index) => ({
-      id: index,
-      date: moment(t.created_at).format("YYYY-MM-DD"),
-      time: moment(t.created_at).format("HH:mm:ss"),
-      title: t.status,
-    })) as [];
+const res = transformTracksToHistory(requestData.tracks);
 
     setHistory(res);
   }, [requestData]);
