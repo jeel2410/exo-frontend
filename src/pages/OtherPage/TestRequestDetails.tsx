@@ -21,9 +21,9 @@ import RequestProgress from "../../components/dashboard/ProgressStep";
 import { useModal } from "../../hooks/useModal";
 import RequestDetailModal from "../../components/modal/RequestDetailModal";
 import History from "../../components/dashboard/History";
-import moment from "moment";
 import { useLoading } from "../../context/LoaderProvider";
 import { transformTracksToHistory, TrackItem } from "../../utils/historyUtils";
+import { HistoryItem } from "../../components/dashboard/History";
 import { useRoleRoute } from "../../hooks/useRoleRoute";
 import Breadcrumbs from "../../components/common/Breadcrumbs";
 interface UserData {
@@ -143,7 +143,7 @@ const TestRequestDetails = () => {
 
   const { t } = useTranslation();
   const { requestId } = useParams();
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const { getRoute } = useRoleRoute();
 
   const { data: _requestDetails, isLoading: _requestLoading } = useQuery<any>({
@@ -193,8 +193,7 @@ const TestRequestDetails = () => {
   useEffect(() => {
     if (!requestData?.tracks) return;
 
-const res = transformTracksToHistory(requestData.tracks);
-
+    const res = transformTracksToHistory(requestData.tracks);
     setHistory(res);
   }, [requestData]);
 
@@ -346,7 +345,12 @@ const res = transformTracksToHistory(requestData.tracks);
                           {requestData &&
                             requestData?.files?.map((f) => {
                               return (
-                                <a href={f.file} target="_blank" key={f.id} className="inline-flex items-center gap-2 border border-secondary-60 rounded-full px-3 py-1.5 bg-white hover:bg-gray-50 cursor-pointer transition-colors">
+                                <a
+                                  href={f.file}
+                                  target="_blank"
+                                  key={f.id}
+                                  className="inline-flex items-center gap-2 border border-secondary-60 rounded-full px-3 py-1.5 bg-white hover:bg-gray-50 cursor-pointer transition-colors"
+                                >
                                   <PdfIcon width={12} height={12} />
                                   <Typography
                                     size="xs"
