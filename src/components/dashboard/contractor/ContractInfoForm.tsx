@@ -331,7 +331,7 @@ const ContractInfoForm = ({
             <Label htmlFor="place">
               {t("place")} :<span className="text-red-500">*</span>
             </Label>
-            <Field as={Input} name="place" id="place" placeholder="Frace" />
+            <Field as={Input} name="place" id="place" placeholder={t("place")} />
             <ErrorMessage
               name="place"
               component="div"

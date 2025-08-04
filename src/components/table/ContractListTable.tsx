@@ -3,6 +3,9 @@ import moment from "moment";
 import { ArchiveIconDark, EyeDarkIcon, PencilIcon, PlusIcon } from "../../icons";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
+import contractService from "../../services/contract.service";
+import { useLoading } from "../../context/LoaderProvider";
+import { toast } from "react-toastify";
 
 export interface TableHeader {
   content: React.ReactNode;
@@ -103,8 +106,44 @@ const ContractListTable = ({
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const navigate = useNavigate();
+  const  {setLoading} =useLoading()
 
   const { t } = useTranslation()
+
+  const handleArchiveClick = async (contractId: string) => {
+    const confirmArchive = window.confirm("Are you sure you want to archive this contract? This action cannot be undone.");
+    
+    if (!confirmArchive) {
+      setOpenMenuId(null);
+      return;
+    }
+
+    try {
+
+      const payload = {
+        contract_ids: contractId
+      };
+      setLoading(true);
+      const response = await contractService.archiveContract(payload);
+      console.log('Contract archived successfully:', response);
+      
+      // Remove the archived contract from the table data
+      const updatedData = tableData.filter(contract => contract.contractId !== contractId);
+      setTableData(updatedData);
+      
+      // You can add a success notification here if you have a notification system
+      toast.success(t("contract_archived_success"));
+      
+      setLoading(false);
+    } catch (error) {
+      console.error('Error archiving contract:', error);
+      // You can add an error notification here
+      // toast.error('Failed to archive contract');
+      setLoading(false);
+    }
+    
+    setOpenMenuId(null);  // Ensure the menu is closed after action
+  };
 
   // const handleSelectAll = (event: ChangeEvent<HTMLInputElement>) => {
   //   if (event.target.checked) {
@@ -350,7 +389,7 @@ const ContractListTable = ({
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                // handleArchive(data.id);
+                                handleArchiveClick(data.contractId);
                               }}
                               className="rounded-sm flex items-center gap-2 w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                               role="menuitem"
