@@ -14,6 +14,9 @@ class ContractService extends ApiBaseService {
   async getAllContractList(data:any){
     return await this.authorizedRequest.post(ApiRoutes.ALL_CONTRACT_LIST,data)
   }
+  async archiveContract(data:any){
+    return await this.authorizedRequest.delete(ApiRoutes.ARCHIVE_CONTRACT,{data:data})
+  }
 }
 
 const contractService = new ContractService();

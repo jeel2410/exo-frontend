@@ -25,6 +25,7 @@ export const ApiRoutes = {
   CONTRACT_DETAILS: "/contract/view",
   CREATE_CONTRACT: "/contract/create",
   ALL_CONTRACT_LIST: "/contract/list",
+  ARCHIVE_CONTRACT:"/contract/delete",
   // Request routes
   GET_ALL_REQUEST: "/request/list",
   NOTIFICATION_LIST: "/notifications",

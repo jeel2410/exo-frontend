@@ -536,7 +536,7 @@ const ContractDetails = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-2 sm:gap-3 justify-end relative">
-                {user?.type === "user" && (
+                {/* {user?.type === "user" && (
                   <Button
                     variant="outline"
                     className="flex justify-center items-center gap-1.5 sm:gap-2 py-2 px-3 sm:py-2.5 sm:px-4 min-w-[80px] sm:min-w-[100px] h-9 sm:h-10 text-xs sm:text-sm"
@@ -551,7 +551,7 @@ const ContractDetails = () => {
                       {t("Archive")}
                     </Typography>
                   </Button>
-                )}
+                )} */}
 
                 <Button
                   variant="outline"

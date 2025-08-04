@@ -267,6 +267,7 @@ const SignUpForm = () => {
               onOptionChange={(value) =>
                 formik.setFieldValue("country_code", value)
               }
+              countryCode={formik.values.country_code}
               onBlur={formik.handleBlur}
               error={formik.touched.mobile && Boolean(formik.errors.mobile)}
               hint={formik.touched.mobile ? formik.errors.mobile : undefined}
