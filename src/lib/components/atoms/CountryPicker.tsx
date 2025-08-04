@@ -1,7 +1,7 @@
-import React from 'react';
-import Select, { components } from 'react-select';
-import * as Flags from 'country-flag-icons/react/3x2';
-import { countries, CountryData } from '../../../utils/constant/countries';
+// import React from "react";
+import Select, { components } from "react-select";
+import * as Flags from "country-flag-icons/react/3x2";
+import { countries } from "../../../utils/constant/countries";
 
 interface CountryOption {
   value: string; // This will be the phone code (e.g., "+91")
@@ -21,7 +21,9 @@ const CustomOption = (props: any) => {
             <FlagComponent className="w-full h-full object-cover" />
           </div>
         )}
-        <span className="text-xs text-gray-600 min-w-[40px]">{props.data.phoneCode}</span>
+        <span className="text-xs text-gray-600 min-w-[40px]">
+          {props.data.phoneCode}
+        </span>
         <span className="text-sm truncate">{props.data.label}</span>
       </div>
     </components.Option>
@@ -47,7 +49,7 @@ const CustomSingleValue = (props: any) => {
 
 const CountryPicker = ({
   value,
-  onChange
+  onChange,
 }: {
   value: CountryOption | null;
   onChange: (value: CountryOption | null) => void;
@@ -60,47 +62,47 @@ const CountryPicker = ({
   }));
 
   const customStyles = {
-    control: (provided: any, state: any) => ({
+    control: (provided: any) => ({
       ...provided,
-      minHeight: '42px',
-      border: '1px solid #e2e8f0',
-      borderRadius: '8px',
-      backgroundColor: '#f8fafc',
-      '&:hover': {
-        borderColor: '#94a3b8'
+      minHeight: "42px",
+      border: "1px solid #e2e8f0",
+      borderRadius: "8px",
+      backgroundColor: "#f8fafc",
+      "&:hover": {
+        borderColor: "#94a3b8",
       },
-      '&:focus-within': {
-        borderColor: '#3b82f6',
-        boxShadow: '0 0 0 1px #3b82f6'
-      }
+      "&:focus-within": {
+        borderColor: "#3b82f6",
+        boxShadow: "0 0 0 1px #3b82f6",
+      },
     }),
     menu: (provided: any) => ({
       ...provided,
-      minWidth: '300px',
-      maxWidth: '400px',
-      zIndex: 9999
+      minWidth: "300px",
+      maxWidth: "400px",
+      zIndex: 9999,
     }),
     menuList: (provided: any) => ({
       ...provided,
-      maxHeight: '200px'
+      maxHeight: "200px",
     }),
-    option: (provided: any, state: any) => ({
+    option: (provided: any) => ({
       ...provided,
-      padding: '8px 12px',
-      fontSize: '14px',
-      '&:hover': {
-        backgroundColor: '#f1f5f9'
-      }
+      padding: "8px 12px",
+      fontSize: "14px",
+      "&:hover": {
+        backgroundColor: "#f1f5f9",
+      },
     }),
     singleValue: (provided: any) => ({
       ...provided,
-      fontSize: '14px'
+      fontSize: "14px",
     }),
     placeholder: (provided: any) => ({
       ...provided,
-      fontSize: '14px',
-      color: '#94a3b8'
-    })
+      fontSize: "14px",
+      color: "#94a3b8",
+    }),
   };
 
   return (
@@ -113,7 +115,7 @@ const CountryPicker = ({
         placeholder="Select country"
         components={{
           Option: CustomOption,
-          SingleValue: CustomSingleValue
+          SingleValue: CustomSingleValue,
         }}
         styles={customStyles}
         classNamePrefix="country-picker"
@@ -125,4 +127,3 @@ const CountryPicker = ({
 };
 
 export default CountryPicker;
-
