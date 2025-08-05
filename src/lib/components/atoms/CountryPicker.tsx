@@ -17,7 +17,7 @@ const CustomOption = (props: any) => {
     <components.Option {...props}>
       <div className="flex items-center gap-2">
         {FlagComponent && (
-          <div className="w-6 h-4 flex-shrink-0">
+<div className="w-5 h-3.5 flex-shrink-0">
             <FlagComponent className="w-full h-full object-cover" />
           </div>
         )}
@@ -35,13 +35,13 @@ const CustomSingleValue = (props: any) => {
   const FlagComponent = (Flags as any)[props.data.code];
   return (
     <components.SingleValue {...props}>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         {FlagComponent && (
-          <div className="w-6 h-4 flex-shrink-0">
+          <div className="w-4 h-3 flex-shrink-0">
             <FlagComponent className="w-full h-full object-cover" />
           </div>
         )}
-        <span className="text-sm font-medium">{props.data.phoneCode}</span>
+<span className="text-xs font-medium">{props.data.phoneCode}</span>
       </div>
     </components.SingleValue>
   );
@@ -64,10 +64,12 @@ const CountryPicker = ({
   const customStyles = {
     control: (provided: any) => ({
       ...provided,
-      minHeight: "42px",
+      minHeight: "40px",
       border: "1px solid #e2e8f0",
       borderRadius: "8px",
       backgroundColor: "#f8fafc",
+      paddingLeft: "4px",
+      paddingRight: "4px",
       "&:hover": {
         borderColor: "#94a3b8",
       },
@@ -106,7 +108,7 @@ const CountryPicker = ({
   };
 
   return (
-    <div className="min-w-[200px]">
+    <div className="min-w-[100px] max-w-[120px]">
       <Select
         options={options}
         value={value}

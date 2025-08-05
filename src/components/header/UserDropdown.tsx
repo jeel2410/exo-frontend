@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Dropdown } from "../../lib/components/atoms/Dropdown";
 import { DropdownItem } from "../../lib/components/atoms/DropdownItem";
 import { useNavigate } from "react-router";
 import { useModal } from "../../hooks/useModal";
 import LogoutModal from "../modal/LogoutModal";
-import localStorageService from "../../services/local.service";
 import Avatar from "../common/Avatar";
 import { useTranslation } from "react-i18next";
+import { useUser } from "../../hooks/useUser";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [userData, setUserData] = useState<any | undefined>();
+  const { userData } = useUser();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -20,15 +20,6 @@ export default function UserDropdown() {
     closeModal: closeLogoutModal,
   } = useModal();
 
-  useEffect(() => {
-    try {
-      const userRaw = localStorageService.getUser();
-      const user = typeof userRaw === "string" ? JSON.parse(userRaw) : userRaw;
-      setUserData(user || null);
-    } catch (error) {
-      console.error("Failed to parse user data from localStorage", error);
-    }
-  }, []);
 
   function toggleDropdown() {
     setIsOpen(!isOpen);

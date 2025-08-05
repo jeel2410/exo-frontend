@@ -248,7 +248,10 @@ const RequestTable = ({
                         </div>
                       ) : (
                         <span className="block font-medium text-secondary-100 text-sm">
-                          {Number(data.amount).toLocaleString()}
+                          {(() => {
+                            const amount = parseFloat(data.amount || "0");
+                            return isNaN(amount) ? "0" : amount.toLocaleString();
+                          })()}
                         </span>
                       )}
                     </TableCell>

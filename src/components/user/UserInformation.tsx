@@ -105,24 +105,35 @@ const UserInformation = ({
     values: FormValues,
     { setSubmitting }: FormikHelpers<FormValues>
   ) => {
-    console.log(file, "file");
+    console.log("Form values:", values);
+    console.log("File:", file);
 
     try {
       const formData = new FormData();
 
-      // Append form data
-      Object.entries(values).forEach(([key, value]) => {
-        console.log(key, value, "key and value");
+      // Add _method first (some backends require this to be first)
+      formData.append("_method", "PUT");
 
-        formData.append(key, value as string);
-        // if (key !== "profile_image" && value !== undefined && value !== null) {
-        // }
+      // Append all form data (including empty fields)
+      Object.entries(values).forEach(([key, value]) => {
+        const stringValue = value !== undefined && value !== null ? String(value) : "";
+        console.log(`Appending ${key}:`, stringValue);
+        formData.append(key, stringValue);
       });
-      formData.append("profile_image", file);
-      console.log(formData, "FormData before submission");
+
+      // Append image if available
+      if (file) {
+        console.log("Appending profile_image:", file.name, file.type, file.size);
+        formData.append("profile_image", file);
+      }
+
+      // Debug: Log all FormData entries
+      console.log("FormData entries:");
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
 
       await updateProfileMutation.mutateAsync(formData);
-      console.log("FormData submitted:", formData);
     } catch (err) {
       console.error("Update failed:", err);
     } finally {

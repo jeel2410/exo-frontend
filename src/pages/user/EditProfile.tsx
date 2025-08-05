@@ -16,26 +16,11 @@ import UserInformation from "../../components/user/UserInformation";
 import Security from "../../components/user/Security";
 import LogoutModal from "../../components/modal/LogoutModal";
 import { useModal } from "../../hooks/useModal";
-// import { useQuery, useMutation } from "@tanstack/react-query";
-import localStorageService from "../../services/local.service";
-// import authService from "../../services/auth.service";
+import { useQuery } from "@tanstack/react-query";
+import authService from "../../services/auth.service";
 import { useLoading } from "../../context/LoaderProvider";
 import { toast } from "react-toastify";
-
-// Define proper types for user data
-interface UserData {
-  id?: string | number;
-  token: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  company_name?: string;
-  profile_picture?: string;
-  profile_image?: string;
-  country_code?: string;
-  mobile?: string;
-  type?: string;
-}
+import { useUser } from "../../hooks/useUser";
 
 // interface ProfileData {
 //   data: {
@@ -52,57 +37,56 @@ const EditProfile = () => {
     "info"
   );
   const { setLoading } = useLoading();
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const { userData, updateUserData } = useUser();
   // const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const userRaw = localStorageService.getUser();
-      const user = typeof userRaw === "string" ? JSON.parse(userRaw) : userRaw;
-      setUserData(user || null);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to parse user data from localStorage", error);
-    }
+    setLoading(false);
   }, [setLoading]);
 
-  // const isTokenAvailable = !!userData?.token;
+  // Cleanup image preview URL when component unmounts or image changes
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
-  // const { refetch } = useQuery({
-  //   queryKey: ["userProfile", userData?.token],
-  //   enabled: isTokenAvailable,
-  //   queryFn: async () => {
-  //     setLoading(true);
-  //     const res = await authService.getProfile();
-  //     console.log(res.data.data, "userProfileData");
-  //     setLoading(false);
-  //     setUserData((prev: UserData | null) => {
-  //       if (!prev) return prev;
-  //       return {
-  //         ...prev,
-  //         first_name: res.data.data.first_name,
-  //         last_name: res.data.data.last_name,
-  //         company_name: res.data.data.company_name,
-  //         profile_picture: res.data.data.profile_picture,
-  //         profile_image: res.data.data.profile_image,
-  //         mobile: res.data.data.mobile,
-  //       };
-  //     });
-  //     localStorageService.setUser(
-  //       JSON.stringify({
-  //         ...userData,
-  //         first_name: res.data.data.first_name,
-  //         last_name: res.data.data.last_name,
-  //         company_name: res.data.data.company_name,
-  //         profile_picture: res.data.data.profile_picture,
-  //         profile_image: res.data.data.profile_image,
-  //         mobile: res.data.data.mobile,
-  //       })
-  //     );
-  //     return res.data as ProfileData;
-  //   },
-  // });
+  const isTokenAvailable = !!userData?.token;
+
+  const { refetch } = useQuery({
+    queryKey: ["userProfile", userData?.token],
+    enabled: isTokenAvailable,
+    queryFn: async () => {
+      setLoading(true);
+      const res = await authService.getProfile();
+      console.log(res.data.data, "userProfileData");
+      setLoading(false);
+
+      // Update user data using the hook
+      updateUserData({
+        first_name: res.data.data.first_name,
+        last_name: res.data.data.last_name,
+        company_name: res.data.data.company_name,
+        profile_picture: res.data.data.profile_picture,
+        profile_image: res.data.data.profile_image,
+        mobile: res.data.data.mobile,
+        country_code: res.data.data.country_code,
+      });
+
+      // Clear image preview after successful update
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+        setImagePreview(null);
+        setFile(null);
+      }
+
+      return res.data;
+    },
+  });
 
   // Profile picture upload mutation
   // const uploadProfilePictureMutation = useMutation({
@@ -150,9 +134,15 @@ const EditProfile = () => {
       return;
     }
 
-    // setIsUploadingImage(true);
+    // Clean up previous preview URL if it exists
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    // Create new preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
     setFile(file);
-    // uploadProfilePictureMutation.mutate(file);
   };
 
   const {
@@ -163,12 +153,8 @@ const EditProfile = () => {
 
   const handelSetUser = (data: { email: string }): void => {
     if (data) {
-      setUserData((prev: UserData | null) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          email: data.email,
-        };
+      updateUserData({
+        email: data.email,
       });
     }
   };
@@ -195,7 +181,11 @@ const EditProfile = () => {
                 firstName: userData.first_name || "",
                 lastName: userData.last_name || "",
               }}
-              imageUrl={userData.profile_image || userData.profile_picture}
+              imageUrl={
+                imagePreview ||
+                userData.profile_image ||
+                userData.profile_picture
+              }
               onImageUpload={handleImageUpload}
               // isUploading={isUploadingImage}
             />
@@ -245,7 +235,11 @@ const EditProfile = () => {
           {userData && (
             <>
               {isActiveButton === "info" ? (
-                <UserInformation userData={userData as any} file={file} />
+                <UserInformation
+                  userData={userData as any}
+                  file={file}
+                  onProfileUpdate={() => refetch()}
+                />
               ) : (
                 <Security
                   userData={userData as any}

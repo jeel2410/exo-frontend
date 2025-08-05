@@ -43,7 +43,12 @@ interface ContractProps {
 interface RequestApiData {
   id: string;
   request_unique_number?: string;
+  amount?: string;
   total_amount?: string;
+  entities?: Array<{
+    total?: string;
+    [key: string]: any;
+  }>;
   created_at?: string;
   current_status?: string;
   // add other fields as needed
@@ -606,21 +611,29 @@ const ContractDetails = () => {
               <RequestTable
                 data={
                   Array.isArray(requestsData)
-                    ? (requestsData as RequestApiData[]).map((req, idx) => ({
-                        id: idx + 1,
-                        requestNo: req.request_unique_number
-                          ? String(req.request_unique_number)
-                          : String(idx + 1),
-                        amount: req.total_amount
-                          ? String(req.total_amount)
-                          : "0",
-                        createdDate: req.created_at
-                          ? moment(req.created_at).format("YYYY-MM-DD")
-                          : "",
-                        status: req.current_status || "",
-                        request_id: req.id || "",
-                        contract_id: contractData?.id || "",
-                      }))
+                    ? (requestsData as RequestApiData[]).map((req, idx) => {
+                        console.log('Debug - Request data:', req);
+                        console.log('Debug - entities:', req.entities);
+                        console.log('Debug - entities[0]?.total:', req.entities?.[0]?.total);
+                        console.log('Debug - total_amount:', req.total_amount);
+                        console.log('Debug - amount:', req.amount);
+                        // Get the correct amount from entities[0].total first, then fallback to other fields
+                        const finalAmount = req.entities?.[0]?.total || req.total_amount || req.amount || "0";
+                        console.log('Debug - final amount:', finalAmount);
+                        return {
+                          id: idx + 1,
+                          requestNo: req.request_unique_number
+                            ? String(req.request_unique_number)
+                            : String(idx + 1),
+                          amount: finalAmount,
+                          createdDate: req.created_at
+                            ? moment(req.created_at).format("YYYY-MM-DD")
+                            : "",
+                          status: req.current_status || "",
+                          request_id: req.id || "",
+                          contract_id: contractData?.id || "",
+                        };
+                      })
                     : []
                 }
               />

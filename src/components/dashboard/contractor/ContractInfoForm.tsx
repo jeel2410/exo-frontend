@@ -72,12 +72,17 @@ const ContractInfoForm = ({
     organization: Yup.string().required(t("organization_required")),
     amount: Yup.string()
       .required(t("amount_required"))
+      .test("is-positive-number", t("amount_must_be_positive"), (value) => {
+        if (!value) return false;
+        const num = parseFloat(value.replace(/,/g, ""));
+        return !isNaN(num) && num > 0;
+      })
       .test(
         "amount-less-than-project",
         t("contract_amount_exceeds_project"),
         (value) => {
           if (!projectAmount || !value) return true;
-          const contractAmount = parseFloat(value);
+          const contractAmount = parseFloat(value.replace(/,/g, ""));
           const projAmount = parseFloat(projectAmount);
           return (
             !isNaN(contractAmount) &&

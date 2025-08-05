@@ -19,8 +19,12 @@ const AppSidebar: React.FC = () => {
 
   const navItems: NavItem[] = [
   {
-    name: "Dashboard",
-    path: getRoute("dashboard"),
+    name: "Requests",
+    path: "/requests",
+  },
+  {
+    name: "Contracts",
+    path: "/contract",
   },
   {
     name: "Help",

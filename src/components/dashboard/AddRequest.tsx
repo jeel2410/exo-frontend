@@ -151,7 +151,6 @@ const AddRequest = () => {
       taxRate: 0,
       taxAmount: 0,
       vatIncluded: 0,
-      financialAuthority: "DGDA",
       customDuty: "",
     };
     setData(recalculateTableData([...data, newOrder]));

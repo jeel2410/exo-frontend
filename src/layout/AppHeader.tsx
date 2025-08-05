@@ -54,13 +54,24 @@ const AppHeader: React.FC = () => {
             <Button
               variant="outline"
               className={`border-none text-nowrap text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 ${
-                pathname === "/project-dashboard"
+                pathname === "/requests"
                   ? "hover:bg-primary-10"
                   : "hover:text-primary-150"
               } hover:bg-primary-10 rounded-lg`}
-              onClick={() => navigate(getRoute("dashboard"))}
+              onClick={() => navigate("/requests")}
             >
-              {t("dashboard")}
+              {t("requests")}
+            </Button>
+            <Button
+              variant="outline"
+              className={`border-none text-nowrap text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 ${
+                pathname === "/contract"
+                  ? "hover:bg-primary-10"
+                  : "hover:text-primary-150"
+              } hover:bg-primary-10 rounded-lg`}
+              onClick={() => navigate("/contract")}
+            >
+              {t("contracts")}
             </Button>
             <Button
               variant="outline"

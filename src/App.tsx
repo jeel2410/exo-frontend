@@ -27,6 +27,8 @@ import ContractListPage from "./pages/Dashboard/contractor/ContractListPage";
 import ContractProjectListPage from "./pages/Dashboard/contractor/ContractProjectListPage";
 import ContractCreatePage from "./pages/Dashboard/contractor/ContractCreatePage";
 import AddRequestPage from "./pages/Dashboard/contractor/AddRequestPage";
+import RequestListPage from "./pages/Dashboard/contractor/RequestListPage";
+import SelectContractPage from "./pages/Dashboard/contractor/SelectContractPage";
 
 export default function App() {
   const queryClient = new QueryClient();
@@ -185,6 +187,22 @@ export default function App() {
                 </RoleBasedRoute>
               }
             />
+            <Route
+              path="/requests"
+              element={
+                <RoleBasedRoute allowedRoles={["user"]}>
+                  <RequestListPage />
+                </RoleBasedRoute>
+              }
+            />
+            <Route
+              path="/select-contract"
+              element={
+                <RoleBasedRoute allowedRoles={["user"]}>
+                  <SelectContractPage />
+                </RoleBasedRoute>
+              }
+            />
 
             {/* User Routes (Regular Users) */}
             <Route
@@ -192,6 +210,16 @@ export default function App() {
               element={
                 <RoleBasedRoute allowedRoles={["project_manager"]}>
                   <Home />
+                </RoleBasedRoute>
+              }
+            />
+            
+            {/* Default route for users */}
+            <Route
+              path="/"
+              element={
+                <RoleBasedRoute allowedRoles={["user"]}>
+                  <RequestListPage />
                 </RoleBasedRoute>
               }
             />

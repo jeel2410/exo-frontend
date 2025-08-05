@@ -10,7 +10,7 @@ type RoleBasedPathMap = Partial<Record<UserRole, string>> & {
 const roleBasedRoutes: Record<RouteKey, RoleBasedPathMap> = {
   dashboard: {
     project_manager: "/project-dashboard",
-    user: "/contract",
+    user: "/requests",
     default: "/sign-in",
   },
   projectList: {

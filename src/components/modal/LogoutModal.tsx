@@ -9,22 +9,11 @@ import localStorageService from "../../services/local.service";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
-interface UserData {
-  id: number;
-  first_name: string;
-  last_name: string;
-  company_name: string;
-  country_code: string;
-  mobile: string;
-  email: string;
-  profile_image: string;
-  type: string;
-  token: string;
-}
+import { UserData } from "../../hooks/useUser";
 interface ChangeEmailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userData?: UserData;
+  userData: UserData | null;
 }
 
 const LogoutModal = ({ isOpen, onClose, userData }: ChangeEmailModalProps) => {

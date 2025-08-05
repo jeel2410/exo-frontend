@@ -36,7 +36,6 @@ interface AddressData {
 }
 
 interface Entity {
-  financial_authority: string;
   label: string;
   quantity: number;
   status: string;
@@ -45,6 +44,7 @@ interface Entity {
   total: number;
   unit_price: number;
   vat_included: number;
+  custom_duties?: string;
 }
 
 interface CreateRequestPayload {
@@ -54,6 +54,7 @@ interface CreateRequestPayload {
   request_letter: string;
   document_ids?: string;
   request_entity: string; // must be stringified JSON
+  tax_category: string; // separate field outside entity JSON
   request_id?: string;
 }
 
@@ -199,7 +200,6 @@ const AddRequest = () => {
       taxRate: 0,
       taxAmount: 0,
       vatIncluded: 0,
-      financialAuthority: financialAuthority,
       customDuty: "",
     };
     setData(recalculateTableData([...data, newOrder]));
@@ -216,13 +216,10 @@ const AddRequest = () => {
       taxRate: entity.tax_rate,
       taxAmount: entity.tax_amount,
       vatIncluded: entity.vat_included,
-      financialAuthority: entity.financial_authority,
+      customDuty: entity.custom_duties || "",
     }));
-    setFinancialAuthority(
-      entitys.length !== 0
-        ? entitys[0]?.financial_authority
-        : "location_acquisition"
-    );
+    // Note: For editing existing requests, tax_category will be fetched separately
+    // and the financialAuthority state will be updated accordingly
     setData(recalculateTableData([...data, ...newOrder]));
   };
 
@@ -354,9 +351,10 @@ const AddRequest = () => {
           tax_rate: d.taxRate.toString(),
           tax_amount: d.taxAmount.toString(),
           vat_included: d.vatIncluded.toString(),
-          financial_authority: financialAuthority,
+          custom_duties: d.customDuty || "",
         }))
       ),
+      tax_category: financialAuthority, // separate field outside entity JSON
       ...(requestId && { request_id: requestId }),
       contract_id: contractId || "",
     };
@@ -470,12 +468,19 @@ const AddRequest = () => {
   const getRequestData = async (requestId: string) => {
     const response = await requestMutaion.mutateAsync(requestId);
     if (response.status === 200) {
-      const { project_id, request_letter, entities, address, files } =
-        response.data;
+      const {
+        project_id,
+        request_letter,
+        entities,
+        address,
+        files,
+        tax_category,
+      } = response.data;
 
       updateEntitys(entities);
       setProjectId(project_id);
       setRequestLetter(request_letter);
+      setFinancialAuthority(tax_category);
 
       // Handle existing documents
       if (files && files.length > 0) {

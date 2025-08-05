@@ -81,13 +81,11 @@ export interface Order {
   taxRate: number;
   taxAmount: number;
   vatIncluded: number;
-  financialAuthority: string;
   customDuty?: string;
   unit_price?: number;
   tax_rate?: number;
   tax_amount?: number;
   vat_included?: number;
-  financial_authority?: string;
   custom_duty?: string;
 }
 
@@ -162,7 +160,7 @@ const CreateRequestTable = ({
     setTableData((prev) =>
       prev.map((order) => {
         if (order.id === orderId) {
-          const newQuantity = Math.min(order.quantity + 1, 7);
+          const newQuantity = Math.min(order.quantity + 1, 100);
           const total = newQuantity * order.unitPrice;
           const taxAmount = total * (order.taxRate / 100);
           const vatIncluded = total + taxAmount;
@@ -180,7 +178,7 @@ const CreateRequestTable = ({
 
     if (editingId === orderId) {
       setEditFormData((prev) => {
-        const newQuantity = Math.min((prev.quantity || 1) + 1, 7);
+        const newQuantity = Math.min((prev.quantity || 1) + 1, 100);
         const { total, taxAmount, vatIncluded } = calculateTaxAndVat({
           ...prev,
           quantity: newQuantity,
@@ -248,7 +246,7 @@ const CreateRequestTable = ({
     // Validation: Check if all required fields are filled
     const isLabelValid = editFormData.label && editFormData.label.trim() !== "";
     const isQuantityValid = editFormData.quantity && editFormData.quantity > 0;
-    const isUnitPriceValid = editFormData.unitPrice !== undefined && editFormData.unitPrice >= 0;
+    const isUnitPriceValid = editFormData.unitPrice !== undefined && editFormData.unitPrice > 0;
     const isTaxRateValid = editFormData.taxRate !== undefined && editFormData.taxRate >= 0;
     const isCustomDutyValid = editFormData.customDuty && editFormData.customDuty.trim() !== "";
 
@@ -261,7 +259,7 @@ const CreateRequestTable = ({
       return;
     }
     if (!isUnitPriceValid) {
-      alert("Unit Price is required and must be 0 or greater.");
+      alert("Unit Price is required and must be greater than 0.");
       return;
     }
     if (!isTaxRateValid) {
@@ -287,8 +285,6 @@ const CreateRequestTable = ({
             taxRate: editFormData.taxRate ?? order.taxRate,
             taxAmount,
             vatIncluded,
-            financialAuthority:
-              editFormData.financialAuthority || order.financialAuthority,
             customDuty: editFormData.customDuty || order.customDuty,
           };
         }
@@ -461,14 +457,6 @@ const CreateRequestTable = ({
       content: <div>Custom Duties</div>,
       className: "w-32",
     },
-    ...(!showActions
-      ? [
-          {
-            content: <div>Financial Authority</div>,
-            className: "min-w-[140px]",
-          },
-        ]
-      : []),
     ...(showActions
       ? [
           {
@@ -694,33 +682,6 @@ const CreateRequestTable = ({
                     </span>
                   )}
                 </TableCell>
-                {!showActions && (
-                  <TableCell className="px-5 py-4 sm:px-6">
-                    {editingId === order.id ? (
-                      <div className="flex flex-col gap-1">
-                        <select
-                          value={editFormData.financialAuthority ?? ""}
-                          onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                            handleInputChange(
-                              "financialAuthority",
-                              e.target.value
-                            )
-                          }
-                          className="px-2 py-1 text-sm border border-gray-300 rounded-md bg-white"
-                          aria-label="Financial Authority"
-                        >
-                          <option value="DGDA">DGDA</option>
-                          <option value="DGI">DGI</option>
-                          <option value="DGRAD">DGRAD</option>
-                        </select>
-                      </div>
-                    ) : (
-                      <span className="block font-medium text-secondary-100 text-sm">
-                        {order.financialAuthority || order.financial_authority}
-                      </span>
-                    )}
-                  </TableCell>
-                )}
                 {showActions && (
                   <TableCell className="px-4 py-3 text-gray-500 text-sm">
                     {editingId === order.id ? (
