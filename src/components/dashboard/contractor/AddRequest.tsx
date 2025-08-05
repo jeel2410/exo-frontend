@@ -677,14 +677,14 @@ const AddRequest = () => {
             onClick={handleAddEntity}
           >
             <WhitePlusIcon />
-            <Typography>{t("add_entity")}</Typography>
+            <Typography>{t("add_item")}</Typography>
           </Button>
         </div>
 
         {/* Entity Section */}
         <div>
           <Typography size="base" weight="normal" className="text-secondary-60">
-            {t("entity")}
+            {t("items")}
           </Typography>
 
           {/* Dashboard Cards */}
@@ -692,7 +692,7 @@ const AddRequest = () => {
             <DashBoardCard
               icon={<FileVioletIcon width={44} height={44} />}
               count={totals.totalEntity}
-              title={t("total_entity")}
+              title={t("total_items")}
             />
             <DashBoardCard
               icon={<UsdGreenIcon width={44} height={44} />}

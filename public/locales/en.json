@@ -277,13 +277,13 @@
   "place_required": "Place is required",
   "date_required": "Date is required",
   "contract_amount_exceeds_project": "Contract amount cannot exceed the project amount.",
-  "amount_by_contract":"Amount by Contract",
-  "date_created":"Date Created",
-  "no_of_request":"No of Request",
-  "amount_of_contract":"Amount of Contract",
-  "number_of_equests":"Number of Requests",
-  "actions":"Actions",
-  "profile_updated_successfully":"profile_updated_successfully",
+  "amount_by_contract": "Amount by Contract",
+  "date_created": "Date Created",
+  "no_of_request": "No of Request",
+  "amount_of_contract": "Amount of Contract",
+  "number_of_equests": "Number of Requests",
+  "actions": "Actions",
+  "profile_updated_successfully": "profile_updated_successfully",
   "project_id": "Project ID",
   "funded_by": "Funded By",
   "currency": "Currency",
@@ -294,5 +294,6 @@
   "uploaded_files": "Uploaded Files:",
   "at_least_three_mandatory_files_required": "At least three mandatory files are required.",
   "created_date": "Created Date",
-  "contract_archived_success":"Contract archived successfully"
+  "contract_archived_success": "Contract archived successfully",
+  "select_contract": "Select Contract"
 }
