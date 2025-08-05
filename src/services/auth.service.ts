@@ -2,10 +2,12 @@ import { ApiRoutes } from "../utils/constant/apiRoutes";
 import ApiBaseService from "./apibase.service";
 
 class AuthService extends ApiBaseService {
-  async sendOtp(email: string) {
-    return await this.guestRequest.post(ApiRoutes.SEND_OTP, {
-      email,
-    });
+  async sendOtp(email: string, mobile?: string) {
+    const payload: { email: string; mobile?: string } = { email };
+    if (mobile) {
+      payload.mobile = mobile;
+    }
+    return await this.guestRequest.post(ApiRoutes.SEND_OTP, payload);
   }
   async signUp(data: any) {
     return await this.guestRequest.post(ApiRoutes.SIGN_UP, data);

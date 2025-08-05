@@ -82,8 +82,9 @@ const SignUpForm = () => {
       .required(t("confirm_password_required")),
   });
   const sendOtpMutation = useMutation({
-    mutationFn: async (email: string) => {
-      await authService.sendOtp(email);
+    mutationFn: async (data: { email: string; mobile: string; country_code: string }) => {
+      const mobileWithCountryCode = data.country_code + data.mobile;
+      await authService.sendOtp(data.email, mobileWithCountryCode);
     },
     onSuccess: () => {
       toast.success(t("otp_sent_successfully"));
@@ -112,7 +113,7 @@ const SignUpForm = () => {
     onSubmit: async (values) => {
       localStorageService.setUser(JSON.stringify(values));
       localStorageService.setPath("sign-up");
-      await sendOtpMutation.mutateAsync(values.email);
+      await sendOtpMutation.mutateAsync({ email: values.email, mobile: values.mobile, country_code: values.country_code });
       // toast.success(t("account_created_successfully"), {
       //   autoClose: 800,
       // });
