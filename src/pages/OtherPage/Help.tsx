@@ -10,7 +10,7 @@ import TextArea from "../../lib/components/atoms/TextArea";
 import Button from "../../lib/components/atoms/Button";
 import faqService from "../../services/faq.service";
 import contactService from "../../services/contact.service";
-import Loader from "../../components/common/Loader";
+import { useLoading, LoaderProvider } from "../../context/LoaderProvider";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
@@ -23,7 +23,7 @@ const Help = () => {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const { t, i18n } = useTranslation();
   const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { setLoading } = useLoading();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
@@ -101,10 +101,6 @@ const Help = () => {
   const toggleQuestion = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
-
-  if (loading) {
-    return <Loader />;
-  }
 
   return (
     <AppLayout>
@@ -301,4 +297,10 @@ const Help = () => {
   );
 };
 
-export default Help;
+const HelpWithLoader = () => (
+  <LoaderProvider>
+    <Help />
+  </LoaderProvider>
+);
+
+export default HelpWithLoader;
