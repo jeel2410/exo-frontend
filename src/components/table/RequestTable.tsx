@@ -19,6 +19,7 @@ export interface Data {
   amount: string;
   createdDate: string;
   status: string;
+  sub_status?: string;
   request_id: string;
   contract_id: string;
 }
@@ -164,7 +165,11 @@ const RequestTable = ({
       className: "w-28",
     },
     {
-      content: <div>status</div>,
+      content: <div>Stage</div>,
+      className: "w-24",
+    },
+    {
+      content: <div>Status</div>,
       className: "w-24",
     },
     {
@@ -300,12 +305,50 @@ const RequestTable = ({
                               ? "bg-green-100 text-green-700"
                               : data.status === "error"
                               ? "bg-red-100 text-red-700"
-                              : "bg-[#FFF5CF] text-[#E0A100]" // pending
+                              : "bg-blue-100 text-blue-700" // light blue instead of orange
                           }`}
                         >
                           <Typography size="sm" weight="semibold">
                             {data.status.charAt(0).toUpperCase() +
                               data.status.slice(1)}
+                          </Typography>
+                        </div>
+                      )}
+                    </TableCell>
+
+                    <TableCell className="px-5 py-4 sm:px-6">
+                      {editingId === data.id ? (
+                        <div className="flex flex-col gap-1">
+                          <input
+                            type="text"
+                            value={editFormData.sub_status ?? ""}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              handleInputChange("sub_status", e.target.value)
+                            }
+                            className="block w-full px-2 py-1 text-sm rounded-md bg-secondary-10 focus:border focus:outline-none border-secondary-30"
+                            placeholder="Add Status"
+                            aria-label="Status"
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          className={`w-fit cursor-pointer px-4 py-1.5 rounded-sm min-w-[89px] text-center ${
+                            (data.sub_status || '').toLowerCase().replace('_', ' ') === "in progress"
+                              ? "bg-blue-500 text-white"
+                              : (data.sub_status || '').toLowerCase() === "approved" || (data.sub_status || '').toLowerCase() === "completed"
+                              ? "bg-green-500 text-white"
+                              : (data.sub_status || '').toLowerCase() === "hold"
+                              ? "bg-orange-500 text-white"
+                              : (data.sub_status || '').toLowerCase() === "rejected"
+                              ? "bg-red-500 text-white"
+                              : "bg-gray-500 text-white" // default
+                          }`}
+                        >
+                          <Typography size="sm" weight="semibold">
+                            {data.sub_status ? 
+                              data.sub_status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                              : '-'
+                            }
                           </Typography>
                         </div>
                       )}

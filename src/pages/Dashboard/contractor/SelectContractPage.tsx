@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import AppLayout from "../../../layout/AppLayout";
 import { motion } from "framer-motion";
 import Typography from "../../../lib/components/atoms/Typography";
+import Button from "../../../lib/components/atoms/Button";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import { useLoading } from "../../../context/LoaderProvider";
 import contractService from "../../../services/contract.service";
 import { ContractDetails } from "./ContractListPage";
 import SelectContractTable from "../../../components/table/SelectContractTable";
+import { WhitePlusIcon } from "../../../icons";
 
 const SelectContractPage = () => {
   const [contracts, setContracts] = useState<ContractDetails[]>([]);
@@ -37,6 +39,10 @@ const SelectContractPage = () => {
     navigate(`/add-request/${projectId}/${contractId}`);
   };
 
+  const handleAddContract = () => {
+    navigate("/contract-project-list");
+  };
+
   return (
     <AppLayout>
       <div className="relative">
@@ -53,6 +59,28 @@ const SelectContractPage = () => {
           >
             {t("select_contract")}
           </Typography>
+          
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="w-full sm:w-auto"
+          >
+            <Button
+              variant="primary"
+              className="flex items-center justify-center w-full sm:w-fit gap-2 py-2.5 px-4"
+              onClick={handleAddContract}
+            >
+              <WhitePlusIcon
+                width={12}
+                height={12}
+                className="sm:w-[13px] sm:h-[13px]"
+              />
+              <Typography size="sm" className="sm:text-base">
+                {t("add_contract")}
+              </Typography>
+            </Button>
+          </motion.div>
         </motion.div>
 
         <motion.div className="px-4 sm:px-0">

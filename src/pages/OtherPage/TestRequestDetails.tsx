@@ -26,6 +26,7 @@ import { transformTracksToHistory, TrackItem } from "../../utils/historyUtils";
 import { HistoryItem } from "../../components/dashboard/History";
 import { useRoleRoute } from "../../hooks/useRoleRoute";
 import Breadcrumbs from "../../components/common/Breadcrumbs";
+import CreateRequestTable from "../../components/table/CreateRequestTable.tsx";
 interface UserData {
   id: number;
   first_name: string;
@@ -246,13 +247,6 @@ const TestRequestDetails = () => {
                       >
                         {t("request_details")}
                       </Typography>
-                      <Button
-                        variant="outline"
-                        className="px-4 py-2 w-fit"
-                        onClick={openRequestDetails}
-                      >
-                        {t("view_more")}
-                      </Button>
                     </div>
                   </div>
 
@@ -367,6 +361,36 @@ const TestRequestDetails = () => {
                             })}
                         </div>
                       </div>
+                    </div>
+                  </div>
+                  
+                  {/* Request Letter Section */}
+                  <div className="px-4 md:px-6 py-5 border-t border-gray-100">
+                    <Typography
+                      size="base"
+                      weight="semibold"
+                      className="text-secondary-100 mb-4"
+                    >
+                      {t("request_latter")}
+                    </Typography>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <Typography size="sm" weight="normal" className="text-secondary-60">
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: requestData.request_letter,
+                          }}
+                        ></div>
+                      </Typography>
+                    </div>
+                  </div>
+                  
+                  {/* Entity Table Section */}
+                  <div className="px-4 md:px-6 py-5 border-t border-gray-100">
+                    <div className="overflow-x-auto">
+                      <CreateRequestTable
+                        data={requestData.entities}
+                        showActions={false}
+                      />
                     </div>
                   </div>
                 </div>

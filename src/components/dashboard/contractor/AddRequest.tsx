@@ -280,9 +280,17 @@ const AddRequest = () => {
         }
       );
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast.success(t("request_updated_successfully"));
-      navigate("/contract-project-list");
+      
+      // Extract request ID from response and redirect to request details
+      const requestId = response?.data?.data?.id || response?.data?.data?.request_id;
+      if (requestId) {
+        navigate(`/request-details/${requestId}`);
+      } else {
+        // Fallback to contract project list if no request ID
+        navigate("/contract-project-list");
+      }
     },
     onError: (error: unknown) => {
       const errorMessage =

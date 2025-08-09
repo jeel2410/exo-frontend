@@ -25,6 +25,7 @@ export interface RequestData {
   amount: string;
   createdDate: string;
   status: string;
+  sub_status?: string;
   request_id: string;
   contract_id: string;
 }
@@ -39,6 +40,7 @@ export interface RequestDetails {
   currency: string;
   status: string;
   current_status: string;
+  sub_status?: string;
   created_at: string;
   entities?: Array<{
     total?: string;
@@ -97,6 +99,7 @@ const RequestListPage = () => {
             amount: finalAmount,
             createdDate: moment(request.created_at).format("YYYY/MM/DD"),
             status: request.current_status || request.status,
+            sub_status: request.sub_status,
             request_id: request.id,
             contract_id: request.contract_id,
           };
