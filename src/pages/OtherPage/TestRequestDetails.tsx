@@ -8,7 +8,6 @@ import {
   UsdVioletIcon,
 } from "../../icons";
 import AppLayout from "../../layout/AppLayout";
-import Button from "../../lib/components/atoms/Button";
 import Typography from "../../lib/components/atoms/Typography";
 import DashBoardCard from "../../lib/components/molecules/DashBoardCard";
 import { useQuery } from "@tanstack/react-query";
@@ -139,7 +138,7 @@ const TestRequestDetails = () => {
   const {
     isOpen: isOpenRequestDetails,
     closeModal: closeRequestDetails,
-    openModal: openRequestDetails,
+    // openModal: openRequestDetails,
   } = useModal();
 
   const { t } = useTranslation();
@@ -363,7 +362,7 @@ const TestRequestDetails = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Request Letter Section */}
                   <div className="px-4 md:px-6 py-5 border-t border-gray-100">
                     <Typography
@@ -374,7 +373,11 @@ const TestRequestDetails = () => {
                       {t("request_latter")}
                     </Typography>
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <Typography size="sm" weight="normal" className="text-secondary-60">
+                      <Typography
+                        size="sm"
+                        weight="normal"
+                        className="text-secondary-60"
+                      >
                         <div
                           dangerouslySetInnerHTML={{
                             __html: requestData.request_letter,
@@ -383,12 +386,27 @@ const TestRequestDetails = () => {
                       </Typography>
                     </div>
                   </div>
-                  
+
                   {/* Entity Table Section */}
                   <div className="px-4 md:px-6 py-5 border-t border-gray-100">
                     <div className="overflow-x-auto">
                       <CreateRequestTable
-                        data={requestData.entities}
+                        data={
+                          requestData.entities?.map((entity, index) => ({
+                            id: index + 1,
+                            label: entity.label,
+                            quantity: entity.quantity,
+                            unitPrice: entity.unit_price,
+                            unit_price: entity.unit_price,
+                            total: entity.total,
+                            taxRate: entity.tax_rate,
+                            tax_rate: entity.tax_rate,
+                            taxAmount: entity.tax_amount,
+                            tax_amount: entity.tax_amount,
+                            vatIncluded: entity.vat_included,
+                            vat_included: entity.vat_included,
+                          })) || []
+                        }
                         showActions={false}
                       />
                     </div>
