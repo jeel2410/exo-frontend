@@ -34,7 +34,7 @@ const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({
     if (user.type === "project_manager") {
       redirectPath = "/project-dashboard";
     } else {
-      redirectPath = "/contract";
+      redirectPath = "/requests";
     }
 
     return <Navigate to={redirectPath} replace />;

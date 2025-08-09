@@ -26,6 +26,7 @@ import { HistoryItem } from "../../components/dashboard/History";
 import { useRoleRoute } from "../../hooks/useRoleRoute";
 import Breadcrumbs from "../../components/common/Breadcrumbs";
 import CreateRequestTable from "../../components/table/CreateRequestTable.tsx";
+import { RequestDetailsSkeleton } from "../../components/common/skeletons";
 interface UserData {
   id: number;
   first_name: string;
@@ -163,15 +164,19 @@ const TestRequestDetails = () => {
       const newSteps: ProgressStep[] = steps.map((step, index) => {
         let status: ProgressStep["status"];
 
-        // Check if this step is completed (track exists and not rejected)
-        if (index < trackLength) {
-          const currentTrack = tracks[index];
+        // Application Submission (index 0) is always completed since API starts from Secretariat Review
+        if (index === 0) {
+          status = "completed";
+        }
+        // Map API tracks to steps starting from index 1 (Secretariat Review)
+        else if (index - 1 < trackLength) {
+          const currentTrack = tracks[index - 1]; // Offset by 1 since API starts from Secretariat Review
           if (currentTrack?.status === "Rejected") {
             status = "pending"; // If rejected, mark as pending
           } else {
             status = "completed"; // Otherwise completed
           }
-        } else if (index === trackLength) {
+        } else if (index - 1 === trackLength) {
           // This is the current step (next step to be processed)
           status = "current";
         } else {
@@ -215,7 +220,11 @@ const TestRequestDetails = () => {
 
   return (
     <div>
-      {requestData && (
+      {!requestData || _requestLoading ? (
+        <AppLayout>
+          <RequestDetailsSkeleton />
+        </AppLayout>
+      ) : (
         <AppLayout>
           <div className="px-4 md:px-8 py-6">
             <div className="mb-6">
@@ -423,6 +432,7 @@ const TestRequestDetails = () => {
           </div>
         </AppLayout>
       )}
+      
       {requestData && (
         <RequestDetailModal
           isOpen={isOpenRequestDetails}
