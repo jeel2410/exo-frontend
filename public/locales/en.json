@@ -295,5 +295,6 @@
   "at_least_three_mandatory_files_required": "At least three mandatory files are required.",
   "created_date": "Created Date",
   "contract_archived_success": "Contract archived successfully",
-  "select_contract": "Select Contract"
+  "select_contract": "Select Contract",
+  "add_item": "Add Item"
 }

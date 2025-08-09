@@ -246,10 +246,19 @@ const CreateRequestTable = ({
     // Validation: Check if all required fields are filled
     const isLabelValid = editFormData.label && editFormData.label.trim() !== "";
     const isQuantityValid = editFormData.quantity && editFormData.quantity > 0;
-    const isUnitPriceValid = editFormData.unitPrice !== undefined && editFormData.unitPrice > 0;
-    const isTaxRateValid = editFormData.taxRate !== undefined && editFormData.taxRate >= 0;
-    const isCustomDutyValid = editFormData.customDuty && editFormData.customDuty.trim() !== "";
+    const isUnitPriceValid =
+      editFormData.unitPrice !== undefined && editFormData.unitPrice > 0;
+    const isTaxRateValid =
+      editFormData.taxRate !== undefined &&
+      editFormData.taxRate >= 0 &&
+      isValidTaxRate(editFormData.taxRate, editFormData.customDuty);
+    const isCustomDutyValid =
+      editFormData.customDuty && editFormData.customDuty.trim() !== "";
 
+    if (!isCustomDutyValid) {
+      alert("Custom Duty selection is required.");
+      return;
+    }
     if (!isLabelValid) {
       alert("Label is required and cannot be empty.");
       return;
@@ -263,11 +272,12 @@ const CreateRequestTable = ({
       return;
     }
     if (!isTaxRateValid) {
-      alert("Tax Rate is required and must be 0 or greater.");
-      return;
-    }
-    if (!isCustomDutyValid) {
-      alert("Custom Duty selection is required.");
+      const constraints = getTaxRateConstraints(editFormData.customDuty);
+      const constraintText =
+        constraints.fixed !== null
+          ? `exactly ${constraints.fixed}%`
+          : `between ${constraints.min}% and ${constraints.max}%`;
+      alert(`Tax Rate must be ${constraintText} for the selected custom duty.`);
       return;
     }
 
@@ -303,7 +313,7 @@ const CreateRequestTable = ({
     // If we're canceling the edit of a newly added entity (autoEditId), remove it from the table
     if (editingId === autoEditId && autoEditId) {
       // Check if the entity is essentially empty (no meaningful data entered)
-      const isEmptyEntity = 
+      const isEmptyEntity =
         (!editFormData.label || editFormData.label.trim() === "") &&
         (!editFormData.unitPrice || editFormData.unitPrice === 0) &&
         (!editFormData.taxRate || editFormData.taxRate === 0) &&
@@ -315,7 +325,7 @@ const CreateRequestTable = ({
         onDataChange?.(tableData.filter((order) => order.id !== autoEditId));
       }
     }
-    
+
     setEditingId(null);
     setEditFormData({});
     onEditComplete?.();
@@ -386,20 +396,53 @@ const CreateRequestTable = ({
   // Dynamic custom duty options based on tax category
   const getCustomDutyOptions = () => {
     if (currentTaxCategory === "location_acquisition") {
-      return [
-        { value: "tva", label: "TVA" },
-      ];
+      return [{ value: "tva", label: "TVA" }];
     } else if (currentTaxCategory === "importation") {
       return [
+        { value: "tva_douane", label: "TVA à la douane" },
         { value: "droits_de_douanes", label: "Droits de douanes" },
-        { value: "taxes_dgrad_importation", label: "Taxes DGRAD à l'importation" },
-        { value: "tva_importation", label: "TVA à l'importation" },
+        {
+          value: "taxes_dgrad_importation",
+          label: "Taxes DGRAD à l'importation",
+        },
       ];
     }
     // Default fallback for DGI, DGDA, DGRAD (legacy values)
-    return [
-      { value: "tva", label: "TVA" },
-    ];
+    return [{ value: "tva", label: "TVA" }];
+  };
+
+  // Tax rate validation based on custom duty selection
+  const getTaxRateConstraints = (customDuty: string | undefined) => {
+    if (!customDuty) return { min: 1, max: 100, fixed: null };
+
+    switch (customDuty) {
+      case "tva":
+        return { min: 16, max: 16, fixed: 16 }; // Fixed at 16%
+      case "tva_douane":
+        return { min: 8, max: 16, fixed: null }; // Between 8% to 16%
+      case "droits_de_douanes":
+      case "taxes_dgrad_importation":
+      default:
+        return { min: 1, max: 100, fixed: null }; // Between 1% to 100%
+    }
+  };
+
+  // Validate tax rate based on custom duty selection
+  const isValidTaxRate = (taxRate: number, customDuty: string | undefined) => {
+    const constraints = getTaxRateConstraints(customDuty);
+    if (constraints.fixed !== null) {
+      return taxRate === constraints.fixed;
+    }
+    return taxRate >= constraints.min && taxRate <= constraints.max;
+  };
+
+  // Get tax rate placeholder text
+  const getTaxRatePlaceholder = (customDuty: string | undefined) => {
+    const constraints = getTaxRateConstraints(customDuty);
+    if (constraints.fixed !== null) {
+      return `${constraints.fixed}% (Fixed)`;
+    }
+    return `${constraints.min}%-${constraints.max}%`;
   };
 
   const tableHeader: TableHeader[] = [
@@ -418,6 +461,10 @@ const CreateRequestTable = ({
     {
       content: <div>Sr No</div>,
       className: "w-16",
+    },
+    {
+      content: <div>Custom Duties</div>,
+      className: "w-32",
     },
     {
       content: <div>Label</div>,
@@ -452,10 +499,6 @@ const CreateRequestTable = ({
     {
       content: <div>VAT Included</div>,
       className: "w-28",
-    },
-    {
-      content: <div>Custom Duties</div>,
-      className: "w-32",
     },
     ...(showActions
       ? [
@@ -506,18 +549,67 @@ const CreateRequestTable = ({
                 <TableCell className="px-5 py-4 sm:px-6">
                   {editingId === order.id ? (
                     <div className="flex flex-col gap-1">
+                      <select
+                        value={editFormData.customDuty ?? ""}
+                        onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                          const newCustomDuty = e.target.value;
+                          handleInputChange("customDuty", newCustomDuty);
+
+                          // Auto-set tax rate if TVA is selected
+                          const constraints =
+                            getTaxRateConstraints(newCustomDuty);
+                          if (constraints.fixed !== null) {
+                            handleInputChange("taxRate", constraints.fixed);
+                          }
+                        }}
+                        className={`px-2 py-1 text-sm border rounded-md bg-white ${
+                          editFormData.customDuty &&
+                          editFormData.customDuty.trim() !== ""
+                            ? "border-gray-300"
+                            : "border-red-500"
+                        }`}
+                        aria-label="Custom Duty"
+                      >
+                        <option value="">Select Custom Duty *</option>
+                        {getCustomDutyOptions().map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <span className="block font-medium text-secondary-100 text-sm">
+                      {getCustomDutyOptions().find(
+                        (opt) =>
+                          opt.value === (order.customDuty || order.custom_duty)
+                      )?.label || "-"}
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className="px-5 py-4 sm:px-6">
+                  {editingId === order.id ? (
+                    <div className="flex flex-col gap-1">
                       <input
                         type="text"
                         value={editFormData.label ?? ""}
                         onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleInputChange("label", e.target.value)
                         }
-                        className={`block w-full px-2 py-1 text-sm rounded-md bg-secondary-10 focus:border focus:outline-none ${
-                          editFormData.label && editFormData.label.trim() !== "" 
-                            ? "border-secondary-30" 
-                            : "border-red-500"
+                        disabled={!editFormData.customDuty}
+                        className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
+                          !editFormData.customDuty
+                            ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
+                            : editFormData.label &&
+                              editFormData.label.trim() !== ""
+                            ? "bg-secondary-10 border-secondary-30"
+                            : "bg-secondary-10 border-red-500"
                         }`}
-                        placeholder="Add Label *"
+                        placeholder={
+                          editFormData.customDuty
+                            ? "Add Label *"
+                            : "Select Custom Duty first"
+                        }
                         aria-label="Label"
                       />
                     </div>
@@ -529,20 +621,42 @@ const CreateRequestTable = ({
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-sm">
                   {editingId === order.id ? (
-                    <div className="flex items-center border border-secondary-30 rounded-md overflow-hidden">
+                    <div
+                      className={`flex items-center border rounded-md overflow-hidden ${
+                        !editFormData.customDuty
+                          ? "border-gray-200 bg-gray-100"
+                          : "border-secondary-30"
+                      }`}
+                    >
                       <button
                         onClick={() => handleDecrement(order.id)}
-                        className="w-8 h-8 flex items-center justify-center bg-white text-secondary-50 border-r border-secondary-30 hover:bg-gray-100 transition-colors focus:outline-none"
+                        disabled={!editFormData.customDuty}
+                        className={`w-8 h-8 flex items-center justify-center border-r transition-colors focus:outline-none ${
+                          !editFormData.customDuty
+                            ? "bg-gray-100 text-gray-300 cursor-not-allowed border-gray-200"
+                            : "bg-white text-secondary-50 border-secondary-30 hover:bg-gray-100"
+                        }`}
                         aria-label="Decrease quantity"
                       >
                         -
                       </button>
-                      <div className="w-12 text-center font-medium bg-secondary-10 px-2 py-1 text-secondary-100 text-sm">
+                      <div
+                        className={`w-12 text-center font-medium px-2 py-1 text-sm ${
+                          !editFormData.customDuty
+                            ? "bg-gray-100 text-gray-400"
+                            : "bg-secondary-10 text-secondary-100"
+                        }`}
+                      >
                         {editFormData.quantity ?? order.quantity}
                       </div>
                       <button
                         onClick={() => handleIncrement(order.id)}
-                        className="w-8 h-8 flex items-center justify-center bg-white text-secondary-50 border-l border-secondary-30 hover:bg-gray-100 transition-colors focus:outline-none"
+                        disabled={!editFormData.customDuty}
+                        className={`w-8 h-8 flex items-center justify-center border-l transition-colors focus:outline-none ${
+                          !editFormData.customDuty
+                            ? "bg-gray-100 text-gray-300 cursor-not-allowed border-gray-200"
+                            : "bg-white text-secondary-50 border-secondary-30 hover:bg-gray-100"
+                        }`}
                         aria-label="Increase quantity"
                       >
                         +
@@ -563,12 +677,20 @@ const CreateRequestTable = ({
                         onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           handleInputChange("unitPrice", e.target.value)
                         }
-                        className={`block w-full px-2 py-1 text-sm rounded-md bg-secondary-10 focus:border focus:outline-none ${
-                          editFormData.unitPrice !== undefined && editFormData.unitPrice >= 0 
-                            ? "border-secondary-30" 
-                            : "border-red-500"
+                        disabled={!editFormData.customDuty}
+                        className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
+                          !editFormData.customDuty
+                            ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
+                            : editFormData.unitPrice !== undefined &&
+                              editFormData.unitPrice >= 0
+                            ? "bg-secondary-10 border-secondary-30"
+                            : "bg-secondary-10 border-red-500"
                         }`}
-                        placeholder="Add Price *"
+                        placeholder={
+                          editFormData.customDuty
+                            ? "Add Price *"
+                            : "Select Custom Duty first"
+                        }
                         aria-label="Unit Price"
                       />
                     </div>
@@ -599,19 +721,70 @@ const CreateRequestTable = ({
                   {editingId === order.id ? (
                     <div className="flex flex-col gap-1">
                       <input
-                        type="text"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
                         value={editFormData.taxRate ?? ""}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                          handleInputChange("taxRate", e.target.value)
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                          // const newTaxRate = parseFloat(e.target.value) || 0;
+                          const constraints = getTaxRateConstraints(
+                            editFormData.customDuty
+                          );
+
+                          // Validate against constraints
+                          if (constraints.fixed !== null) {
+                            // For fixed rate (TVA), don't allow manual entry but show the fixed value
+                            return;
+                          } else {
+                            // For range validation, allow entry but validate
+                            handleInputChange("taxRate", e.target.value);
+                          }
+                        }}
+                        disabled={
+                          !editFormData.customDuty ||
+                          getTaxRateConstraints(editFormData.customDuty)
+                            .fixed !== null
                         }
-                        className={`block w-full px-2 py-1 text-sm rounded-md bg-secondary-10 focus:border focus:outline-none ${
-                          editFormData.taxRate !== undefined && editFormData.taxRate >= 0 
-                            ? "border-secondary-30" 
-                            : "border-red-500"
+                        className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
+                          !editFormData.customDuty
+                            ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
+                            : getTaxRateConstraints(editFormData.customDuty)
+                                .fixed !== null
+                            ? "bg-gray-100 cursor-not-allowed border-gray-300 text-gray-600"
+                            : editFormData.taxRate !== undefined &&
+                              isValidTaxRate(
+                                editFormData.taxRate,
+                                editFormData.customDuty
+                              )
+                            ? "bg-secondary-10 border-secondary-30"
+                            : "bg-secondary-10 border-red-500"
                         }`}
-                        placeholder="Add Tax Rate *"
+                        placeholder={
+                          !editFormData.customDuty
+                            ? "Select Custom Duty first"
+                            : getTaxRatePlaceholder(editFormData.customDuty)
+                        }
                         aria-label="Tax Rate"
+                        title={
+                          !editFormData.customDuty
+                            ? "Select Custom Duty first"
+                            : `Tax rate constraints: ${getTaxRatePlaceholder(
+                                editFormData.customDuty
+                              )}`
+                        }
                       />
+                      {editFormData.customDuty &&
+                        editFormData.taxRate !== undefined &&
+                        !isValidTaxRate(
+                          editFormData.taxRate,
+                          editFormData.customDuty
+                        ) && (
+                          <span className="text-xs text-red-500">
+                            Rate must be{" "}
+                            {getTaxRatePlaceholder(editFormData.customDuty)}
+                          </span>
+                        )}
                     </div>
                   ) : (
                     <span className="block font-medium text-secondary-100 text-sm">
@@ -650,35 +823,6 @@ const CreateRequestTable = ({
                   ) : (
                     <span className="block font-medium text-secondary-100 text-sm">
                       {order.vatIncluded || order.vat_included}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell className="px-5 py-4 sm:px-6">
-                  {editingId === order.id ? (
-                    <div className="flex flex-col gap-1">
-                      <select
-                        value={editFormData.customDuty ?? ""}
-                        onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                          handleInputChange("customDuty", e.target.value)
-                        }
-                        className={`px-2 py-1 text-sm border rounded-md bg-white ${
-                          editFormData.customDuty && editFormData.customDuty.trim() !== "" 
-                            ? "border-gray-300" 
-                            : "border-red-500"
-                        }`}
-                        aria-label="Custom Duty"
-                      >
-                        <option value="">Select Custom Duty</option>
-                        {getCustomDutyOptions().map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ) : (
-                    <span className="block font-medium text-secondary-100 text-sm">
-                      {getCustomDutyOptions().find(opt => opt.value === (order.customDuty || order.custom_duty))?.label || "-"}
                     </span>
                   )}
                 </TableCell>
