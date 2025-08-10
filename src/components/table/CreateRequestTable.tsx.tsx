@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, ChangeEvent } from "react";
 import Typography from "../../lib/components/atoms/Typography";
-import { CrossRedIcon, RightGreenIcon } from "../../icons";
+import { CrossRedIcon, RightGreenIcon, USFlag, CDFFlag } from "../../icons";
 
 export interface TableHeader {
   content: React.ReactNode;
@@ -82,6 +82,7 @@ export interface Order {
   taxAmount: number;
   vatIncluded: number;
   customDuty?: string;
+  currency?: string;
   unit_price?: number;
   tax_rate?: number;
   tax_amount?: number;
@@ -445,6 +446,27 @@ const CreateRequestTable = ({
     return `${constraints.min}%-${constraints.max}%`;
   };
 
+  // Helper function to render currency with flag
+  const renderCurrencyWithFlag = (amount: number | string, currency?: string) => {
+    const currencyType = currency || "USD";
+    const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    const formattedAmount = isNaN(numericAmount) ? "0" : numericAmount.toLocaleString();
+    
+    return (
+      <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
+        {currencyType === "USD" ? (
+          <USFlag width={20} height={12} />
+        ) : currencyType === "CDF" ? (
+          <CDFFlag width={20} height={12} />
+        ) : null}
+        <span className="text-gray-600">{currencyType}</span>
+        <span className="block font-medium text-secondary-100 text-sm">
+          {formattedAmount}
+        </span>
+      </div>
+    );
+  };
+
   const tableHeader: TableHeader[] = [
     // {
     //   content: (
@@ -695,9 +717,7 @@ const CreateRequestTable = ({
                       />
                     </div>
                   ) : (
-                    <span className="block font-medium text-secondary-100 text-sm">
-                      {order.unitPrice || order.unit_price}
-                    </span>
+                    renderCurrencyWithFlag(order.unitPrice || order.unit_price || 0, order.currency)
                   )}
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6">
@@ -712,9 +732,7 @@ const CreateRequestTable = ({
                       </Typography>
                     </div>
                   ) : (
-                    <span className="block font-medium text-secondary-100 text-sm">
-                      {order.total}
-                    </span>
+                    renderCurrencyWithFlag(order.total || 0, order.currency)
                   )}
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6">
@@ -804,9 +822,7 @@ const CreateRequestTable = ({
                       </Typography>
                     </div>
                   ) : (
-                    <span className="block font-medium text-secondary-100 text-sm">
-                      {order.taxAmount || order.tax_amount}
-                    </span>
+                    renderCurrencyWithFlag(order.taxAmount || order.tax_amount || 0, order.currency)
                   )}
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6">
@@ -821,9 +837,7 @@ const CreateRequestTable = ({
                       </Typography>
                     </div>
                   ) : (
-                    <span className="block font-medium text-secondary-100 text-sm">
-                      {order.vatIncluded || order.vat_included}
-                    </span>
+                    renderCurrencyWithFlag(order.vatIncluded || order.vat_included || 0, order.currency)
                   )}
                 </TableCell>
                 {showActions && (

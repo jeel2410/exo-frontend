@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "./CreateRequestTable.tsx";
-import { CrossRedIcon, RightGreenIcon } from "../../icons";
+import { CrossRedIcon, RightGreenIcon, USFlag, CDFFlag } from "../../icons";
 import Typography from "../../lib/components/atoms/Typography.tsx";
 import { useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
@@ -17,6 +17,7 @@ export interface Data {
   id: number;
   requestNo: string;
   amount: string;
+  currency?: string;
   createdDate: string;
   status: string;
   sub_status?: string;
@@ -252,12 +253,20 @@ const RequestTable = ({
                           />
                         </div>
                       ) : (
-                        <span className="block font-medium text-secondary-100 text-sm">
-                          {(() => {
-                            const amount = parseFloat(data.amount || "0");
-                            return isNaN(amount) ? "0" : amount.toLocaleString();
-                          })()}
-                        </span>
+                        <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
+                          {data.currency === "USD" ? (
+                            <USFlag width={24} height={14} />
+                          ) : data.currency === "CDF" ? (
+                            <CDFFlag width={24} height={14} />
+                          ) : null}
+                          <span className="text-gray-600">{data.currency || "USD"}</span>
+                          <span className="block font-medium text-secondary-100 text-sm">
+                            {(() => {
+                              const amount = parseFloat(data.amount || "0");
+                              return isNaN(amount) ? "0" : amount.toLocaleString();
+                            })()}
+                          </span>
+                        </div>
                       )}
                     </TableCell>
 
