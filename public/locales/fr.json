@@ -291,5 +291,6 @@
   "created_date": "Date de création",
   "contract_archived_success": "Contrat archivé avec succès",
   "select_contract": "Select Contract",
-  "add_item": "Add Item"
+  "add_item": "Add Item",
+  "select_tax_category": "Select Tax Category"
 }

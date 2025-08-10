@@ -442,6 +442,8 @@ const TestRequestDetails = () => {
                             tax_amount: entity.tax_amount,
                             vatIncluded: entity.vat_included,
                             vat_included: entity.vat_included,
+                            customDuty: (entity as any).custom_duties,
+                            custom_duty: (entity as any).custom_duties,
                           })) || []
                         }
                         showActions={false}

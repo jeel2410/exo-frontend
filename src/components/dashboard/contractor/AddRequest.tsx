@@ -105,7 +105,7 @@ const AddRequest = () => {
   });
   const { getRoute } = useRoleRoute();
   const [financialAuthority, setFinancialAuthority] = useState<string>(
-    "location_acquisition"
+    ""
   );
   const [autoEditId, setAutoEditId] = useState<number | null>(null);
   const [validationErrors, setValidationErrors] = useState<{
@@ -316,19 +316,33 @@ const AddRequest = () => {
       errors.requestLetter = t("request_letter_is_required");
     }
 
-    // Check for mandatory files (minimum 3 mandatory files required)
-    const mandatoryDocNames = [
-      "Letter de transport, note de fret, note d'assurance",
-      "De`claration pour I'importation Conditionnelle <<IC>>",
-      "Facture e`mise par le fournisseur",
-    ];
+    // Check for mandatory files based on tax category
+    let mandatoryDocNames: string[] = [];
+    let requiredFileCount = 0;
+    let errorMessage = "";
+
+    if (financialAuthority === "location_acquisition") {
+      // For Location Acquisition: only "Facture émise par le fournisseur" is required
+      mandatoryDocNames = ["Facture e`mise par le fournisseur"];
+      requiredFileCount = 1;
+      errorMessage = t("facture_file_required") || "Facture émise par le fournisseur is required";
+    } else {
+      // For Importation: all 3 documents are required
+      mandatoryDocNames = [
+        "Letter de transport, note de fret, note d'assurance",
+        "De`claration pour I'importation Conditionnelle <<IC>>",
+        "Facture e`mise par le fournisseur",
+      ];
+      requiredFileCount = 3;
+      errorMessage = t("at_least_three_mandatory_files_required") || "At least 3 mandatory files are required";
+    }
 
     const mandatoryFilesUploaded = uploadedFiles.filter((file) =>
       mandatoryDocNames.includes(file.original_name || "")
     );
 
-    if (mandatoryFilesUploaded.length < 3) {
-      errors.fileUpload = t("at_least_three_mandatory_files_required");
+    if (mandatoryFilesUploaded.length < requiredFileCount) {
+      errors.fileUpload = errorMessage;
     }
 
     if (
@@ -670,6 +684,9 @@ const AddRequest = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-30 focus:border-transparent"
             disabled={isLoadingAddresses}
           >
+            <option value="">
+              {isLoadingAddresses ? t("loading") : t("select_tax_category") || "Select Tax Category"}
+            </option>
             {financialAuthorityList.map(
               (list: { name: string; value: string }) => (
                 <option key={list.value} value={list.value}>
@@ -750,7 +767,8 @@ const AddRequest = () => {
                 onUploadFile={handleUploadFile}
                 onDeleteFile={handleDeleteFile}
                 onRenameFile={handleRenameFile}
-                showAdditionalDocs={requestId ? (requestSubStatus === "hold" || requestSubStatus === "request_info") : false}
+                showAdditionalDocs={requestId ? (requestSubStatus === "hold" || requestSubStatus === "Request Info") : false}
+                taxCategory={financialAuthority}
               />
               {validationErrors.fileUpload && (
                 <Typography size="sm" className="text-red-500 mt-1">

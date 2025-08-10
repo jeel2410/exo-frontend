@@ -32,6 +32,7 @@ interface FileUploadProps {
   files?: UploadedFile[];
   context?: "create-project" | "create-contract" | "create-request"; // Controls which sections to show
   showAdditionalDocs?: boolean; // Controls visibility of additional documents section
+  taxCategory?: string; // Tax category to determine which mandatory documents to show
 }
 
 const UploadFile: React.FC<FileUploadProps> = ({
@@ -44,6 +45,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
   onRenameFile,
   context = "create-request", // Default to showing both sections
   showAdditionalDocs = true, // Default to showing additional documents
+  taxCategory = "importation", // Default to importation (shows all 3 documents)
 }) => {
   const [mandatoryDocs, setMandatoryDocs] = useState<DocumentRow[]>([
     {
@@ -93,6 +95,67 @@ const UploadFile: React.FC<FileUploadProps> = ({
 
   const isInitialMount = useRef(true);
   const lastNotifiedFiles = useRef<string>("");
+
+  // Function to get mandatory documents based on tax category
+  const getMandatoryDocsByTaxCategory = (category: string): DocumentRow[] => {
+    if (category === "location_acquisition") {
+      // For Location Acquisition: only show "Facture émise par le fournisseur"
+      return [
+        {
+          id: "mandatory_3",
+          name: "Facture e`mise par le fournisseur",
+          isUploaded: false,
+          isMandatory: true,
+          isNameEditable: false,
+        },
+      ];
+    } else {
+      // For Importation: show all 3 documents
+      return [
+        {
+          id: "mandatory_1",
+          name: "Letter de transport, note de fret, note d'assurance",
+          isUploaded: false,
+          isMandatory: true,
+          isNameEditable: false,
+        },
+        {
+          id: "mandatory_2",
+          name: "De`claration pour I'importation Conditionnelle <<IC>>",
+          isUploaded: false,
+          isMandatory: true,
+          isNameEditable: false,
+        },
+        {
+          id: "mandatory_3",
+          name: "Facture e`mise par le fournisseur",
+          isUploaded: false,
+          isMandatory: true,
+          isNameEditable: false,
+        },
+      ];
+    }
+  };
+
+  // Effect to update mandatory documents when tax category changes
+  useEffect(() => {
+    const newMandatoryDocs = getMandatoryDocsByTaxCategory(taxCategory);
+    
+    // Preserve uploaded files when updating mandatory docs structure
+    const updatedMandatoryDocs = newMandatoryDocs.map(newDoc => {
+      const existingDoc = mandatoryDocs.find(existing => existing.id === newDoc.id);
+      if (existingDoc && existingDoc.isUploaded) {
+        return {
+          ...newDoc,
+          isUploaded: existingDoc.isUploaded,
+          uploadedFile: existingDoc.uploadedFile,
+        };
+      }
+      return newDoc;
+    });
+    
+    setMandatoryDocs(updatedMandatoryDocs);
+  }, [taxCategory]);
 
   // Listen for form reset events
   useEffect(() => {

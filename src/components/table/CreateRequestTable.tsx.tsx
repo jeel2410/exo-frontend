@@ -397,19 +397,19 @@ const CreateRequestTable = ({
   // Dynamic custom duty options based on tax category
   const getCustomDutyOptions = () => {
     if (currentTaxCategory === "location_acquisition") {
-      return [{ value: "tva", label: "TVA" }];
+      return [{ value: "TVA", label: "TVA" }];
     } else if (currentTaxCategory === "importation") {
       return [
-        { value: "tva_douane", label: "TVA à la douane" },
-        { value: "droits_de_douanes", label: "Droits de douanes" },
+        { value: "TVA à l'importation", label: "TVA à l'importation" },
         {
-          value: "taxes_dgrad_importation",
+          value: "Taxes DGRAD à l'importation",
           label: "Taxes DGRAD à l'importation",
         },
+        { value: "Droits de douane", label: "Droits de douane" },
       ];
     }
     // Default fallback for DGI, DGDA, DGRAD (legacy values)
-    return [{ value: "tva", label: "TVA" }];
+    return [{ value: "TVA", label: "TVA" }];
   };
 
   // Tax rate validation based on custom duty selection
@@ -417,12 +417,12 @@ const CreateRequestTable = ({
     if (!customDuty) return { min: 1, max: 100, fixed: null };
 
     switch (customDuty) {
-      case "tva":
+      case "TVA":
         return { min: 16, max: 16, fixed: 16 }; // Fixed at 16%
-      case "tva_douane":
-        return { min: 8, max: 16, fixed: null }; // Between 8% to 16%
-      case "droits_de_douanes":
-      case "taxes_dgrad_importation":
+      case "TVA à l'importation":
+        return { min: 16, max: 16, fixed: 16 }; // Fixed at 16%
+      case "Droits de douane":
+      case "Taxes DGRAD à l'importation":
       default:
         return { min: 1, max: 100, fixed: null }; // Between 1% to 100%
     }
@@ -447,11 +447,17 @@ const CreateRequestTable = ({
   };
 
   // Helper function to render currency with flag
-  const renderCurrencyWithFlag = (amount: number | string, currency?: string) => {
+  const renderCurrencyWithFlag = (
+    amount: number | string,
+    currency?: string
+  ) => {
     const currencyType = currency || "USD";
-    const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    const formattedAmount = isNaN(numericAmount) ? "0" : numericAmount.toLocaleString();
-    
+    const numericAmount =
+      typeof amount === "string" ? parseFloat(amount) : amount;
+    const formattedAmount = isNaN(numericAmount)
+      ? "0"
+      : numericAmount.toLocaleString();
+
     return (
       <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
         {currencyType === "USD" ? (
@@ -717,7 +723,10 @@ const CreateRequestTable = ({
                       />
                     </div>
                   ) : (
-                    renderCurrencyWithFlag(order.unitPrice || order.unit_price || 0, order.currency)
+                    renderCurrencyWithFlag(
+                      order.unitPrice || order.unit_price || 0,
+                      order.currency
+                    )
                   )}
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6">
@@ -822,7 +831,10 @@ const CreateRequestTable = ({
                       </Typography>
                     </div>
                   ) : (
-                    renderCurrencyWithFlag(order.taxAmount || order.tax_amount || 0, order.currency)
+                    renderCurrencyWithFlag(
+                      order.taxAmount || order.tax_amount || 0,
+                      order.currency
+                    )
                   )}
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6">
@@ -837,7 +849,10 @@ const CreateRequestTable = ({
                       </Typography>
                     </div>
                   ) : (
-                    renderCurrencyWithFlag(order.vatIncluded || order.vat_included || 0, order.currency)
+                    renderCurrencyWithFlag(
+                      order.vatIncluded || order.vat_included || 0,
+                      order.currency
+                    )
                   )}
                 </TableCell>
                 {showActions && (
