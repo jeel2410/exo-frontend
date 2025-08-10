@@ -336,38 +336,66 @@ const TestRequestDetails = () => {
                         </Typography>
                       </div>
 
-                      <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-8">
+                      <div className="space-y-4">
                         <Typography
-                          className="text-secondary-60 min-w-[100px]"
+                          className="text-secondary-60"
                           size="sm"
                         >
                           {t("invoice_files")}
                         </Typography>
-                        <div className="flex flex-wrap gap-2">
-                          {requestData &&
-                            requestData?.files?.map((f) => {
-                              return (
-                                <a
-                                  href={f.file}
-                                  target="_blank"
-                                  key={f.id}
-                                  className="inline-flex items-center gap-2 border border-secondary-60 rounded-full px-3 py-1.5 bg-white hover:bg-gray-50 cursor-pointer transition-colors"
-                                >
-                                  <PdfIcon width={12} height={12} />
-                                  <Typography
-                                    size="xs"
-                                    weight="semibold"
-                                    className="text-secondary-100 whitespace-nowrap"
-                                  >
-                                    {f.original_name}
-                                    <span className="text-secondary-60 ml-1">
-                                      {(f.size / (1024 * 1024)).toFixed(2)}MB
-                                    </span>
-                                  </Typography>
-                                </a>
-                              );
-                            })}
-                        </div>
+                        {requestData && requestData?.files && requestData.files.length > 0 ? (
+                          <div className="border border-gray-200 rounded-lg overflow-hidden">
+                            <table className="w-full">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  <th className="text-left py-3 px-4 font-medium text-gray-700">
+                                    Sr No
+                                  </th>
+                                  <th className="text-left py-3 px-4 font-medium text-gray-700">
+                                    Document Name
+                                  </th>
+                                  <th className="text-left py-3 px-4 font-medium text-gray-700">
+                                    Action
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                {requestData.files.map((f, index) => (
+                                  <tr key={f.id} className="hover:bg-gray-50">
+                                    <td className="py-3 px-4 text-sm text-gray-900">
+                                      {index + 1}
+                                    </td>
+                                    <td className="py-3 px-4">
+                                      <div className="flex items-center gap-2">
+                                        <PdfIcon width={16} height={16} />
+                                        <Typography
+                                          size="sm"
+                                          className="text-gray-900"
+                                        >
+                                          {f.original_name || f.name || 'Document'}
+                                        </Typography>
+                                      </div>
+                                    </td>
+                                    <td className="py-3 px-4">
+                                      <a
+                                        href={f.file}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-300 transition-colors"
+                                      >
+                                        View
+                                      </a>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : (
+                          <div className="text-gray-500 text-sm py-4">
+                            No documents available
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
