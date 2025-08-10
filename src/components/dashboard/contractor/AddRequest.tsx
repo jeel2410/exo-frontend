@@ -118,6 +118,7 @@ const AddRequest = () => {
     amount?: string | number;
     currency?: string;
   }>({});
+  const [requestSubStatus, setRequestSubStatus] = useState<string>("");
 
   const pathName: string = pathname.split("/")[1];
 
@@ -483,12 +484,14 @@ const AddRequest = () => {
         address,
         files,
         tax_category,
+        sub_status,
       } = response.data;
 
       updateEntitys(entities);
       setProjectId(project_id);
       setRequestLetter(request_letter);
       setFinancialAuthority(tax_category);
+      setRequestSubStatus(sub_status || "");
 
       // Handle existing documents
       if (files && files.length > 0) {
@@ -747,6 +750,7 @@ const AddRequest = () => {
                 onUploadFile={handleUploadFile}
                 onDeleteFile={handleDeleteFile}
                 onRenameFile={handleRenameFile}
+                showAdditionalDocs={requestId ? (requestSubStatus === "hold" || requestSubStatus === "request_info") : false}
               />
               {validationErrors.fileUpload && (
                 <Typography size="sm" className="text-red-500 mt-1">

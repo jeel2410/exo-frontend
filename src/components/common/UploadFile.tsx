@@ -31,6 +31,7 @@ interface FileUploadProps {
   maxFiles?: number;
   files?: UploadedFile[];
   context?: "create-project" | "create-contract" | "create-request"; // Controls which sections to show
+  showAdditionalDocs?: boolean; // Controls visibility of additional documents section
 }
 
 const UploadFile: React.FC<FileUploadProps> = ({
@@ -42,6 +43,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
   onDeleteFile,
   onRenameFile,
   context = "create-request", // Default to showing both sections
+  showAdditionalDocs = true, // Default to showing additional documents
 }) => {
   const [mandatoryDocs, setMandatoryDocs] = useState<DocumentRow[]>([
     {
@@ -800,12 +802,13 @@ const UploadFile: React.FC<FileUploadProps> = ({
     );
   };
 
-  // Determine which sections to show based on context
+  // Determine which sections to show based on context and props
   const showMandatoryDocs = context === "create-request";
-  const showAdditionalDocs =
+  const shouldShowAdditionalDocs = showAdditionalDocs && (
     context === "create-request" ||
     context === "create-project" ||
-    context === "create-contract"; // Show additional docs for create-request, create-project, and create-contract
+    context === "create-contract"
+  ); // Show additional docs based on prop and context
 
   // Calculate starting index for additional docs serial numbers
   const additionalDocsStartIndex = showMandatoryDocs ? mandatoryDocs.length : 0;
@@ -855,8 +858,8 @@ const UploadFile: React.FC<FileUploadProps> = ({
         </div>
       )}
 
-      {/* Additional Documents Section - Always show */}
-      {showAdditionalDocs && (
+      {/* Additional Documents Section - Show conditionally */}
+      {shouldShowAdditionalDocs && (
         <div className={showMandatoryDocs ? "" : "mt-0"}>
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             {showMandatoryDocs ? "Additional Documents" : "Documents"}
