@@ -310,5 +310,10 @@
   "search_placeholder": "Search By Project ID or Project Name...",
   "rows_per_page": "Rows per page:",
   "page_of_total": "Page {{current}} of {{total}}",
-  "sign_in": "Sign In"
+  "sign_in": "Sign In",
+  "notifications": "Notifications",
+  "failed_to_load_notifications": "Failed to load notifications",
+  "no_notifications": "No notifications",
+  "unread": "Unread",
+  "read": "Read"
 }

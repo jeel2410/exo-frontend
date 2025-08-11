@@ -1,5 +1,6 @@
 import { useState } from "react";
 import moment from "moment";
+import { useNavigate } from "react-router";
 
 import { Dropdown } from "../../lib/components/atoms/Dropdown";
 import { NotificationIcon } from "../../icons";
@@ -29,10 +30,13 @@ interface FormattedNotification {
   description: string;
   createdAt: string;
   isRead: boolean;
+  objectId: string;
+  objectType: string;
 }
 
 export default function NotificationDropdown() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
@@ -51,6 +55,8 @@ export default function NotificationDropdown() {
     description: notification.message,
     createdAt: moment(notification.created_at).fromNow(),
     isRead: notification.read === 1,
+    objectId: notification.object_id,
+    objectType: notification.object_type,
   }));
 
   function toggleDropdown() {
@@ -63,6 +69,20 @@ export default function NotificationDropdown() {
 
   const handleClick = () => {
     toggleDropdown();
+  };
+
+  // Handle notification click to navigate to appropriate page
+  const handleNotificationClick = (notification: FormattedNotification) => {
+    // Check if it's a request notification
+    if (notification.objectType === 'request' && notification.objectId) {
+      navigate(`/request-details/${notification.objectId}`);
+      closeDropdown(); // Close dropdown after navigation
+    }
+    // Add more object types here if needed in the future
+    // For example:
+    // else if (notification.objectType === 'project' && notification.objectId) {
+    //   navigate(`/project-details/${notification.objectId}`);
+    // }
   };
 
   // Separate unread and read notifications
@@ -139,12 +159,13 @@ export default function NotificationDropdown() {
             {unread.length > 0 && (
               <>
                 <li className="text-xs font-bold text-blue-600 mb-1">
-                  {t("Unread")}
+                  {t("unread")}
                 </li>
                 {unread.map((l, index) => (
                   <div
                     key={"unread-" + index}
-                    className="notification-unread flex flex-col gap-1 rounded p-2"
+                    className="notification-unread flex flex-col gap-1 rounded p-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                    onClick={() => handleNotificationClick(l)}
                   >
                     <Typography
                       size="xs"
@@ -175,13 +196,14 @@ export default function NotificationDropdown() {
               <>
                 {unread.length > 0 && (
                   <li className="text-xs font-bold text-gray-400 mt-2 mb-1">
-                    {t("Read")}
+                    {t("read")}
                   </li>
                 )}
                 {read.map((l, index) => (
                   <div
                     key={"read-" + index}
-                    className="notification-read flex flex-col gap-1 rounded p-2"
+                    className="notification-read flex flex-col gap-1 rounded p-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                    onClick={() => handleNotificationClick(l)}
                   >
                     <Typography
                       size="xs"

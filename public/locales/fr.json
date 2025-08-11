@@ -305,5 +305,10 @@
   "search_placeholder": "Rechercher par ID ou nom du projet...",
   "rows_per_page": "Lignes par page :",
   "page_of_total": "Page {{current}} sur {{total}}",
-  "sign_in": "Se connecter"
+  "sign_in": "Se connecter",
+  "notifications": "Notifications",
+  "failed_to_load_notifications": "Échec du chargement des notifications",
+  "no_notifications": "Aucune notification",
+  "unread": "Non lues",
+  "read": "Lues"
 }
