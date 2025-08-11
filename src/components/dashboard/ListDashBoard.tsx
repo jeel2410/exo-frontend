@@ -209,11 +209,11 @@ const ListDashBoard = () => {
   // Archive handlers
   const handleBulkArchive = async () => {
     if (selectedProjects.length === 0) {
-      alert("Please select projects to archive");
+      alert(t("please_select_projects_to_archive"));
       return;
     }
 
-    if (window.confirm(`Are you sure you want to archive ${selectedProjects.length} projects?`)) {
+    if (window.confirm(t("confirm_archive_multiple_projects", { count: selectedProjects.length }))) {
       const projectIds = selectedProjects.join(",");
       await archiveProjectMutation.mutateAsync(projectIds);
       setSelectedProjects([]); // Clear selection after archive
@@ -221,7 +221,7 @@ const ListDashBoard = () => {
   };
 
   const handleSingleArchive = async (projectUuid: string) => {
-    if (window.confirm("Are you sure you want to archive this project?")) {
+    if (window.confirm(t("confirm_archive_single_project"))) {
       await archiveProjectMutation.mutateAsync(projectUuid);
     }
   };
@@ -407,7 +407,7 @@ const ListDashBoard = () => {
                     </div>
                     <Input
                       type="text"
-                      placeholder={t("Search By Project ID or Project Name...")}
+                      placeholder={t("search_placeholder")}
                       className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10"
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -438,10 +438,10 @@ const ListDashBoard = () => {
                         weight="semibold"
                       >
                         {archiveProjectMutation.isPending 
-                          ? "Archiving..." 
+                          ? t("archiving") 
                           : selectedProjects.length > 0 
-                            ? `Archive (${selectedProjects.length})` 
-                            : t("Archive")
+                            ? t("archive_count", { count: selectedProjects.length }) 
+                            : t("archive")
                         }
                       </Typography>
                     </Button>
@@ -464,7 +464,7 @@ const ListDashBoard = () => {
                         size="sm"
                         weight="semibold"
                       >
-                        {t("Filter")}
+                        {t("filter")}
                       </Typography>
                     </Button>
                   </motion.div>
@@ -494,7 +494,7 @@ const ListDashBoard = () => {
 
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-4 sm:px-0">
                 <div className="flex items-center gap-2 text-sm">
-                  <span>Rows per page:</span>
+                  <span>{t("rows_per_page")}</span>
                   <select
                     value={limit}
                     onChange={(e) => handleLimitChange(Number(e.target.value))}

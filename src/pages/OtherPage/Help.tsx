@@ -90,7 +90,7 @@ const Help = () => {
         );
       } catch (err: unknown) {
         console.log(err, "err");
-        setError(t("Failed to load FAQs"));
+        setError(t("failed_to_load_faqs"));
       } finally {
         setLoading(false);
       }
@@ -123,7 +123,7 @@ const Help = () => {
             {error ? (
               <Typography>{error}</Typography>
             ) : faqItems.length === 0 ? (
-              <Typography>{t("No FAQs available.")}</Typography>
+              <Typography>{t("no_faqs_available")}</Typography>
             ) : (
               faqItems.map(
                 (item: { question: string; answer: string }, index: number) => (

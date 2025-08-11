@@ -297,5 +297,18 @@
   "contract_archived_success": "Contract archived successfully",
   "select_contract": "Select Contract",
   "add_item": "Add Item",
-  "select_tax_category": "Select Tax Category"
+  "select_tax_category": "Select Tax Category",
+  "failed_to_load_faqs": "Failed to load FAQs",
+  "no_faqs_available": "No FAQs available.",
+  "please_select_projects_to_archive": "Please select projects to archive",
+  "confirm_archive_multiple_projects": "Are you sure you want to archive {{count}} projects?",
+  "confirm_archive_single_project": "Are you sure you want to archive this project?",
+  "archiving": "Archiving...",
+  "archive": "Archive",
+  "archive_count": "Archive ({{count}})",
+  "filter": "Filter",
+  "search_placeholder": "Search By Project ID or Project Name...",
+  "rows_per_page": "Rows per page:",
+  "page_of_total": "Page {{current}} of {{total}}",
+  "sign_in": "Sign In"
 }
