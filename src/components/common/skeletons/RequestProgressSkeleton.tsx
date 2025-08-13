@@ -9,7 +9,7 @@ const RequestProgressSkeleton = () => {
       {/* Progress Steps */}
       <div className="relative">
         <div className="space-y-6">
-          {Array.from({ length: 5 }).map((_, index) => (
+          {Array.from({ length: 10 }).map((_, index) => (
             <div key={index} className="flex items-start group">
               <div className="relative flex flex-col items-center mr-4">
                 {/* Step Indicator */}
@@ -17,7 +17,7 @@ const RequestProgressSkeleton = () => {
                   <div className={`w-10 h-10 rounded-full ${shimmer} flex-shrink-0`}></div>
                 </div>
 
-                {index < 4 && (
+                {index < 9 && (
                   <div className={`w-[3px] h-12 mt-2 rounded-full ${shimmer}`}></div>
                 )}
               </div>

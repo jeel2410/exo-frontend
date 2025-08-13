@@ -97,11 +97,12 @@ export const progressSteps: ProgressStep[] = [
   { id: 2, title: "Secretariat Review", status: "pending" },
   { id: 3, title: "Coordinator Review", status: "pending" },
   { id: 4, title: "Financial Review", status: "pending" },
-  { id: 5, title: "FO Preparation", status: "pending" },
-  { id: 6, title: "Transmission to Secretariat", status: "pending" },
-  { id: 7, title: "Coordinator Final Validation", status: "pending" },
-  { id: 8, title: "Ministerial Review", status: "pending" },
-  { id: 9, title: "Title Generation", status: "pending" },
+  { id: 5, title: "Calculation Notes Transmission", status: "pending" },
+  { id: 6, title: "FO Preparation", status: "pending" },
+  { id: 7, title: "Transmission to Secretariat", status: "pending" },
+  { id: 8, title: "Coordinator Final Validation", status: "pending" },
+  { id: 9, title: "Ministerial Review", status: "pending" },
+  { id: 10, title: "Title Generation", status: "pending" },
 ];
 export const comments: CommentProps[] = [
   {
