@@ -72,7 +72,9 @@ export interface RequestDetails {
   status: string;
   project_id: string;
   request_letter: string;
-  address: RequestAddress;
+  address?: RequestAddress; // Single address (for backward compatibility)
+  addresses?: RequestAddress[]; // Multiple addresses (new format)
+  address_ids?: string; // Comma-separated string of address IDs
   entities: RequestEntity[];
   amount_summary: AmountSummary;
   files?: any[];
@@ -315,35 +317,76 @@ const TestRequestDetails = () => {
                         </Typography>
                       </div>
 
-                      <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8">
+                      <div className="flex flex-col md:flex-row gap-2 md:gap-8">
                         <Typography
-                          className="text-secondary-60 min-w-[100px]"
+                          className="text-secondary-60 min-w-[100px] flex-shrink-0"
                           size="sm"
                         >
                           {t("address")}
+                          {requestData?.addresses &&
+                          requestData.addresses.length > 1
+                            ? "es"
+                            : ""}
                         </Typography>
-                        <Typography className="text-secondary-100" size="sm">
-                          {requestData
-                            ? [
-                                requestData.address?.country,
-                                requestData.address?.providence,
-                                requestData.address?.city,
-                                requestData.address?.municipality,
-                              ]
-                                .filter((val) => val && val.trim() !== "")
-                                .join(", ")
-                            : "-"}
-                        </Typography>
+                        <div className="text-secondary-100 text-sm flex-1">
+                          {requestData ? (
+                            requestData.addresses &&
+                            Array.isArray(requestData.addresses) &&
+                            requestData.addresses.length > 0 ? (
+                              <div className="space-y-2">
+                                {requestData.addresses.map(
+                                  (addr: any, index: number) => (
+                                    <div
+                                      key={index}
+                                      className="flex items-start gap-2"
+                                    >
+                                      <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-blue-500 rounded-full flex-shrink-0 mt-0.5">
+                                        {index + 1}
+                                      </span>
+                                      <span className="break-words">
+                                        {[
+                                          addr.city,
+                                          addr.municipality,
+                                          addr.country,
+                                          addr.providence,
+                                        ]
+                                          .filter(
+                                            (val) => val && val.trim() !== ""
+                                          )
+                                          .join(", ")}
+                                      </span>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            ) : requestData.address ? (
+                              // Fallback to single address for backward compatibility
+                              <span className="break-words">
+                                {[
+                                  requestData.address.country,
+                                  requestData.address.providence,
+                                  requestData.address.city,
+                                  requestData.address.municipality,
+                                ]
+                                  .filter((val) => val && val.trim() !== "")
+                                  .join(", ")}
+                              </span>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )
+                          ) : (
+                            <span className="text-gray-500">-</span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="space-y-4">
-                        <Typography
-                          className="text-secondary-60"
-                          size="sm"
-                        >
+                        <Typography className="text-secondary-60" size="sm">
                           {t("invoice_files")}
                         </Typography>
-                        {requestData && requestData?.files && requestData.files.length > 0 ? (
+                        {requestData &&
+                        requestData?.files &&
+                        requestData.files.length > 0 ? (
                           <div className="border border-gray-200 rounded-lg overflow-hidden">
                             <table className="w-full">
                               <thead className="bg-gray-50">
@@ -372,7 +415,9 @@ const TestRequestDetails = () => {
                                           size="sm"
                                           className="text-gray-900"
                                         >
-                                          {f.original_name || f.name || 'Document'}
+                                          {f.original_name ||
+                                            f.name ||
+                                            "Document"}
                                         </Typography>
                                       </div>
                                     </td>
@@ -462,7 +507,7 @@ const TestRequestDetails = () => {
           </div>
         </AppLayout>
       )}
-      
+
       {requestData && (
         <RequestDetailModal
           isOpen={isOpenRequestDetails}

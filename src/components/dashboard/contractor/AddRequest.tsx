@@ -90,7 +90,7 @@ const AddRequest = () => {
 
   const [data, setData] = useState<Order[]>([]);
   const [userData, setUserData] = useState<{ token: string } | undefined>();
-  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  const [selectedAddresses, setSelectedAddresses] = useState<string[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   // const [mandatoryFiles, setMandatoryFiles] = useState<UploadedFile[]>([]);
   // const [additionalFiles, setAdditionalFiles] = useState<UploadedFile[]>([]);
@@ -104,9 +104,7 @@ const AddRequest = () => {
     totalAmountWithTax: 0,
   });
   const { getRoute } = useRoleRoute();
-  const [financialAuthority, setFinancialAuthority] = useState<string>(
-    ""
-  );
+  const [financialAuthority, setFinancialAuthority] = useState<string>("");
   const [autoEditId, setAutoEditId] = useState<number | null>(null);
   const [validationErrors, setValidationErrors] = useState<{
     address?: string;
@@ -208,24 +206,48 @@ const AddRequest = () => {
   };
 
   const updateEntitys = (entitys: Entity[]) => {
-    const newOrder: Order[] = entitys.map((entity: Entity, index: number) => ({
-      id: new Date().getTime() + index + 1,
-      label: entity.label,
-      quantity: entity.quantity,
-      unitPrice: entity.unit_price,
-      total: entity.total,
-      taxRate: entity.tax_rate,
-      taxAmount: entity.tax_amount,
-      vatIncluded: entity.vat_included,
-      customDuty: entity.custom_duties || "",
-    }));
+    const newOrder: Order[] = entitys.map((entity: Entity, index: number) => {
+      console.log("🔍 Processing entity:", {
+        label: entity.label,
+        custom_duties: entity.custom_duties,
+        mapped_customDuty: entity.custom_duties || "",
+      });
+      return {
+        id: new Date().getTime() + index + 1,
+        label: entity.label,
+        quantity: entity.quantity,
+        unitPrice: entity.unit_price,
+        total: entity.total,
+        taxRate: entity.tax_rate,
+        taxAmount: entity.tax_amount,
+        vatIncluded: entity.vat_included,
+        customDuty: entity.custom_duties || "",
+      };
+    });
     // Note: For editing existing requests, tax_category will be fetched separately
     // and the financialAuthority state will be updated accordingly
     setData(recalculateTableData([...data, ...newOrder]));
   };
 
-  const handleAddressChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedAddress(event.target.value);
+  // Multiple address selection handlers
+  const toggleAddressSelection = (addressId: string) => {
+    setSelectedAddresses((prev) => {
+      if (prev.includes(addressId)) {
+        return prev.filter((id) => id !== addressId);
+      } else {
+        return [...prev, addressId];
+      }
+    });
+  };
+
+  const handleSelectAllAddresses = () => {
+    if (selectedAddresses.length === addressData?.data?.length) {
+      setSelectedAddresses([]);
+    } else {
+      setSelectedAddresses(
+        addressData?.data?.map((addr: AddressData) => addr.id) || []
+      );
+    }
   };
 
   const handleTableDataChange = (newData: Order[]) => {
@@ -283,9 +305,10 @@ const AddRequest = () => {
     },
     onSuccess: (response) => {
       toast.success(t("request_updated_successfully"));
-      
+
       // Extract request ID from response and redirect to request details
-      const requestId = response?.data?.data?.id || response?.data?.data?.request_id;
+      const requestId =
+        response?.data?.data?.id || response?.data?.data?.request_id;
       if (requestId) {
         navigate(`/request-details/${requestId}`);
       } else {
@@ -309,40 +332,50 @@ const AddRequest = () => {
       contractAmount?: string;
       fileUpload?: string;
     } = {};
-    if (!selectedAddress) {
+    if (selectedAddresses.length === 0) {
       errors.address = t("address_is_required");
     }
     if (!requestLetter || requestLetter.trim() === "") {
       errors.requestLetter = t("request_letter_is_required");
     }
 
-    // Check for mandatory files based on tax category
     let mandatoryDocNames: string[] = [];
     let requiredFileCount = 0;
     let errorMessage = "";
 
     if (financialAuthority === "location_acquisition") {
-      // For Location Acquisition: only "Facture émise par le fournisseur" is required
+      // For Location Acquisition: only 1 document is required
       mandatoryDocNames = ["Facture e`mise par le fournisseur"];
       requiredFileCount = 1;
-      errorMessage = t("facture_file_required") || "Facture émise par le fournisseur is required";
-    } else {
-      // For Importation: all 3 documents are required
+      errorMessage =
+        t("location_acquisition_file_required") ||
+        "Location Acquisition requires 1 document: Facture émise par le fournisseur";
+    } else if (financialAuthority === "importation") {
       mandatoryDocNames = [
         "Letter de transport, note de fret, note d'assurance",
         "De`claration pour I'importation Conditionnelle <<IC>>",
         "Facture e`mise par le fournisseur",
       ];
       requiredFileCount = 3;
-      errorMessage = t("at_least_three_mandatory_files_required") || "At least 3 mandatory files are required";
+      errorMessage =
+        t("importation_files_required") ||
+        "Importation requires 3 documents: Letter de transport, Déclaration IC, and Facture émise";
     }
 
-    const mandatoryFilesUploaded = uploadedFiles.filter((file) =>
-      mandatoryDocNames.includes(file.original_name || "")
-    );
+    if (financialAuthority && mandatoryDocNames.length > 0) {
+      const mandatoryFilesUploaded = uploadedFiles.filter((file) => {
+        const fileName = file.original_name || "";
+        return mandatoryDocNames.some((docName) => {
+          return (
+            fileName.toLowerCase().includes(docName.toLowerCase()) ||
+            docName.toLowerCase().includes(fileName.toLowerCase())
+          );
+        });
+      });
 
-    if (mandatoryFilesUploaded.length < requiredFileCount) {
-      errors.fileUpload = errorMessage;
+      if (mandatoryFilesUploaded.length < requiredFileCount) {
+        errors.fileUpload = errorMessage;
+      }
     }
 
     if (
@@ -359,7 +392,7 @@ const AddRequest = () => {
 
     const apiData: CreateRequestPayload = {
       project_id: projectId,
-      address_id: selectedAddress,
+      address_id: selectedAddresses.join(","), // Convert array to comma-separated string
       request_letter: requestLetter,
       document_ids:
         uploadedFiles.length > 0
@@ -496,6 +529,8 @@ const AddRequest = () => {
         request_letter,
         entities,
         address,
+        addresses,
+        address_ids,
         files,
         tax_category,
         sub_status,
@@ -521,7 +556,21 @@ const AddRequest = () => {
 
       const res = await fetchProjectAddressesAsync(project_id);
       if (res.status === 200) {
-        setSelectedAddress(address.id);
+        // Handle multiple address selection for edit mode
+        let selectedAddressIds: string[] = [];
+
+        if (addresses && Array.isArray(addresses)) {
+          // If addresses array exists, extract IDs from it
+          selectedAddressIds = addresses.map((addr: any) => addr.id);
+        } else if (address_ids && typeof address_ids === "string") {
+          // If address_ids exists as comma-separated string, split it
+          selectedAddressIds = address_ids.split(",").filter((id) => id.trim());
+        } else if (address && address.id) {
+          // Fallback to single address for backward compatibility
+          selectedAddressIds = [address.id];
+        }
+
+        setSelectedAddresses(selectedAddressIds);
       }
     }
   };
@@ -633,23 +682,64 @@ const AddRequest = () => {
         {/* Form Fields */}
         <div className="mt-4 md:mt-6">
           <Label htmlFor="address">{t("address")}</Label>
-          <select
-            id="address"
-            name="address"
-            value={selectedAddress}
-            onChange={handleAddressChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-30 focus:border-transparent"
-            disabled={isLoadingAddresses}
-          >
-            <option value="">
-              {isLoadingAddresses ? t("loading") : t("select_address")}
-            </option>
-            {addressData?.data?.map((address: AddressData) => (
-              <option key={address.id} value={address.id}>
-                {`${address.city}, ${address.municipality}, ${address.country}`}
-              </option>
-            ))}
-          </select>
+          <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
+            {isLoadingAddresses ? (
+              <Typography className="text-gray-500">{t("loading")}</Typography>
+            ) : addressData?.data?.length > 0 ? (
+              <>
+                <div className="mb-3 pb-2 border-b border-gray-200">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectedAddresses.length === addressData.data.length
+                      }
+                      onChange={handleSelectAllAddresses}
+                      className="rounded focus:ring-2 focus:ring-primary-30"
+                    />
+                    <Typography
+                      size="sm"
+                      weight="normal"
+                      className="text-primary-70"
+                    >
+                      Select All ({addressData.data.length})
+                    </Typography>
+                  </label>
+                </div>
+                {addressData.data.map((address: AddressData) => (
+                  <label
+                    key={address.id}
+                    className="flex items-start gap-2 cursor-pointer mb-2 last:mb-0"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedAddresses.includes(address.id)}
+                      onChange={() => toggleAddressSelection(address.id)}
+                      className="mt-1 rounded focus:ring-2 focus:ring-primary-30"
+                    />
+                    <div>
+                      <Typography size="sm" weight="normal">
+                        {`${address.city}, ${address.municipality}, ${address.country}`}
+                      </Typography>
+                      <Typography size="xs" className="text-gray-500">
+                        {address.providence}
+                      </Typography>
+                    </div>
+                  </label>
+                ))}
+              </>
+            ) : (
+              <Typography className="text-gray-500">
+                {t("no_addresses_available")}
+              </Typography>
+            )}
+          </div>
+          {selectedAddresses.length > 0 && (
+            <Typography size="sm" className="text-primary-70 mt-2">
+              {selectedAddresses.length} address
+              {selectedAddresses.length > 1 ? "es" : ""} selected
+            </Typography>
+          )}
           {validationErrors.address && (
             <Typography size="sm" className="text-red-500 mt-1">
               {validationErrors.address}
@@ -685,7 +775,9 @@ const AddRequest = () => {
             disabled={isLoadingAddresses}
           >
             <option value="">
-              {isLoadingAddresses ? t("loading") : t("select_tax_category") || "Select Tax Category"}
+              {isLoadingAddresses
+                ? t("loading")
+                : t("select_tax_category") || "Select Tax Category"}
             </option>
             {financialAuthorityList.map(
               (list: { name: string; value: string }) => (
@@ -767,7 +859,12 @@ const AddRequest = () => {
                 onUploadFile={handleUploadFile}
                 onDeleteFile={handleDeleteFile}
                 onRenameFile={handleRenameFile}
-                showAdditionalDocs={requestId ? (requestSubStatus === "hold" || requestSubStatus === "Request Info") : false}
+                showAdditionalDocs={
+                  requestId
+                    ? requestSubStatus === "hold" ||
+                      requestSubStatus === "Request Info"
+                    : false
+                }
                 taxCategory={financialAuthority}
               />
               {validationErrors.fileUpload && (

@@ -47,55 +47,6 @@ const UploadFile: React.FC<FileUploadProps> = ({
   showAdditionalDocs = true, // Default to showing additional documents
   taxCategory = "importation", // Default to importation (shows all 3 documents)
 }) => {
-  const [mandatoryDocs, setMandatoryDocs] = useState<DocumentRow[]>([
-    {
-      id: "mandatory_1",
-      name: "Letter de transport, note de fret, note d'assurance",
-      isUploaded: false,
-      isMandatory: true,
-      isNameEditable: false,
-    },
-    {
-      id: "mandatory_2",
-      name: "De`claration pour I'importation Conditionnelle <<IC>>",
-      isUploaded: false,
-      isMandatory: true,
-      isNameEditable: false,
-    },
-    {
-      id: "mandatory_3",
-      name: "Facture e`mise par le fournisseur",
-      isUploaded: false,
-      isMandatory: true,
-      isNameEditable: false,
-    },
-  ]);
-
-  const [additionalDocs, setAdditionalDocs] = useState<DocumentRow[]>([
-    {
-      id: "additional_1",
-      name: "",
-      isUploaded: false,
-      isMandatory: false,
-      isNameEditable: true,
-    },
-  ]);
-  const [error, setError] = useState<string>("");
-  const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
-    {}
-  );
-  const [removingFile, setRemovingFile] = useState<boolean>(false);
-  const [renamingFiles, setRenamingFiles] = useState<Set<string>>(new Set());
-
-  const filesDep = useMemo(
-    () => files?.map((f) => f.id).join(","),
-    [files]
-  );
-
-  const isInitialMount = useRef(true);
-  const lastNotifiedFiles = useRef<string>("");
-
   // Function to get mandatory documents based on tax category
   const getMandatoryDocsByTaxCategory = (category: string): DocumentRow[] => {
     if (category === "location_acquisition") {
@@ -137,6 +88,35 @@ const UploadFile: React.FC<FileUploadProps> = ({
     }
   };
 
+  const [mandatoryDocs, setMandatoryDocs] = useState<DocumentRow[]>(
+    () => getMandatoryDocsByTaxCategory(taxCategory)
+  );
+
+  const [additionalDocs, setAdditionalDocs] = useState<DocumentRow[]>([
+    {
+      id: "additional_1",
+      name: "",
+      isUploaded: false,
+      isMandatory: false,
+      isNameEditable: true,
+    },
+  ]);
+  const [error, setError] = useState<string>("");
+  const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
+    {}
+  );
+  const [removingFile, setRemovingFile] = useState<boolean>(false);
+  const [renamingFiles, setRenamingFiles] = useState<Set<string>>(new Set());
+
+  const filesDep = useMemo(
+    () => files?.map((f) => f.id).join(","),
+    [files]
+  );
+
+  const isInitialMount = useRef(true);
+  const lastNotifiedFiles = useRef<string>("");
+
   // Effect to update mandatory documents when tax category changes
   useEffect(() => {
     const newMandatoryDocs = getMandatoryDocsByTaxCategory(taxCategory);
@@ -160,30 +140,8 @@ const UploadFile: React.FC<FileUploadProps> = ({
   // Listen for form reset events
   useEffect(() => {
     const resetFilesListener = () => {
-      // Reset all document states
-      setMandatoryDocs([
-        {
-          id: "mandatory_1",
-          name: "Letter de transport, note de fret, note d'assurance",
-          isUploaded: false,
-          isMandatory: true,
-          isNameEditable: false,
-        },
-        {
-          id: "mandatory_2",
-          name: "De`claration pour I'importation Conditionnelle <<IC>>",
-          isUploaded: false,
-          isMandatory: true,
-          isNameEditable: false,
-        },
-        {
-          id: "mandatory_3",
-          name: "Facture e`mise par le fournisseur",
-          isUploaded: false,
-          isMandatory: true,
-          isNameEditable: false,
-        },
-      ]);
+      // Reset all document states based on current tax category
+      setMandatoryDocs(getMandatoryDocsByTaxCategory(taxCategory));
       
       setAdditionalDocs([
         {
@@ -215,7 +173,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
     return () => {
       window.removeEventListener('form-reset', resetFilesListener);
     };
-  }, [onFilesSelect]);
+  }, [onFilesSelect, taxCategory]);
 
   // useEffect(() => {
   //   if (files && files.length > 0) {
@@ -266,30 +224,8 @@ const UploadFile: React.FC<FileUploadProps> = ({
       setMandatoryDocs(newMandatoryDocs);
       setAdditionalDocs(newAdditionalDocs);
     } else if (files && files.length === 0) {
-      // Reset to initial state when files array is empty
-      setMandatoryDocs([
-        {
-          id: "mandatory_1",
-          name: "Letter de transport, note de fret, note d'assurance",
-          isUploaded: false,
-          isMandatory: true,
-          isNameEditable: false,
-        },
-        {
-          id: "mandatory_2",
-          name: "De`claration pour I'importation Conditionnelle <<IC>>",
-          isUploaded: false,
-          isMandatory: true,
-          isNameEditable: false,
-        },
-        {
-          id: "mandatory_3",
-          name: "Facture e`mise par le fournisseur",
-          isUploaded: false,
-          isMandatory: true,
-          isNameEditable: false,
-        },
-      ]);
+      // Reset to initial state when files array is empty, respecting tax category
+      setMandatoryDocs(getMandatoryDocsByTaxCategory(taxCategory));
       
       setAdditionalDocs([
         {
@@ -301,7 +237,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
         },
       ]);
     }
-  }, [filesDep]);
+  }, [filesDep, taxCategory]);
 
   useEffect(() => {
     const allUploadedFiles = [

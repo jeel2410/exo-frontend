@@ -608,10 +608,22 @@ const CreateRequestTable = ({
                     </div>
                   ) : (
                     <span className="block font-medium text-secondary-100 text-sm">
-                      {getCustomDutyOptions().find(
-                        (opt) =>
-                          opt.value === (order.customDuty || order.custom_duty)
-                      )?.label || "-"}
+                      {(() => {
+                        const customDutyValue = order.customDuty || order.custom_duty;
+                        const matchedOption = getCustomDutyOptions().find(
+                          (opt) => opt.value === customDutyValue
+                        );
+                        console.log('🏷️ Custom Duty Display Debug:', {
+                          orderId: order.id,
+                          orderCustomDuty: order.customDuty,
+                          orderCustom_duty: order.custom_duty,
+                          finalValue: customDutyValue,
+                          availableOptions: getCustomDutyOptions(),
+                          matchedOption: matchedOption,
+                          displayLabel: matchedOption?.label || "-"
+                        });
+                        return matchedOption?.label || "-";
+                      })()}
                     </span>
                   )}
                 </TableCell>
