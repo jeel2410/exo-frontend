@@ -238,6 +238,24 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
           <div className="space-y-3">
             <div className="flex">
               <div className="w-1/3 text-secondary-60">
+                <Label>Reference</Label>
+              </div>
+              <div className="w-2/3 text-secondary-100">
+                {projectData.contractReference || "-"}
+              </div>
+            </div>
+
+            <div className="flex">
+              <div className="w-1/3 text-secondary-60">
+                <Label>Name</Label>
+              </div>
+              <div className="w-2/3 text-secondary-100">
+                {projectData.contractName || "-"}
+              </div>
+            </div>
+
+            <div className="flex">
+              <div className="w-1/3 text-secondary-60">
                 <Label>{t("signed_by")}</Label>
               </div>
               <div className="w-2/3 text-secondary-100">

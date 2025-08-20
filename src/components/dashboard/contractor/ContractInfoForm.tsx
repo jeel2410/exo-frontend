@@ -23,6 +23,8 @@ interface ContractFormValues {
   dateOfSigning: string;
   place: string;
   contractFiles: UploadedFile[];
+  reference: string;
+  name: string;
 }
 
 interface StepProps {
@@ -50,6 +52,8 @@ const ContractInfoForm = ({
     dateOfSigning: "",
     contractFiles: [],
     place: "",
+    reference: "",
+    name: "",
   };
 
   const currencyOptions = [
@@ -93,6 +97,8 @@ const ContractInfoForm = ({
       ),
     place: Yup.string().required(t("place_required")),
     dateOfSigning: Yup.string().required(t("date_required")),
+    reference: Yup.string().required("Reference is required"),
+    name: Yup.string().required("Name is required"),
   });
 
   const fileUploadMutation = async ({
@@ -249,6 +255,43 @@ const ContractInfoForm = ({
               component="div"
               className="text-red-500 text-sm"
             />
+          </div>
+
+          <div className="flex gap-5 w-full">
+            <div className="w-full">
+              <Label htmlFor="reference">
+                Reference
+                <span className="text-red-500">*</span>
+              </Label>
+              <Field
+                id="reference"
+                as={Input}
+                name="reference"
+                placeholder="Contract Reference"
+              />
+              <ErrorMessage
+                name="reference"
+                component="div"
+                className="text-red-500 text-sm"
+              />
+            </div>
+            <div className="w-full">
+              <Label htmlFor="name">
+                Name
+                <span className="text-red-500">*</span>
+              </Label>
+              <Field
+                id="name"
+                as={Input}
+                name="name"
+                placeholder="Contract Name"
+              />
+              <ErrorMessage
+                name="name"
+                component="div"
+                className="text-red-500 text-sm"
+              />
+            </div>
           </div>
 
           <div className="flex gap-5 w-full">

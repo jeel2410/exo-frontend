@@ -43,6 +43,8 @@ export interface ContractReviewData {
   dateOfSigning: string;
   contractFiles: UploadedFile[];
   place: string;
+  contractReference: string;
+  contractName: string;
 }
 
 const ContractReviewInitialValue = {
@@ -64,6 +66,8 @@ const ContractReviewInitialValue = {
   dateOfSigning: "",
   contractFiles: [],
   place: "",
+  contractReference: "",
+  contractName: "",
 };
 
 interface FormDataProps {
@@ -76,6 +80,8 @@ interface FormDataProps {
   dateOfSigning: string;
   contractFiles: UploadedFile[];
   place: string;
+  reference: string;
+  name: string;
 }
 
 const initialValue = {
@@ -88,6 +94,8 @@ const initialValue = {
   dateOfSigning: "",
   contractFiles: [],
   place: "",
+  reference: "",
+  name: "",
 };
 
 const ContractCreatePage = () => {
@@ -131,7 +139,12 @@ const ContractCreatePage = () => {
   };
 
   const handleFormSubmit = (values: any) => {
-    setContractReview((preve) => ({ ...preve, ...values }));
+    setContractReview((preve) => ({ 
+      ...preve, 
+      ...values,
+      contractReference: values.reference,
+      contractName: values.name
+    }));
     setFormData(values);
     setCurrentStep(1);
   };
@@ -156,6 +169,9 @@ const ContractCreatePage = () => {
         "document_ids",
         filesData.map((file: any) => file.id).join(",")
       );
+      // Add required fields
+      payload.append("reference", data.reference);
+      payload.append("name", data.name);
       if (projectId) {
         payload.append("project_id", projectId);
       }
@@ -239,6 +255,8 @@ const ContractCreatePage = () => {
           place: string;
           date_of_signing: string;
           documents: UploadedFile[] | [];
+          reference?: string;
+          name?: string;
         } = response.data.data;
         setEditProjectId(contractData.project_id);
         fetchProject(contractData.project_id);
@@ -256,6 +274,8 @@ const ContractCreatePage = () => {
           place: contractData.place,
           signedBy: contractData.signed_by,
           position: contractData.position,
+          reference: contractData.reference || "",
+          name: contractData.name || "",
         }));
       }
     },
