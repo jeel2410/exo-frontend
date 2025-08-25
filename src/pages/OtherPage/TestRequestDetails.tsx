@@ -243,6 +243,49 @@ const TestRequestDetails = () => {
                 {requestData ? requestData.unique_number : ""}
               </Typography>
             </div>
+            
+            {/* Statistics Cards - moved outside main content box */}
+            <div className="mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <DashBoardCard
+                  icon={<BlueCopyIcon width={44} height={44} />}
+                  count={
+                    requestData
+                      ? requestData?.amount_summary?.total_quantity
+                      : 0
+                  }
+                  title={t("total_quantity")}
+                />
+                <DashBoardCard
+                  icon={<UsdGreenIcon width={44} height={44} />}
+                  count={
+                    requestData
+                      ? requestData?.amount_summary?.total_amount
+                      : 0
+                  }
+                  title={t("total_amount")}
+                />
+                <DashBoardCard
+                  icon={<UsdVioletIcon width={44} height={44} />}
+                  count={
+                    requestData
+                      ? requestData?.amount_summary?.total_tax
+                      : 0
+                  }
+                  title={t("total_tax_amount")}
+                />
+                <DashBoardCard
+                  icon={<UsdOrangeIcon width={44} height={44} />}
+                  count={
+                    requestData
+                      ? requestData?.amount_summary?.vat_included
+                      : 0
+                  }
+                  title={t("total_amount_with_tax")}
+                />
+              </div>
+            </div>
+            
             <div className="flex gap-6">
               <div>
                 <RequestProgress steps={steps} />
@@ -261,48 +304,8 @@ const TestRequestDetails = () => {
                     </div>
                   </div>
 
-                  {/* Cards Grid */}
+                  {/* Details List - cards moved outside */}
                   <div className="px-4 md:px-6 py-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                      <DashBoardCard
-                        icon={<BlueCopyIcon width={44} height={44} />}
-                        count={
-                          requestData
-                            ? requestData?.amount_summary?.total_quantity
-                            : 0
-                        }
-                        title={t("total_quantity")}
-                      />
-                      <DashBoardCard
-                        icon={<UsdGreenIcon width={44} height={44} />}
-                        count={
-                          requestData
-                            ? requestData?.amount_summary?.total_amount
-                            : 0
-                        }
-                        title={t("total_amount")}
-                      />
-                      <DashBoardCard
-                        icon={<UsdVioletIcon width={44} height={44} />}
-                        count={
-                          requestData
-                            ? requestData?.amount_summary?.total_tax
-                            : 0
-                        }
-                        title={t("total_tax_amount")}
-                      />
-                      <DashBoardCard
-                        icon={<UsdOrangeIcon width={44} height={44} />}
-                        count={
-                          requestData
-                            ? requestData?.amount_summary?.vat_included
-                            : 0
-                        }
-                        title={t("total_amount_with_tax")}
-                      />
-                    </div>
-
-                    {/* Details List */}
                     <div className="space-y-4">
                       <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8">
                         <Typography

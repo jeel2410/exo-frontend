@@ -23,6 +23,7 @@ export interface RequestData {
   id: number;
   requestNo: string;
   amount: string;
+  currency?: string;
   createdDate: string;
   status: string;
   sub_status?: string;
@@ -97,6 +98,7 @@ const RequestListPage = () => {
             id: Number(index + 1),
             requestNo: request.id,
             amount: finalAmount,
+            currency: request.currency || "USD",
             createdDate: moment(request.created_at).format("YYYY/MM/DD"),
             status: request.current_status || request.status,
             sub_status: request.sub_status,

@@ -5,12 +5,15 @@ import {
   TableCell,
   TableHeader,
   TableRow,
-} from "./CreateRequestTable.tsx";
+  TableHeader as TableHeaderType,
+} from "./CreateRequestTable.tsx.tsx";
 import {
   CrossRedIcon,
   EyeDarkIcon,
   PluseDarkIcon,
   RightGreenIcon,
+  USFlag,
+  CDFFlag,
 } from "../../icons";
 import { useNavigate } from "react-router-dom";
 // import projectService from "../../services/project.service.ts";
@@ -175,7 +178,7 @@ const ContractProjectListTable = ({
     navigate(`/create-contract/${projectId}`);
   };
 
-  const tableHeader: TableHeader[] = [
+  const tableHeader: TableHeaderType[] = [
     // {
     //   content: (
     //     <input
@@ -242,7 +245,7 @@ const ContractProjectListTable = ({
           </TableHeader>
 
           <TableBody className="divide-y divide-gray-100">
-            {tableData &&
+            {tableData && tableData.length > 0 ? (
               tableData.map((data) => {
                 return (
                   <TableRow key={data.id}>
@@ -271,7 +274,12 @@ const ContractProjectListTable = ({
 
                     
                     <TableCell className="px-5 py-4 sm:px-6">
-                      <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">                        
+                      <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
+                        {data.currency === "USD" ? (
+                          <USFlag width={24} height={14} />
+                        ) : data.currency === "CDF" ? (
+                          <CDFFlag width={24} height={14} />
+                        ) : null}
                         <span className="text-gray-500">{data.currency}</span>
                         <span className="block font-medium text-secondary-100 text-sm">
                           {Number(data.amount).toLocaleString()}
@@ -365,7 +373,14 @@ const ContractProjectListTable = ({
                     </TableCell>
                   </TableRow>
                 );
-              })}
+              })
+            ) : (
+              <TableRow>
+                <TableCell className="px-5 py-8 text-center text-gray-500">
+                  {t("no_projects_found") || "No projects found"}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

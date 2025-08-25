@@ -134,83 +134,84 @@ const SelectContractTable: React.FC<SelectContractTableProps> = ({
   }
 
   return (
-    <div className="relative rounded-lg bg-white border border-secondary-30">
-      <div className="relative">
-        <Table>
-          <TableHeader className="border-b border-gray-100 bg-secondary-10 rounded-lg">
-            <TableRow>
-              {tableHeader.map((header, index) => {
+    <div className="relative rounded-lg bg-white border border-secondary-30 overflow-hidden">
+      <div className="overflow-x-auto">
+        <div className="min-w-[1200px]">
+          <Table>
+            <TableHeader className="border-b border-gray-100 bg-secondary-10 rounded-t-lg">
+              <TableRow>
+                {tableHeader.map((header, index) => {
+                  return (
+                    <TableCell
+                      key={index}
+                      isHeader
+                      className={`px-5 py-4 font-semibold text-secondary-50 text-left text-sm ${header.className || ''}`}
+                      onClick={header.onClick}
+                    >
+                      {header.content}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            </TableHeader>
+
+            <TableBody className="divide-y divide-gray-100">
+              {data.map((contract, index) => {
                 return (
-                  <TableCell
-                    key={index}
-                    isHeader
-                    className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm"
-                    onClick={header.onClick}
-                  >
-                    {header.content}
-                  </TableCell>
+                  <TableRow key={contract.id}>
+                    <TableCell className="px-5 py-4 text-gray-500 text-sm w-16">
+                      {index + 1}
+                    </TableCell>
+                    <TableCell className="px-5 py-4 min-w-[150px]">
+                      <span className="block font-medium text-secondary-100 text-sm">
+                        {contract.project_name}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-5 py-4 min-w-[120px]">
+                      <span className="block font-medium text-secondary-100 text-sm">
+                        {contract.signed_by}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-5 py-4 min-w-[100px]">
+                      <span className="block font-medium text-secondary-100 text-sm">
+                        {contract.position}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-5 py-4 min-w-[120px]">
+                      <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
+                        <span className="text-gray-600">{contract.currency}</span>
+                        <span className="block font-medium text-secondary-100 text-sm">
+                          {Number(contract.amount).toLocaleString()}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-5 py-4 min-w-[120px]">
+                      <span className="block font-medium text-secondary-100 text-sm">
+                        {contract.organization}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-5 py-4 min-w-[100px]">
+                      <span className="block font-medium text-secondary-100 text-sm whitespace-nowrap">
+                        {moment(contract.created_at).format("YYYY/MM/DD")}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-3 py-3 text-center w-20">
+                      <Button
+                        variant="primary"
+                        onClick={() =>
+                          onSelectContract(contract.id, contract.project_id)
+                        }
+                        className="text-xs px-3 py-1.5 min-w-[60px] h-7 whitespace-nowrap"
+                      >
+                        {t("select")}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 );
               })}
-            </TableRow>
-          </TableHeader>
-
-          <TableBody className="divide-y divide-gray-100">
-            {data.map((contract, index) => {
-              return (
-                <TableRow key={contract.id}>
-                  <TableCell className="px-5 py-4 text-gray-500 text-sm">
-                    {index + 1}
-                  </TableCell>
-                  <TableCell className="px-5 py-4 sm:px-6">
-                    <span className="block font-medium text-secondary-100 text-sm text-nowrap truncate">
-                      {contract.project_name}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4 sm:px-6">
-                    <span className="block font-medium text-secondary-100 text-sm text-nowrap truncate">
-                      {contract.signed_by}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4 sm:px-6">
-                    <span className="block font-medium text-secondary-100 text-sm text-nowrap truncate">
-                      {contract.position}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4 sm:px-6">
-                    <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
-                      <span className="text-gray-600">{contract.currency}</span>
-                      <span className="block font-medium text-secondary-100 text-sm">
-                        {Number(contract.amount).toLocaleString()}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-5 py-4 sm:px-6">
-                    <span className="block font-medium text-secondary-100 text-sm text-nowrap truncate">
-                      {contract.organization}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4 sm:px-6">
-                    <span className="block font-medium text-secondary-100 text-sm text-nowrap">
-                      {moment(contract.created_at).format("YYYY/MM/DD")}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-3 py-3 text-center">
-                    <Button
-                      variant="primary"
-                      // size="sm"
-                      onClick={() =>
-                        onSelectContract(contract.id, contract.project_id)
-                      }
-                      className="text-xs px-3 py-1.5 min-w-[60px] h-7"
-                    >
-                      {t("select")}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

@@ -5,7 +5,8 @@ import {
   TableCell,
   TableHeader,
   TableRow,
-} from "./CreateRequestTable.tsx";
+  TableHeader as TableHeaderType,
+} from "./CreateRequestTable.tsx.tsx";
 import { CrossRedIcon, RightGreenIcon, USFlag, CDFFlag } from "../../icons";
 import Typography from "../../lib/components/atoms/Typography.tsx";
 import { useNavigate } from "react-router";
@@ -135,7 +136,7 @@ const RequestTable = ({
     }
   };
 
-  const tableHeader: TableHeader[] = [
+  const tableHeader: TableHeaderType[] = [
     // {
     //   content: (
     //     <input

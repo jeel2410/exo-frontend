@@ -310,5 +310,6 @@
   "failed_to_load_notifications": "Échec du chargement des notifications",
   "no_notifications": "Aucune notification",
   "unread": "Non lues",
-  "read": "Lues"
+  "read": "Lues",
+  "no_projects_found": "No Projects Found"
 }

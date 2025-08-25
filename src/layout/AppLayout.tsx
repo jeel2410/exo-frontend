@@ -28,7 +28,7 @@ const LayoutContent: React.FC<LayoutContentProps> = ({
         }`}
       >
         <AppHeader />
-        <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+        <div className="p-4 mx-auto max-w-[1600px] md:p-6 xl:max-w-none xl:mx-0 xl:px-6">
           {children}
           <div className="w-full p-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
             © {new Date().getFullYear()} ExoTrack, All rights reserved.

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import moment from "moment";
-import { ArchiveIconDark, EyeDarkIcon, PencilIcon, PlusIcon } from "../../icons";
+import { ArchiveIconDark, EyeDarkIcon, PencilIcon, PlusIcon, USFlag, CDFFlag } from "../../icons";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import contractService from "../../services/contract.service";
@@ -294,6 +294,11 @@ const ContractListTable = ({
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6">
                       <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
+                        {data.currency === "USD" ? (
+                          <USFlag width={24} height={14} />
+                        ) : data.currency === "CDF" ? (
+                          <CDFFlag width={24} height={14} />
+                        ) : null}
                         <span className="text-gray-600">{data.currency}</span>
                         <span className="block font-medium text-secondary-100 text-sm">
                           {Number(data.amountOfContract).toLocaleString()}

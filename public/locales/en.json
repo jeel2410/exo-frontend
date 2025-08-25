@@ -315,5 +315,6 @@
   "failed_to_load_notifications": "Failed to load notifications",
   "no_notifications": "No notifications",
   "unread": "Unread",
-  "read": "Read"
+  "read": "Read",
+  "no_projects_found": "No Projects Found"
 }

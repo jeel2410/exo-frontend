@@ -47,7 +47,7 @@ const SelectContractPage = () => {
     <AppLayout>
       <div className="relative">
         <motion.div
-          className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-4 px-4 sm:px-0"
+          className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
@@ -83,17 +83,15 @@ const SelectContractPage = () => {
           </motion.div>
         </motion.div>
 
-        <motion.div className="px-4 sm:px-0">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
-          >
-            <SelectContractTable
-              data={contracts}
-              onSelectContract={handleSelectContract}
-            />
-          </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
+        >
+          <SelectContractTable
+            data={contracts}
+            onSelectContract={handleSelectContract}
+          />
         </motion.div>
       </div>
     </AppLayout>
