@@ -316,5 +316,9 @@
   "no_notifications": "No notifications",
   "unread": "Unread",
   "read": "Read",
-  "no_projects_found": "No Projects Found"
+  "no_projects_found": "No Projects Found",
+  "view_contract": "View Contract",
+  "edit": "Edit",
+  "add_request": "Add Request",
+  "copyright_text": "© {{year}} ExoTrack, All rights reserved."
 }

@@ -1,7 +1,10 @@
 import { useEffect } from "react";
 import { FilterIcon, SearchIcon } from "../../../icons";
+import { useTranslation } from "react-i18next";
 
 const ContractListSkeleton = () => {
+  const { t } = useTranslation();
+  
   useEffect(() => {
     const body = document.body;
     body.style.overflow = "hidden";
@@ -36,7 +39,7 @@ const ContractListSkeleton = () => {
                     </div>
                     <input
                       type="text"
-                      placeholder="Search By Project ID or Project Name..."
+                      placeholder={t("search_placeholder")}
                       className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10 border rounded"
                       disabled
                     />
@@ -49,7 +52,7 @@ const ContractListSkeleton = () => {
                     disabled
                   >
                     <FilterIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                    <span className="text-secondary-60 text-sm font-semibold">Filter</span>
+                    <span className="text-secondary-60 text-sm font-semibold">{t("filter")}</span>
                   </button>
                 </div>
               </div>
@@ -62,31 +65,31 @@ const ContractListSkeleton = () => {
                     <thead className="border-b border-gray-100 bg-secondary-10 rounded-lg">
                       <tr>
                         <th className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm w-16">
-                          Sr No
+                          {t("sr_no")}
                         </th>
                         <th className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm min-w-[120px]">
-                          Project Name
+                          {t("project_name")}
                         </th>
                         <th className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm min-w-[120px]">
-                          Signed By
+                          {t("signed_by")}
                         </th>
                         <th className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm w-24">
-                          Position
+                          {t("position")}
                         </th>
                         <th className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm min-w-[120px]">
-                          Amount of Contract
+                          {t("amount_of_contract")}
                         </th>
                         <th className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm w-24">
-                          Organization
+                          {t("organization")}
                         </th>
                         <th className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm w-24">
-                          Created Date
+                          {t("created_date")}
                         </th>
                         <th className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm w-24">
-                          Number of Requests
+                          {t("number_of_equests")}
                         </th>
                         <th className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm w-20">
-                          Actions
+                          {t("actions")}
                         </th>
                       </tr>
                     </thead>
@@ -135,7 +138,7 @@ const ContractListSkeleton = () => {
               {/* Pagination section - Keep static structure, skeleton for dynamic parts */}
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-4 sm:px-0">
                 <div className="flex items-center gap-2 text-sm">
-                  <span>Rows per page:</span>
+                  <span>{t("rows_per_page")}</span>
                   <select className="border rounded px-2 py-1 text-sm bg-white" disabled>
                     <option>8</option>
                   </select>

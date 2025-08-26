@@ -51,6 +51,7 @@ interface RequestApiData {
   }>;
   created_at?: string;
   current_status?: string;
+  sub_status?: string;
   // add other fields as needed
 }
 
@@ -612,14 +613,12 @@ const ContractDetails = () => {
                 data={
                   Array.isArray(requestsData)
                     ? (requestsData as RequestApiData[]).map((req, idx) => {
-                        console.log('Debug - Request data:', req);
-                        console.log('Debug - entities:', req.entities);
-                        console.log('Debug - entities[0]?.total:', req.entities?.[0]?.total);
-                        console.log('Debug - total_amount:', req.total_amount);
-                        console.log('Debug - amount:', req.amount);
                         // Get the correct amount from entities[0].total first, then fallback to other fields
-                        const finalAmount = req.entities?.[0]?.total || req.total_amount || req.amount || "0";
-                        console.log('Debug - final amount:', finalAmount);
+                        const finalAmount =
+                          req.entities?.[0]?.total ||
+                          req.total_amount ||
+                          req.amount ||
+                          "0";
                         return {
                           id: idx + 1,
                           requestNo: req.request_unique_number
@@ -629,7 +628,8 @@ const ContractDetails = () => {
                           createdDate: req.created_at
                             ? moment(req.created_at).format("YYYY-MM-DD")
                             : "",
-                          status: req.current_status || "",
+                          status: req.current_status || "", // This will be shown in Stage column
+                          sub_status: req.sub_status || "", // This will be shown in Status column
                           request_id: req.id || "",
                           contract_id: contractData?.id || "",
                         };

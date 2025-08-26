@@ -13,6 +13,7 @@ import { useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
 import projectService from "../../services/project.service.ts";
 import { useAuth } from "../../context/AuthContext.tsx";
+import { useTranslation } from "react-i18next";
 
 export interface Data {
   id: number;
@@ -41,6 +42,7 @@ const RequestTable = ({
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleClickOutside = (event: Event) => {
@@ -150,35 +152,37 @@ const RequestTable = ({
     //   className: "w-10", // Fixed width for checkbox
     // },
     {
-      content: <div>Sr No</div>,
+      content: <div>{t("sr_no")}</div>,
       className: "w-16",
     },
     {
-      content: <div>Request No</div>,
+      content: <div>{t("request_no")}</div>,
       className: "min-w-[120px]",
     },
     {
-      content: <div>Amount</div>,
+      content: <div>{t("amount")}</div>,
       className: "min-w-[120px]",
     },
 
     {
-      content: <div>Created Date</div>,
+      content: <div>{t("creation_date")}</div>,
       className: "w-28",
     },
     {
-      content: <div>Stage</div>,
+      content: <div>{t("stage")}</div>,
       className: "w-24",
     },
     {
-      content: <div>Status</div>,
+      content: <div>{t("status")}</div>,
       className: "w-24",
     },
     {
-      content: <div>Actions</div>,
+      content: <div>{t("actions")}</div>,
       className: "w-20",
     },
   ];
+
+  console.log(data, "data");
 
   return (
     <div className="relative rounded-lg border border-secondary-30 bg-white ">
@@ -260,11 +264,15 @@ const RequestTable = ({
                           ) : data.currency === "CDF" ? (
                             <CDFFlag width={24} height={14} />
                           ) : null}
-                          <span className="text-gray-600">{data.currency || "USD"}</span>
+                          <span className="text-gray-600">
+                            {data.currency || "USD"}
+                          </span>
                           <span className="block font-medium text-secondary-100 text-sm">
                             {(() => {
                               const amount = parseFloat(data.amount || "0");
-                              return isNaN(amount) ? "0" : amount.toLocaleString();
+                              return isNaN(amount)
+                                ? "0"
+                                : amount.toLocaleString();
                             })()}
                           </span>
                         </div>
@@ -343,22 +351,29 @@ const RequestTable = ({
                       ) : (
                         <div
                           className={`w-fit cursor-pointer px-4 py-1.5 rounded-sm min-w-[89px] text-center ${
-                            (data.sub_status || '').toLowerCase().replace('_', ' ') === "in progress"
+                            (data.sub_status || "")
+                              .toLowerCase()
+                              .replace("_", " ") === "in progress"
                               ? "bg-blue-500 text-white"
-                              : (data.sub_status || '').toLowerCase() === "approved" || (data.sub_status || '').toLowerCase() === "completed"
+                              : (data.sub_status || "").toLowerCase() ===
+                                  "approved" ||
+                                (data.sub_status || "").toLowerCase() ===
+                                  "completed"
                               ? "bg-green-500 text-white"
-                              : (data.sub_status || '').toLowerCase() === "hold"
+                              : (data.sub_status || "").toLowerCase() === "hold"
                               ? "bg-orange-500 text-white"
-                              : (data.sub_status || '').toLowerCase() === "rejected"
+                              : (data.sub_status || "").toLowerCase() ===
+                                "rejected"
                               ? "bg-red-500 text-white"
                               : "bg-gray-500 text-white" // default
                           }`}
                         >
                           <Typography size="sm" weight="semibold">
-                            {data.sub_status ? 
-                              data.sub_status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-                              : '-'
-                            }
+                            {data.sub_status
+                              ? data.sub_status
+                                  .replace(/_/g, " ")
+                                  .replace(/\b\w/g, (l) => l.toUpperCase())
+                              : "-"}
                           </Typography>
                         </div>
                       )}

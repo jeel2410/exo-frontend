@@ -1,6 +1,9 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 const HelpSkeleton = () => {
+  const { t } = useTranslation();
+  
   useEffect(() => {
     const body = document.body;
     body.style.overflow = "hidden";
@@ -22,7 +25,7 @@ const HelpSkeleton = () => {
           <div className="w-full lg:w-1/2">
             {/* Keep static title */}
             <h1 className="mb-8 text-2xl font-extrabold text-gray-900">
-              Frequently Asked Questions
+              {t("frequently_asked_questions")}
             </h1>
             
             {/* FAQ Items - Skeleton for dynamic content */}
@@ -61,10 +64,10 @@ const HelpSkeleton = () => {
             {/* Keep static titles */}
             <div className="flex w-full flex-col sm:flex-row gap-2 items-center sm:items-baseline mb-6">
               <h2 className="text-secondary-100 text-center sm:text-left font-normal text-2xl">
-                Still have query?
+                {t("still_have_query")}
               </h2>
               <span className="text-secondary-100 font-bold text-xl sm:text-2xl">
-                Contact us
+                {t("contact_us")}
               </span>
             </div>
 
@@ -74,7 +77,7 @@ const HelpSkeleton = () => {
               {/* Email Field */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
+                  {t("email")}
                 </label>
                 <input
                   type="email"
@@ -87,11 +90,11 @@ const HelpSkeleton = () => {
               {/* Subject Field */}
               <div>
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                  Subject
+                  {t("subject")}
                 </label>
                 <input
                   type="text"
-                  placeholder="Subject of your message"
+                  placeholder={t("subject_of_your_message")}
                   className="bg-white w-full border rounded-lg px-3 py-2 text-gray-400"
                   disabled
                 />
@@ -100,10 +103,10 @@ const HelpSkeleton = () => {
               {/* Message Field */}
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                  Message
+                  {t("message")}
                 </label>
                 <textarea
-                  placeholder="Type your message or question here"
+                  placeholder={t("type_your_message_or_question_here")}
                   className="w-full border rounded-lg px-3 py-2 h-32 text-gray-400 resize-none"
                   disabled
                 />
@@ -115,7 +118,7 @@ const HelpSkeleton = () => {
                   className="py-3 px-6 w-full sm:w-fit bg-blue-500 text-white rounded-lg disabled:opacity-50"
                   disabled
                 >
-                  Submit
+                  {t("submit")}
                 </button>
               </div>
             </form>

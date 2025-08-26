@@ -359,7 +359,7 @@ const ContractListTable = ({
                               aria-label="View Contract"
                             >
                               <EyeDarkIcon />
-                              View Contract
+                              {t("view_contract")}
                             </button>
 
                             <button
@@ -372,7 +372,7 @@ const ContractListTable = ({
                               aria-label="Edit"
                             >
                               <PencilIcon />
-                              Edit
+                              {t("edit")}
                             </button>
 
                             <button
@@ -388,7 +388,7 @@ const ContractListTable = ({
                               aria-label="Edit"
                             >
                               <PlusIcon />
-                              Add Request
+                              {t("add_request")}
                             </button>
 
                             <button
@@ -401,7 +401,7 @@ const ContractListTable = ({
                               aria-label="Archive"
                             >
                               <ArchiveIconDark />
-                              Archive
+                              {t("archive")}
                             </button>
 
                             {/* <button

@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import AppHeader from "./AppHeader";
 import Backdrop from "./Backdrop";
 import AppSidebar from "./AppSidebar";
@@ -14,6 +15,7 @@ const LayoutContent: React.FC<LayoutContentProps> = ({
   children,
 }) => {
   const { isMobileOpen } = useSidebar();
+  const { t } = useTranslation();
 
   return (
     <div className={`min-h-screen xl:flex bg-primary-10 ${className}`}>
@@ -31,7 +33,7 @@ const LayoutContent: React.FC<LayoutContentProps> = ({
         <div className="p-4 mx-auto max-w-[1600px] md:p-6 xl:max-w-none xl:mx-0 xl:px-6">
           {children}
           <div className="w-full p-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-            © {new Date().getFullYear()} ExoTrack, All rights reserved.
+            {t("copyright_text", { year: new Date().getFullYear() })}
           </div>
         </div>
       </div>

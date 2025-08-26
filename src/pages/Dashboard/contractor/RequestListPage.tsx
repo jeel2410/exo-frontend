@@ -79,21 +79,12 @@ const RequestListPage = () => {
       const requests: RequestDetails[] = response.data.data;
       const newRequestData: RequestData[] = requests.map(
         (request, index: number) => {
-          console.log("Debug - Request data:", request);
-          console.log("Debug - entities:", request.entities);
-          console.log(
-            "Debug - entities[0]?.total:",
-            request.entities?.[0]?.total
-          );
-          console.log("Debug - total_amount:", request.total_amount);
-          console.log("Debug - amount:", request.amount);
           // Get the correct amount from entities[0].total first, then fallback to other fields
           const finalAmount =
             request.entities?.[0]?.total ||
             request.total_amount ||
             request.amount ||
             "0";
-          console.log("Debug - final amount:", finalAmount);
           return {
             id: Number(index + 1),
             requestNo: request.id,
@@ -201,7 +192,7 @@ const RequestListPage = () => {
 
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-4 sm:px-0">
               <div className="flex items-center gap-2 text-sm">
-                <span>Rows per page:</span>
+                <span>{t("rows_per_page")}:</span>
                 <select
                   value={limit}
                   onChange={(e) => handleLimitChange(Number(e.target.value))}
@@ -230,7 +221,7 @@ const RequestListPage = () => {
                 </Button>
                 <div>
                   <span className="text-nowrap">
-                    Page {currentPage} of {totalPages}
+                    {t("page")} {currentPage} {t("of")} {totalPages}
                   </span>
                 </div>
                 <Button
