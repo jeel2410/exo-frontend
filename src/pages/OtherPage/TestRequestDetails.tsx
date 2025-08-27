@@ -3,9 +3,6 @@ import {
   BlueCopyIcon,
   PdfIcon,
   // PdfIcon,
-  UsdGreenIcon,
-  UsdOrangeIcon,
-  UsdVioletIcon,
 } from "../../icons";
 import AppLayout from "../../layout/AppLayout";
 import Typography from "../../lib/components/atoms/Typography";
@@ -27,6 +24,7 @@ import { useRoleRoute } from "../../hooks/useRoleRoute";
 import Breadcrumbs from "../../components/common/Breadcrumbs";
 import CreateRequestTable from "../../components/table/CreateRequestTable.tsx";
 import { RequestDetailsSkeleton } from "../../components/common/skeletons";
+import CurrencyBadge from "../../components/common/CurrencyBadge";
 interface UserData {
   id: number;
   first_name: string;
@@ -64,6 +62,7 @@ export interface AmountSummary {
   total_amount: number;
   total_tax: number;
   vat_included: number;
+  contract_currency: string; // Currency from contract
 }
 
 export interface RequestDetails {
@@ -79,6 +78,7 @@ export interface RequestDetails {
   amount_summary: AmountSummary;
   files?: any[];
   tracks: TrackItem[];
+  contract_currency?: string; // Currency from contract
 }
 export interface ProgressStep {
   id: number;
@@ -243,7 +243,7 @@ const TestRequestDetails = () => {
                 {requestData ? requestData.unique_number : ""}
               </Typography>
             </div>
-            
+
             {/* Statistics Cards - moved outside main content box */}
             <div className="mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -257,35 +257,62 @@ const TestRequestDetails = () => {
                   title={t("total_quantity")}
                 />
                 <DashBoardCard
-                  icon={<UsdGreenIcon width={44} height={44} />}
+                  icon={
+                    <CurrencyBadge
+                      currency={
+                        (requestData?.amount_summary.contract_currency as
+                          | "USD"
+                          | "CDF") || "USD"
+                      }
+                      variant="green"
+                      width={44}
+                      height={44}
+                    />
+                  }
                   count={
-                    requestData
-                      ? requestData?.amount_summary?.total_amount
-                      : 0
+                    requestData ? requestData?.amount_summary?.total_amount : 0
                   }
                   title={t("total_amount")}
                 />
                 <DashBoardCard
-                  icon={<UsdVioletIcon width={44} height={44} />}
+                  icon={
+                    <CurrencyBadge
+                      currency={
+                        (requestData?.amount_summary.contract_currency as
+                          | "USD"
+                          | "CDF") || "USD"
+                      }
+                      variant="violet"
+                      width={44}
+                      height={44}
+                    />
+                  }
                   count={
-                    requestData
-                      ? requestData?.amount_summary?.total_tax
-                      : 0
+                    requestData ? requestData?.amount_summary?.total_tax : 0
                   }
                   title={t("total_tax_amount")}
                 />
                 <DashBoardCard
-                  icon={<UsdOrangeIcon width={44} height={44} />}
+                  icon={
+                    <CurrencyBadge
+                      currency={
+                        (requestData?.amount_summary.contract_currency as
+                          | "USD"
+                          | "CDF") || "USD"
+                      }
+                      variant="orange"
+                      width={44}
+                      height={44}
+                    />
+                  }
                   count={
-                    requestData
-                      ? requestData?.amount_summary?.vat_included
-                      : 0
+                    requestData ? requestData?.amount_summary?.vat_included : 0
                   }
                   title={t("total_amount_with_tax")}
                 />
               </div>
             </div>
-            
+
             <div className="flex gap-6">
               <div>
                 <RequestProgress steps={steps} />

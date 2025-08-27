@@ -10,8 +10,10 @@ import {
   ChevronLeftLightIcon,
   ChevronRightIcon,
   ChevronRightLightIcon,
+  SearchIcon,
   WhitePlusIcon,
 } from "../../../icons";
+import Input from "../../../lib/components/atoms/Input";
 import { useMutation } from "@tanstack/react-query";
 import { useLoading } from "../../../context/LoaderProvider";
 import moment from "moment";
@@ -55,6 +57,8 @@ const RequestListPage = () => {
   const [offset, setOffset] = useState(0);
   const [data, setData] = useState<RequestData[]>([]);
   const [hasContracts, setHasContracts] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -74,6 +78,7 @@ const RequestListPage = () => {
       const payload = {
         limit,
         offset,
+        search: debouncedSearchTerm,
       };
       const response = await requestService.getAllRequestList(payload);
       const requests: RequestDetails[] = response.data.data;
@@ -85,6 +90,8 @@ const RequestListPage = () => {
             request.total_amount ||
             request.amount ||
             "0";
+          console.log(request, "requests");
+
           return {
             id: Number(index + 1),
             requestNo: request.id,
@@ -103,8 +110,11 @@ const RequestListPage = () => {
       setLoading(false);
     },
     onError: async (error) => {
-      console.error(error);
+      console.error("Request API Error:", error);
       setLoading(false);
+      // Clear data on error to prevent showing stale data
+      setData([]);
+      setTotal(0);
     },
   });
 
@@ -121,10 +131,22 @@ const RequestListPage = () => {
     },
   });
 
+  // Debounce search term
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
+
   useEffect(() => {
     requestMutaion.mutate();
-    checkContracts.mutate();
-  }, [limit, offset]);
+    if (debouncedSearchTerm === "") {
+      checkContracts.mutate();
+    }
+  }, [debouncedSearchTerm, limit, offset]);
 
   const handlePageChange = (newPage: number) => {
     const newOffset = (newPage - 1) * limit;
@@ -186,6 +208,33 @@ const RequestListPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
           >
+            {/* Search Section */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center sm:gap-4 mb-4 sm:mb-5">
+              <motion.div
+                className="w-full sm:w-1/2"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-2.5 sm:left-3 flex items-center pointer-events-none">
+                    <SearchIcon className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-50" />
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder={t("search_placeholder")}
+                    className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10"
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={searchTerm}
+                  />
+                  {requestMutaion.isPending && (
+                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+
             <div className="sm:mx-0 overflow-x-auto">
               <RequestTable data={data} />
             </div>

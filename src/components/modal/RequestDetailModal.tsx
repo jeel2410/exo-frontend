@@ -1,14 +1,12 @@
 import { useTranslation } from "react-i18next";
 import {
   FileVioletIcon,
-  UsdGreenIcon,
-  UsdOrangeIcon,
-  UsdVioletIcon,
 } from "../../icons";
 import Modal from "../../lib/components/atoms/Modal";
 import DashBoardCard from "../../lib/components/molecules/DashBoardCard";
 import Typography from "../../lib/components/atoms/Typography";
 import CreateRequestTable from "../table/CreateRequestTable.tsx";
+import CurrencyBadge from "../common/CurrencyBadge";
 
 export interface RequestAddress {
   country: string;
@@ -46,6 +44,7 @@ export interface RequestDetails {
   entities: RequestEntity[];
   amount_summary: AmountSummary;
   tracks: any[]; // Use a specific interface if `tracks` has a defined shape
+  contract_currency?: string; // Currency from contract
 }
 
 interface RequestDetailsProps {
@@ -98,17 +97,38 @@ const RequestDetailModal = ({
               title={t("total_quantity")}
             />
             <DashBoardCard
-              icon={<UsdGreenIcon width={44} height={44} />}
+              icon={
+                <CurrencyBadge
+                  currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
+                  variant="green"
+                  width={44}
+                  height={44}
+                />
+              }
               count={total_amount || 0}
               title={t("total_amount")}
             />
             <DashBoardCard
-              icon={<UsdVioletIcon width={44} height={44} />}
+              icon={
+                <CurrencyBadge
+                  currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
+                  variant="violet"
+                  width={44}
+                  height={44}
+                />
+              }
               count={total_tax || 0}
               title={t("total_tax_amount")}
             />
             <DashBoardCard
-              icon={<UsdOrangeIcon width={44} height={44} />}
+              icon={
+                <CurrencyBadge
+                  currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
+                  variant="orange"
+                  width={44}
+                  height={44}
+                />
+              }
               count={vat_included || 0}
               title={t("total_amount_with_tax")}
             />
