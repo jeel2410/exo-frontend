@@ -5,6 +5,7 @@ export interface CountryData {
 }
 
 export const countries: CountryData[] = [
+  { code: "CD", name: "DR Congo", phoneCode: "+243" },
   { code: "AD", name: "Andorra", phoneCode: "+376" },
   { code: "AE", name: "United Arab Emirates", phoneCode: "+971" },
   { code: "AF", name: "Afghanistan", phoneCode: "+93" },
@@ -44,7 +45,6 @@ export const countries: CountryData[] = [
   { code: "BZ", name: "Belize", phoneCode: "+501" },
   { code: "CA", name: "Canada", phoneCode: "+1" },
   { code: "CC", name: "Cocos Islands", phoneCode: "+61" },
-  { code: "CD", name: "DR Congo", phoneCode: "+243" },
   { code: "CF", name: "Central African Republic", phoneCode: "+236" },
   { code: "CG", name: "Republic of the Congo", phoneCode: "+242" },
   { code: "CH", name: "Switzerland", phoneCode: "+41" },

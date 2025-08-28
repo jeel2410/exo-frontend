@@ -32,6 +32,7 @@ export const ApiRoutes = {
 };
 
 export const mobileCountryCode = [
+  { label: "+243", value: "+243" },
   { label: "+1", value: "+1" },
   { label: "+7", value: "+7" },
   { label: "+20", value: "+20" },
@@ -106,7 +107,6 @@ export const mobileCountryCode = [
   { label: "+240", value: "+240" },
   { label: "+241", value: "+241" },
   { label: "+242", value: "+242" },
-  { label: "+243", value: "+243" },
   { label: "+244", value: "+244" },
   { label: "+245", value: "+245" },
   { label: "+246", value: "+246" },

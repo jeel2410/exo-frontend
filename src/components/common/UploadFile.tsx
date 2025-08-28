@@ -1,4 +1,5 @@
-import React, { useState, useEffect, JSX, useMemo, useRef } from "react";
+import React, { useState, useEffect, JSX, useMemo, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 export interface UploadedFile {
   file: File | undefined;
   id: string;
@@ -47,6 +48,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
   showAdditionalDocs = true, // Default to showing additional documents
   taxCategory = "importation", // Default to importation (shows all 3 documents)
 }) => {
+  const { t } = useTranslation();
   // Function to get mandatory documents based on tax category
   const getMandatoryDocsByTaxCategory = (category: string): DocumentRow[] => {
     if (category === "location_acquisition") {
@@ -117,25 +119,71 @@ const UploadFile: React.FC<FileUploadProps> = ({
   const isInitialMount = useRef(true);
   const lastNotifiedFiles = useRef<string>("");
 
+  // Helper function to process files for display in both mandatory and additional docs
+  const processFilesForDisplay = useCallback((currentFiles: UploadedFile[]) => {
+    if (!currentFiles || currentFiles.length === 0) {
+      // Just update mandatory docs structure without touching files
+      const newMandatoryDocs = getMandatoryDocsByTaxCategory(taxCategory);
+      setMandatoryDocs(newMandatoryDocs);
+      
+      setAdditionalDocs([{
+        id: `additional_${Date.now()}`,
+        name: "",
+        isUploaded: false,
+        isMandatory: false,
+        isNameEditable: true,
+      }]);
+      return;
+    }
+    
+    const newMandatoryDocs = getMandatoryDocsByTaxCategory(taxCategory);
+    const newAdditionalDocs: DocumentRow[] = [];
+    const mandatoryDocNames = newMandatoryDocs.map((doc) => doc.name);
+
+    // Process each file and categorize it
+    currentFiles.forEach((file) => {
+      const mandatoryIndex = mandatoryDocNames.indexOf(file.original_name || "");
+      if (mandatoryIndex !== -1) {
+        // Update the corresponding mandatory document
+        newMandatoryDocs[mandatoryIndex] = {
+          ...newMandatoryDocs[mandatoryIndex],
+          isUploaded: true,
+          uploadedFile: file,
+        };
+      } else {
+        // Add to additional documents
+        newAdditionalDocs.push({
+          id: file.id,
+          name: file.original_name || "",
+          file: undefined,
+          uploadedFile: file,
+          isUploaded: true,
+          isMandatory: false,
+          isNameEditable: true,
+        });
+      }
+    });
+
+    // Ensure at least one empty additional doc row exists
+    if (newAdditionalDocs.length === 0) {
+      newAdditionalDocs.push({
+        id: `additional_${Date.now()}`,
+        name: "",
+        isUploaded: false,
+        isMandatory: false,
+        isNameEditable: true,
+      });
+    }
+
+    setMandatoryDocs(newMandatoryDocs);
+    setAdditionalDocs(newAdditionalDocs);
+  }, [taxCategory]);
+
   // Effect to update mandatory documents when tax category changes
   useEffect(() => {
-    const newMandatoryDocs = getMandatoryDocsByTaxCategory(taxCategory);
-    
-    // Preserve uploaded files when updating mandatory docs structure
-    const updatedMandatoryDocs = newMandatoryDocs.map(newDoc => {
-      const existingDoc = mandatoryDocs.find(existing => existing.id === newDoc.id);
-      if (existingDoc && existingDoc.isUploaded) {
-        return {
-          ...newDoc,
-          isUploaded: existingDoc.isUploaded,
-          uploadedFile: existingDoc.uploadedFile,
-        };
-      }
-      return newDoc;
-    });
-    
-    setMandatoryDocs(updatedMandatoryDocs);
-  }, [taxCategory]);
+    // Re-process current files with new tax category
+    processFilesForDisplay(files || []);
+  }, [taxCategory, processFilesForDisplay]);
 
   // Listen for form reset events
   useEffect(() => {
@@ -182,62 +230,11 @@ const UploadFile: React.FC<FileUploadProps> = ({
   //   }
   // }, [files]);
 
+  // Process files when the files prop changes
   useEffect(() => {
-    if (files && files.length > 0) {
-      const newMandatoryDocs = [...mandatoryDocs];
-      const newAdditionalDocs: DocumentRow[] = [];
-      const mandatoryDocNames = newMandatoryDocs.map((doc) => doc.name);
-
-      files.forEach((file) => {
-        const mandatoryIndex = mandatoryDocNames.indexOf(
-          file.original_name || ""
-        );
-        if (mandatoryIndex !== -1) {
-          newMandatoryDocs[mandatoryIndex] = {
-            ...newMandatoryDocs[mandatoryIndex],
-            isUploaded: true,
-            uploadedFile: file,
-          };
-        } else {
-          newAdditionalDocs.push({
-            id: file.id,
-            name: file.original_name || "",
-            file: undefined,
-            uploadedFile: file,
-            isUploaded: true,
-            isMandatory: false,
-            isNameEditable: true,
-          });
-        }
-      });
-
-      if (newAdditionalDocs.length === 0) {
-        newAdditionalDocs.push({
-          id: `additional_${Date.now()}`,
-          name: "",
-          isUploaded: false,
-          isMandatory: false,
-          isNameEditable: true,
-        });
-      }
-
-      setMandatoryDocs(newMandatoryDocs);
-      setAdditionalDocs(newAdditionalDocs);
-    } else if (files && files.length === 0) {
-      // Reset to initial state when files array is empty, respecting tax category
-      setMandatoryDocs(getMandatoryDocsByTaxCategory(taxCategory));
-      
-      setAdditionalDocs([
-        {
-          id: "additional_1",
-          name: "",
-          isUploaded: false,
-          isMandatory: false,
-          isNameEditable: true,
-        },
-      ]);
-    }
-  }, [filesDep, taxCategory]);
+    console.log('Files changed, processing for display:', files);
+    processFilesForDisplay(files || []);
+  }, [filesDep, processFilesForDisplay]);
 
   useEffect(() => {
     const allUploadedFiles = [
@@ -384,7 +381,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
 
     // Cannot delete mandatory documents
     if (row.isMandatory) {
-      setError("Mandatory documents cannot be deleted");
+      setError(t("cannot_delete_mandatory"));
       return;
     }
 
@@ -427,7 +424,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
 
     const newName = row.name.trim();
     if (!newName) {
-      setError("Please enter a valid file name");
+      setError(t("enter_file_name"));
       return;
     }
     console.log(row, "row");
@@ -525,8 +522,8 @@ const UploadFile: React.FC<FileUploadProps> = ({
               type="text"
               value={row.name}
               onChange={(e) => handleNameChange(row.id, e.target.value)}
-              placeholder="Enter name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                      placeholder={t("enter_file_name")}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
             />
           ) : (
             <span className="text-gray-900 font-medium">{row.name}</span>
@@ -582,7 +579,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
                 <label
                   htmlFor={`file-replace-additional-${row.id}`}
                   className="flex items-center justify-center p-1 cursor-pointer hover:bg-gray-200 rounded transition-colors"
-                  title="Replace file"
+                  title={t("replace_file")}
                 >
                   <svg
                     width="14"
@@ -657,7 +654,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
                 <label
                   htmlFor={`file-replace-${row.id}`}
                   className="flex items-center justify-center p-1 cursor-pointer hover:bg-green-100 rounded transition-colors"
-                  title="Replace file"
+                  title={t("replace_file")}
                 >
                   <svg
                     width="14"
@@ -736,7 +733,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span>Upload</span>
+                <span>{t("upload")}</span>
               </label>
             </div>
           )}
@@ -755,7 +752,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
                   className="px-3 py-1 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors disabled:opacity-50"
                   title="Rename file"
                 >
-                  {renamingFiles.has(row.id) ? "Renaming..." : "Rename"}
+                  {renamingFiles.has(row.id) ? t("uploading") : t("rename")}
                 </button>
               )}
 
@@ -769,7 +766,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
                   : "text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-50"
               }`}
               title={
-                row.isMandatory ? "Cannot delete mandatory document" : "Delete"
+                row.isMandatory ? t("cannot_delete_mandatory") : t("delete")
               }
             >
               <svg
@@ -803,11 +800,15 @@ const UploadFile: React.FC<FileUploadProps> = ({
 
   // Determine which sections to show based on context and props
   const showMandatoryDocs = context === "create-request";
-  const shouldShowAdditionalDocs = showAdditionalDocs && (
-    context === "create-request" ||
-    context === "create-project" ||
-    context === "create-contract"
-  ); // Show additional docs based on prop and context
+  // Force show additional docs for now to debug
+  const shouldShowAdditionalDocs = true; // Always show for debugging
+  
+  console.log('UploadFile render check:', {
+    context,
+    showAdditionalDocs,
+    shouldShowAdditionalDocs,
+    showMandatoryDocs
+  });
 
   // Calculate starting index for additional docs serial numbers
   const additionalDocsStartIndex = showMandatoryDocs ? mandatoryDocs.length : 0;
@@ -825,7 +826,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
       {showMandatoryDocs && (
         <div className="mb-8">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Mandatory Documents
+            {t("mandatory_documents")}
           </h3>
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="overflow-x-auto">
@@ -833,16 +834,16 @@ const UploadFile: React.FC<FileUploadProps> = ({
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-3 px-4 font-medium text-gray-700 w-16">
-                      Sr No
+                      {t("sr_no")}
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">
-                      Name
+                      {t("name")}
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">
-                      File Upload
+                      {t("file_upload")}
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700 w-20">
-                      Action
+                      {t("action")}
                     </th>
                   </tr>
                 </thead>
@@ -861,7 +862,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
       {shouldShowAdditionalDocs && (
         <div className={showMandatoryDocs ? "" : "mt-0"}>
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {showMandatoryDocs ? "Additional Documents" : "Documents"}
+            {showMandatoryDocs ? t("additional_documents") : t("documents")}
           </h3>
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="overflow-x-auto">
@@ -869,16 +870,16 @@ const UploadFile: React.FC<FileUploadProps> = ({
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-3 px-4 font-medium text-gray-700 w-16">
-                      Sr No
+                      {t("sr_no")}
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">
-                      Name
+                      {t("name")}
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">
-                      File Upload
+                      {t("file_upload")}
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700 w-20">
-                      Action
+                      {t("action")}
                     </th>
                   </tr>
                 </thead>
@@ -919,7 +920,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="font-medium">Add More</span>
+                <span className="font-medium">{t("add_more")}</span>
               </button>
             </div>
           </div>

@@ -92,17 +92,18 @@ interface CommentProps {
   timestamp: string;
 }
 
-export const progressSteps: ProgressStep[] = [
-  { id: 1, title: "Application Submission", status: "current" },
-  { id: 2, title: "Secretariat Review", status: "pending" },
-  { id: 3, title: "Coordinator Review", status: "pending" },
-  { id: 4, title: "Financial Review", status: "pending" },
-  { id: 5, title: "Calculation Notes Transmission", status: "pending" },
-  { id: 6, title: "FO Preparation", status: "pending" },
-  { id: 7, title: "Transmission to Secretariat", status: "pending" },
-  { id: 8, title: "Coordinator Final Validation", status: "pending" },
-  { id: 9, title: "Ministerial Review", status: "pending" },
-  { id: 10, title: "Title Generation", status: "pending" },
+// Define the progress steps with translation keys
+const getProgressSteps = (t: any): ProgressStep[] => [
+  { id: 1, title: t("application_submission"), status: "current" },
+  { id: 2, title: t("secretariat_review"), status: "pending" },
+  { id: 3, title: t("coordinator_review"), status: "pending" },
+  { id: 4, title: t("financial_review"), status: "pending" },
+  { id: 5, title: t("calculation_notes_transmission"), status: "pending" },
+  { id: 6, title: t("fo_preparation"), status: "pending" },
+  { id: 7, title: t("transmission_to_secretariat"), status: "pending" },
+  { id: 8, title: t("coordinator_final_validation"), status: "pending" },
+  { id: 9, title: t("ministerial_review"), status: "pending" },
+  { id: 10, title: t("title_generation"), status: "pending" },
 ];
 export const comments: CommentProps[] = [
   {
@@ -135,17 +136,16 @@ export const comments: CommentProps[] = [
 ];
 
 const TestRequestDetails = () => {
+  const { t } = useTranslation();
   const [userData, setUserData] = useState<UserData | undefined>();
   const [requestData, setRequestData] = useState<RequestDetails | null>(null);
   const { setLoading } = useLoading();
-  const [steps, setSteps] = useState<ProgressStep[]>(progressSteps);
+  const [steps, setSteps] = useState<ProgressStep[]>(getProgressSteps(t));
   const {
     isOpen: isOpenRequestDetails,
     closeModal: closeRequestDetails,
     // openModal: openRequestDetails,
   } = useModal();
-
-  const { t } = useTranslation();
   const { requestId } = useParams();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const { getRoute } = useRoleRoute();
@@ -164,7 +164,7 @@ const TestRequestDetails = () => {
       const tracks = res.data.data.tracks;
       const trackLength = tracks.length;
 
-      const newSteps: ProgressStep[] = steps.map((step, index) => {
+      const newSteps: ProgressStep[] = getProgressSteps(t).map((step, index) => {
         let status: ProgressStep["status"];
 
         // Application Submission (index 0) is always completed since API starts from Secretariat Review
@@ -249,12 +249,8 @@ const TestRequestDetails = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <DashBoardCard
                   icon={<BlueCopyIcon width={44} height={44} />}
-                  count={
-                    requestData
-                      ? requestData?.amount_summary?.total_quantity
-                      : 0
-                  }
-                  title={t("total_quantity")}
+                  count={requestData ? requestData.entities.length : 0}
+                  title={t("total_entity")}
                 />
                 <DashBoardCard
                   icon={

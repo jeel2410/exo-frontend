@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, ChangeEvent } from "react";
+import { useTranslation } from "react-i18next";
 import Typography from "../../lib/components/atoms/Typography";
 import { CrossRedIcon, RightGreenIcon, USFlag, CDFFlag } from "../../icons";
 
@@ -109,6 +110,7 @@ const CreateRequestTable = ({
   onEditComplete?: () => void;
   currentTaxCategory?: string;
 }) => {
+  const { t } = useTranslation();
   const [tableData, setTableData] = useState<Order[]>(data);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -487,21 +489,21 @@ const CreateRequestTable = ({
     //   className: "w-10", // Fixed width for checkbox
     // },
     {
-      content: <div>Sr No</div>,
+      content: <div>{t("sr_no")}</div>,
       className: "w-16",
     },
     {
-      content: <div>Custom Duties</div>,
+      content: <div>{t("custom_duties")}</div>,
       className: "w-32",
     },
     {
-      content: <div>Label</div>,
+      content: <div>{t("label")}</div>,
       className: "min-w-[120px]",
     },
     {
       content: (
         <div className="flex items-center gap-1">
-          Quantity
+          {t("quantity")}
           <span className="text-xs">{getSortIcon()}</span>
         </div>
       ),
@@ -509,29 +511,29 @@ const CreateRequestTable = ({
       className: "w-24",
     },
     {
-      content: <div>Unit Price</div>,
+      content: <div>{t("unit_price")}</div>,
       className: "w-28",
     },
     {
-      content: <div>Total</div>,
+      content: <div>{t("total")}</div>,
       className: "w-24",
     },
     {
-      content: <div>Tax Rate</div>,
+      content: <div>{t("tax_rate")}</div>,
       className: "w-24",
     },
     {
-      content: <div>Tax Amount</div>,
+      content: <div>{t("tax_amount")}</div>,
       className: "w-28",
     },
     {
-      content: <div>VAT Included</div>,
+      content: <div>{t("vat_included")}</div>,
       className: "w-28",
     },
     ...(showActions
       ? [
           {
-            content: <div>Actions</div>,
+            content: <div>{t("actions")}</div>,
             className: "w-20",
           },
         ]

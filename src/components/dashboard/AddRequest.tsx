@@ -79,8 +79,13 @@ const AddRequest = () => {
     totalAmountWithTax: 0,
   });
   const { getRoute } = useRoleRoute();
-  const [financialAuthority, setFinancialAuthority] = useState<string>("DGI");
+  const [financialAuthority, setFinancialAuthority] = useState<string>("location_acquisition");
   const [autoEditId, setAutoEditId] = useState<number | null>(null);
+  const [validationErrors, setValidationErrors] = useState<{
+    address?: string;
+    requestLetter?: string;
+    fileUpload?: string;
+  }>({});
   useEffect(() => {
     const user = localStorageService.getUser() || "";
     setUserData(JSON.parse(user));
@@ -233,6 +238,65 @@ const AddRequest = () => {
   });
 
   const handleSubmit = () => {
+    const errors: {
+      address?: string;
+      requestLetter?: string;
+      fileUpload?: string;
+    } = {};
+    
+    if (!selectedAddress) {
+      errors.address = t("address_is_required");
+    }
+    if (!requestLetter || requestLetter.trim() === "") {
+      errors.requestLetter = t("request_letter_is_required");
+    }
+
+    // Validate mandatory files based on financial authority
+    let mandatoryDocNames: string[] = [];
+    let requiredFileCount = 0;
+    let errorMessage = "";
+
+    if (financialAuthority === "location_acquisition") {
+      // For Location Acquisition: only 1 document is required
+      mandatoryDocNames = ["Facture e`mise par le fournisseur"];
+      requiredFileCount = 1;
+      errorMessage =
+        t("location_acquisition_file_required") ||
+        "Location Acquisition requires 1 document: Invoice issued by supplier";
+    } else if (financialAuthority === "importation") {
+      mandatoryDocNames = [
+        "Letter de transport, note de fret, note d'assurance",
+        "De`claration pour I'importation Conditionnelle <<IC>>",
+        "Facture e`mise par le fournisseur",
+      ];
+      requiredFileCount = 3;
+      errorMessage =
+        t("importation_files_required") ||
+        "Importation requires 3 documents: Transport letter, IC Declaration, and Invoice issued by supplier";
+    }
+
+    if (financialAuthority && mandatoryDocNames.length > 0) {
+      const mandatoryFilesUploaded = uploadedFiles.filter((file) => {
+        const fileName = file.original_name || "";
+        return mandatoryDocNames.some((docName) => {
+          return (
+            fileName.toLowerCase().includes(docName.toLowerCase()) ||
+            docName.toLowerCase().includes(fileName.toLowerCase())
+          );
+        });
+      });
+
+      if (mandatoryFilesUploaded.length < requiredFileCount) {
+        errors.fileUpload = errorMessage;
+      }
+    }
+
+    setValidationErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     const apiData: CreateRequestPayload = {
       project_id: projectId,
       address_id: selectedAddress,
@@ -414,9 +478,8 @@ const AddRequest = () => {
   };
 
   const financialAuthorityList: { name: string; value: string }[] = [
-    { name: "DGI: Invoice Files", value: "DGI" },
-    { name: "DGDA: DGDA Files", value: "DGDA" },
-    { name: "DGRAD: DGRAD Files", value: "DGRAD" },
+    { name: "Location Acquisition", value: "location_acquisition" },
+    { name: "Importation", value: "importation" },
   ];
   const handleFinancialAuthority = (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -469,6 +532,11 @@ const AddRequest = () => {
               </option>
             ))}
           </select>
+          {validationErrors.address && (
+            <Typography size="sm" className="text-red-500 mt-1">
+              {validationErrors.address}
+            </Typography>
+          )}
         </div>
 
         <div className="mt-4 md:mt-6">
@@ -481,6 +549,11 @@ const AddRequest = () => {
               setRequestLetter(value);
             }}
           />
+          {validationErrors.requestLetter && (
+            <Typography size="sm" className="text-red-500 mt-1">
+              {validationErrors.requestLetter}
+            </Typography>
+          )}
         </div>
 
         {/* Add Entity Button */}
@@ -493,9 +566,9 @@ const AddRequest = () => {
               onChange={handleFinancialAuthority}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-30 focus:border-transparent"
             >
-              {/* <option value="">
-                  {isLoadingAddresses ? t("loading") : t("select_address")}
-                </option> */}
+              <option value="">
+                {isLoadingAddresses ? t("loading") : t("select_tax_category")}
+              </option>
               {financialAuthorityList.map(
                 (list: { name: string; value: string }) => (
                   <option key={list.value} value={list.value}>
@@ -567,7 +640,15 @@ const AddRequest = () => {
                 onFilesSelect={handleFilesSelect}
                 onUploadFile={handleUploadFile}
                 onDeleteFile={handleDeleteFile}
+                context="create-request"
+                showAdditionalDocs={true}
+                taxCategory={financialAuthority}
               />
+              {validationErrors.fileUpload && (
+                <Typography size="sm" className="text-red-500 mt-1">
+                  {validationErrors.fileUpload}
+                </Typography>
+              )}
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import moment from "moment";
 import Button from "../atoms/Button";
 import DatePicker from "../atoms/DatePicker";
@@ -13,6 +14,7 @@ interface FilterProps {
 }
 
 const Filter: React.FC<FilterProps> = ({ startDate, endDate, onApply, onReset }) => {
+  const { t } = useTranslation();
   const [localStartDate, setLocalStartDate] = React.useState<Date | null>(startDate);
   const [localEndDate, setLocalEndDate] = React.useState<Date | null>(endDate);
   const handleQuickSelect = (type: "today" | "week" | "month") => {
@@ -66,13 +68,13 @@ const Filter: React.FC<FilterProps> = ({ startDate, endDate, onApply, onReset })
   return (
     <div className="w-full max-w-[450px] md:w-[450px] border border-secondary-30 rounded-lg p-4 md:p-5 bg-white">
       <Typography size="sm" weight="semibold" className="text-secondary-100">
-        Date Range
+        {t("date_range")}
       </Typography>
       <div className="mt-3">
         {/* Date Pickers - Stack on mobile, side by side on tablet+ */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
-            <Label htmlFor="fromDate">From</Label>
+            <Label htmlFor="fromDate">{t("from")}</Label>
             <DatePicker
               id="fromDate"
               placeholder="31-12-2025"
@@ -81,7 +83,7 @@ const Filter: React.FC<FilterProps> = ({ startDate, endDate, onApply, onReset })
             />
           </div>
           <div className="flex-1">
-            <Label htmlFor="toDate">To</Label>
+            <Label htmlFor="toDate">{t("to")}</Label>
             <DatePicker
               id="toDate"
               defaultDate={localEndDate ?? undefined}
@@ -97,19 +99,19 @@ const Filter: React.FC<FilterProps> = ({ startDate, endDate, onApply, onReset })
             variant="outline"
             className="text-secondary-50 py-2 px-2 w-full sm:w-auto"
             onClick={() => handleQuickSelect("today")}>
-            Today
+            {t("today")}
           </Button>
           <Button
             variant="outline"
             className="text-secondary-50 py-2 px-2 w-full sm:w-auto"
             onClick={() => handleQuickSelect("week")}>
-            This Week
+            {t("this_week")}
           </Button>
           <Button
             variant="outline"
             className="text-secondary-50 py-2 px-2 w-full sm:w-auto"
             onClick={() => handleQuickSelect("month")}>
-            This Month
+            {t("this_month")}
           </Button>
         </div>
 
@@ -121,7 +123,7 @@ const Filter: React.FC<FilterProps> = ({ startDate, endDate, onApply, onReset })
               className="w-full sm:w-fit py-3 order-2 sm:order-1"
               onClick={handleReset}
               disable={!localStartDate && !localEndDate}>
-              Reset All
+              {t("reset_all")}
             </Button>
             <Button
               variant="primary"
@@ -129,7 +131,7 @@ const Filter: React.FC<FilterProps> = ({ startDate, endDate, onApply, onReset })
               onClick={handleApply}
               disable={!localStartDate || !localEndDate}
               >
-              Apply Filter
+              {t("apply_filter")}
             </Button>
           </div>
         </div>
