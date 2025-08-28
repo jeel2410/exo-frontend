@@ -406,17 +406,17 @@ const AddRequest = () => {
       const currentFileIds = new Set(uploadedFiles.map((f) => f.id));
 
       // Check if files have changed
-      const filesChanged = 
+      const filesChanged =
         originalFiles.length !== uploadedFiles.length ||
-        !Array.from(currentFileIds).every(id => originalFileIds.has(id)) ||
-        !Array.from(originalFileIds).every(id => currentFileIds.has(id));
+        !Array.from(currentFileIds).every((id) => originalFileIds.has(id)) ||
+        !Array.from(originalFileIds).every((id) => currentFileIds.has(id));
 
-      console.log('📄 Document Change Detection:', {
+      console.log("📄 Document Change Detection:", {
         isEditMode: !!requestId,
         originalFileIds: Array.from(originalFileIds),
         currentFileIds: Array.from(currentFileIds),
         filesChanged,
-        willPassDocumentIds: filesChanged
+        willPassDocumentIds: filesChanged,
       });
 
       // Only pass document_ids if files have changed
@@ -776,8 +776,8 @@ const AddRequest = () => {
           </div>
           {selectedAddresses.length > 0 && (
             <Typography size="sm" className="text-primary-70 mt-2">
-              {selectedAddresses.length} address
-              {selectedAddresses.length > 1 ? "es" : ""} selected
+              {selectedAddresses.length} {t("address")}
+              {selectedAddresses.length > 1 ? "es" : ""} {t("selected")}
             </Typography>
           )}
           {validationErrors.address && (

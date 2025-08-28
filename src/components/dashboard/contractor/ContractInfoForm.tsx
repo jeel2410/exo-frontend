@@ -97,8 +97,8 @@ const ContractInfoForm = ({
       ),
     place: Yup.string().required(t("place_required")),
     dateOfSigning: Yup.string().required(t("date_required")),
-    reference: Yup.string().required("Reference is required"),
-    name: Yup.string().required("Name is required"),
+    reference: Yup.string().required(t("reference_required")),
+    name: Yup.string().required(t("name_required")),
   });
 
   const fileUploadMutation = async ({
@@ -260,7 +260,7 @@ const ContractInfoForm = ({
           <div className="flex gap-5 w-full">
             <div className="w-full">
               <Label htmlFor="reference">
-                Reference
+                {t("reference")}
                 <span className="text-red-500">*</span>
               </Label>
               <Field
@@ -277,7 +277,7 @@ const ContractInfoForm = ({
             </div>
             <div className="w-full">
               <Label htmlFor="name">
-                Name
+                {t("name")}
                 <span className="text-red-500">*</span>
               </Label>
               <Field
@@ -331,7 +331,7 @@ const ContractInfoForm = ({
               />
               {isProjectSelected && (
                 <Typography size="sm" className="text-secondary-60 mt-1">
-                  Currency is fixed based on the selected project
+                  {t("currency_fixed_based_on_project")}
                 </Typography>
               )}
               <ErrorMessage

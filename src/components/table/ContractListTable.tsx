@@ -111,7 +111,7 @@ const ContractListTable = ({
   const { t } = useTranslation()
 
   const handleArchiveClick = async (contractId: string) => {
-    const confirmArchive = window.confirm("Are you sure you want to archive this contract? This action cannot be undone.");
+    const confirmArchive = window.confirm(t("confirm_archive_contract"));
     
     if (!confirmArchive) {
       setOpenMenuId(null);

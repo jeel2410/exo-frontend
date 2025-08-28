@@ -164,34 +164,36 @@ const TestRequestDetails = () => {
       const tracks = res.data.data.tracks;
       const trackLength = tracks.length;
 
-      const newSteps: ProgressStep[] = getProgressSteps(t).map((step, index) => {
-        let status: ProgressStep["status"];
+      const newSteps: ProgressStep[] = getProgressSteps(t).map(
+        (step, index) => {
+          let status: ProgressStep["status"];
 
-        // Application Submission (index 0) is always completed since API starts from Secretariat Review
-        if (index === 0) {
-          status = "completed";
-        }
-        // Map API tracks to steps starting from index 1 (Secretariat Review)
-        else if (index - 1 < trackLength) {
-          const currentTrack = tracks[index - 1]; // Offset by 1 since API starts from Secretariat Review
-          if (currentTrack?.status === "Rejected") {
-            status = "pending"; // If rejected, mark as pending
-          } else {
-            status = "completed"; // Otherwise completed
+          // Application Submission (index 0) is always completed since API starts from Secretariat Review
+          if (index === 0) {
+            status = "completed";
           }
-        } else if (index - 1 === trackLength) {
-          // This is the current step (next step to be processed)
-          status = "current";
-        } else {
-          // Future steps are pending
-          status = "pending";
-        }
+          // Map API tracks to steps starting from index 1 (Secretariat Review)
+          else if (index - 1 < trackLength) {
+            const currentTrack = tracks[index - 1]; // Offset by 1 since API starts from Secretariat Review
+            if (currentTrack?.status === "Rejected") {
+              status = "pending"; // If rejected, mark as pending
+            } else {
+              status = "completed"; // Otherwise completed
+            }
+          } else if (index - 1 === trackLength) {
+            // This is the current step (next step to be processed)
+            status = "current";
+          } else {
+            // Future steps are pending
+            status = "pending";
+          }
 
-        return {
-          ...step,
-          status,
-        };
-      });
+          return {
+            ...step,
+            status,
+          };
+        }
+      );
       setSteps(newSteps);
       setRequestData(res.data.data);
       return res.data;
@@ -419,13 +421,13 @@ const TestRequestDetails = () => {
                               <thead className="bg-gray-50">
                                 <tr>
                                   <th className="text-left py-3 px-4 font-medium text-gray-700">
-                                    Sr No
+                                    {t("sr_no")}
                                   </th>
                                   <th className="text-left py-3 px-4 font-medium text-gray-700">
-                                    Document Name
+                                    {t("document_name")}
                                   </th>
                                   <th className="text-left py-3 px-4 font-medium text-gray-700">
-                                    Action
+                                    {t("action")}
                                   </th>
                                 </tr>
                               </thead>
@@ -455,7 +457,7 @@ const TestRequestDetails = () => {
                                         rel="noopener noreferrer"
                                         className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-300 transition-colors"
                                       >
-                                        View
+                                        {t("view")}
                                       </a>
                                     </td>
                                   </tr>
@@ -465,7 +467,7 @@ const TestRequestDetails = () => {
                           </div>
                         ) : (
                           <div className="text-gray-500 text-sm py-4">
-                            No documents available
+                            {t("no_documents_available")}
                           </div>
                         )}
                       </div>
@@ -525,7 +527,7 @@ const TestRequestDetails = () => {
                 </div>
                 <div className="border border-secondary-30 bg-white rounded-lg">
                   <Typography size="base" weight="bold" className="p-4">
-                    History
+                    {t("history")}
                   </Typography>
                   <History items={history} />
                 </div>

@@ -1,14 +1,16 @@
+import { useTranslation } from 'react-i18next';
+
 export interface StatusBadgeProps {
   code: StatusCode;
 }
 export const statusList = {
-  progress: "In Progress",
-  draft: "Draft",
-  expired: "Expired",
-  schedule: "Schedule",
-  publish: "Published",
-  rejected: "Rejected",
-  approved:"Approved"
+  progress: "status_progress",
+  draft: "status_draft",
+  expired: "status_expired",
+  schedule: "status_schedule",
+  publish: "status_publish",
+  rejected: "status_rejected",
+  approved: "status_approved"
 } as const;
 
 
@@ -27,11 +29,13 @@ const statusColors: Record<StatusCode, string> = {
 };
 
 const StatusBadge=({ code }: StatusBadgeProps) =>{
+  const { t } = useTranslation();
+  
   return (
     <span
       className={`text-xs font-medium px-2 py-1 rounded-md inline-block ${statusColors[code]}`}
     >
-      {statusList[code]}
+      {t(statusList[code])}
     </span>
   );
 }

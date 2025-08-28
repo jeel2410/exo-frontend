@@ -39,6 +39,50 @@ export default function NotificationDropdown() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
+  // Function to translate notification titles and messages
+  const translateNotification = (title: string, message: string) => {
+    // Translate the title
+    let translatedTitle = title;
+    if (title === "Request Status Updated") {
+      translatedTitle = t("request_status_updated");
+    }
+    
+    // Translate the message by replacing stage names with translated versions
+    let translatedMessage = message;
+    
+    // Replace common message patterns
+    if (message.includes("Your request has been moved from")) {
+      translatedMessage = translatedMessage.replace(
+        "Your request has been moved from", 
+        t("your_request_has_been_moved_from")
+      );
+    }
+    
+    // Replace stage names in the message
+    const stageTranslations = {
+      "Secretariat Review": t("secretariat_review"),
+      "Financial Review": t("financial_review"),
+      "Calculation Notes Transmission": t("calculation_notes_transmission"),
+      "FO Preparation": t("fo_preparation"),
+      "Coordinator Review": t("coordinator_review"),
+      "Transmission to Secretariat": t("transmission_to_secretariat"),
+      "Coordinator Final Validation": t("coordinator_final_validation"),
+      "Application Submission": t("application_submission"),
+      "Ministerial Review": t("ministerial_review"),
+      "Title Generation": t("title_generation")
+    };
+    
+    // Replace each stage name in the message
+    Object.entries(stageTranslations).forEach(([englishStage, translatedStage]) => {
+      translatedMessage = translatedMessage.replace(new RegExp(englishStage, 'g'), translatedStage);
+    });
+    
+    // Replace common words
+    translatedMessage = translatedMessage.replace(/ to /g, ` ${t("to")} `);
+    
+    return { title: translatedTitle, message: translatedMessage };
+  };
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["notification"],
     queryFn: () => {
@@ -49,15 +93,18 @@ export default function NotificationDropdown() {
   // Format notifications from API response
   const formattedNotifications: FormattedNotification[] = (
     data?.data?.data || []
-  ).map((notification: NotificationData) => ({
-    id: notification.id,
-    title: notification.title,
-    description: notification.message,
-    createdAt: moment(notification.created_at).fromNow(),
-    isRead: notification.read === 1,
-    objectId: notification.object_id,
-    objectType: notification.object_type,
-  }));
+  ).map((notification: NotificationData) => {
+    const translatedContent = translateNotification(notification.title, notification.message);
+    return {
+      id: notification.id,
+      title: translatedContent.title,
+      description: translatedContent.message,
+      createdAt: moment(notification.created_at).fromNow(),
+      isRead: notification.read === 1,
+      objectId: notification.object_id,
+      objectType: notification.object_type,
+    };
+  });
 
   function toggleDropdown() {
     setIsOpen(!isOpen);

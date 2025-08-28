@@ -16,6 +16,8 @@ import { useLoading } from "../../../context/LoaderProvider";
 import { useMutation } from "@tanstack/react-query";
 import contractService from "../../../services/contract.service";
 import moment from "moment";
+import { toast } from "react-toastify";
+import { AxiosError } from "axios";
 interface Address {
   id: string;
   country?: string;
@@ -98,6 +100,47 @@ const initialValue = {
   name: "",
 };
 
+// Function to map backend error messages to translation keys
+const getContractErrorTranslationKey = (errorMessage: string): string => {
+  const normalizedError = errorMessage.toLowerCase();
+  
+  // Check for specific contract amount validation that exceeds project budget
+  if (normalizedError.includes("contract amount") && normalizedError.includes("exceed") && normalizedError.includes("budget")) {
+    return "contract_amount_validation_failed";
+  }
+  if (normalizedError.includes("total amount") && normalizedError.includes("exceed") && normalizedError.includes("budget")) {
+    return "contract_amount_validation_failed";
+  }
+  if (normalizedError.includes("amount") && (normalizedError.includes("exceed") || normalizedError.includes("budget"))) {
+    return "contract_amount_validation_failed";
+  }
+  
+  if (normalizedError.includes("validation") || normalizedError.includes("invalid")) {
+    return "contract_validation_error";
+  }
+  if (normalizedError.includes("already exists") || normalizedError.includes("duplicate")) {
+    return "contract_already_exists";
+  }
+  if (normalizedError.includes("amount") && (normalizedError.includes("invalid") || normalizedError.includes("exceed"))) {
+    return "contract_amount_invalid";
+  }
+  if (normalizedError.includes("date") && (normalizedError.includes("invalid") || normalizedError.includes("past"))) {
+    return "contract_date_invalid";
+  }
+  if (normalizedError.includes("required") || normalizedError.includes("missing")) {
+    return "required_fields_missing";
+  }
+  if (normalizedError.includes("file") || normalizedError.includes("upload")) {
+    return "file_upload_error";
+  }
+  if (normalizedError.includes("reference")) {
+    return "contract_already_exists";
+  }
+  
+  // Default fallback
+  return "contract_save_error";
+};
+
 const ContractCreatePage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -128,8 +171,8 @@ const ContractCreatePage = () => {
   const { loading, setLoading } = useLoading();
 
   const steps = [
-    { id: 1, title: "Contract Info" },
-    { id: 2, title: "Review" },
+    { id: 1, title: t("contract_info") },
+    { id: 2, title: t("review") },
   ];
 
   const handleStepClick = (stepIndex: number) => {
@@ -186,8 +229,34 @@ const ContractCreatePage = () => {
     onSuccess: async () => {
       openModal();
     },
-    onError: (error) => {
-      console.error(error);
+    onError: (error: unknown) => {
+      const axiosError = error as AxiosError<{ message?: string; error?: string; errors?: any }>;
+      console.error('Contract creation error:', error);
+      
+      let errorMessage = "contract_creation_failed";
+      
+      // Handle 422 validation errors specifically
+      if (axiosError?.response?.status === 422) {
+        const backendMessage = 
+          axiosError?.response?.data?.message ||
+          axiosError?.response?.data?.error ||
+          "Validation failed";
+        
+        errorMessage = getContractErrorTranslationKey(backendMessage);
+        
+        // Check if contractId exists for edit mode
+        if (contractId) {
+          errorMessage = "contract_update_failed";
+        }
+      } else {
+        // Handle other status codes
+        if (axiosError?.response?.data?.message) {
+          errorMessage = getContractErrorTranslationKey(axiosError.response.data.message);
+        }
+      }
+      
+      // Show translated error message
+      toast.error(t(errorMessage));
     },
   });
 

@@ -14,6 +14,71 @@ import { useMutation } from "@tanstack/react-query";
 import projectService from "../../services/project.service.ts";
 import { useAuth } from "../../context/AuthContext.tsx";
 import { useTranslation } from "react-i18next";
+import StatusBadge, { StatusCode } from "../common/StatusBadge.tsx";
+
+// Map API status values to StatusBadge codes
+const mapStatusToCode = (status: string): StatusCode => {
+  const normalizedStatus = status.toLowerCase().replace(/[_\s]/g, '');
+  
+  switch (normalizedStatus) {
+    case 'inprogress':
+    case 'progress':
+    case 'pending':
+      return 'progress';
+    case 'draft':
+      return 'draft';
+    case 'expired':
+      return 'expired';
+    case 'scheduled':
+    case 'schedule':
+      return 'schedule';
+    case 'published':
+    case 'publish':
+      return 'publish';
+    case 'rejected':
+    case 'reject':
+      return 'rejected';
+    case 'approved':
+    case 'completed':
+    case 'success':
+      return 'approved';
+    default:
+      return 'progress'; // default fallback
+  }
+};
+
+// Map API stage values to translation keys
+const mapStageToTranslationKey = (stage: string): string => {
+  const normalizedStage = stage.toLowerCase().replace(/[_\s]/g, '');
+  
+  switch (normalizedStage) {
+    case 'secretariatreview':
+    case 'secretariat':
+      return 'secretariat_review';
+    case 'coordinatorreview':
+    case 'coordinator':
+      return 'coordinator_review';
+    case 'financialreview':
+    case 'financial':
+      return 'financial_review';
+    case 'calculationnotestransmission':
+      return 'calculation_notes_transmission';
+    case 'fopreparation':
+      return 'fo_preparation';
+    case 'transmissiontosecretariat':
+      return 'transmission_to_secretariat';
+    case 'coordinatorfinalvalidation':
+      return 'coordinator_final_validation';
+    case 'applicationsubmission':
+      return 'application_submission';
+    case 'ministerialreview':
+      return 'ministerial_review';
+    case 'titlegeneration':
+      return 'title_generation';
+    default:
+      return stage; // return original if no mapping found
+  }
+};
 
 export interface Data {
   id: number;
@@ -111,7 +176,7 @@ const RequestTable = ({
   });
 
   const handleDelete = async (orderId: number, request_id: string) => {
-    if (window.confirm("Are you sure you want to delete this record?")) {
+    if (window.confirm(t("confirm_delete_request"))) {
       const response = await deleteRequestMutation.mutateAsync(request_id);
       if (response.data.status === 200) {
         setTableData((prev) => prev.filter((order) => order.id !== orderId));
@@ -317,19 +382,16 @@ const RequestTable = ({
                           </select>
                         </div>
                       ) : (
-                        <div
-                          className={`w-fit cursor-pointer px-4 py-1.5 rounded-sm min-w-[89px] text-center ${
-                            data.status === "success"
-                              ? "bg-green-100 text-green-700"
-                              : data.status === "error"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-blue-100 text-blue-700" // light blue instead of orange
-                          }`}
-                        >
-                          <Typography size="sm" weight="semibold">
-                            {data.status.charAt(0).toUpperCase() +
-                              data.status.slice(1)}
-                          </Typography>
+                        <div className="w-fit">
+                          {data.status ? (
+                            <div className="px-3 py-1.5 rounded-md bg-blue-100 text-blue-700">
+                              <Typography size="sm" weight="semibold">
+                                {t(mapStageToTranslationKey(data.status))}
+                              </Typography>
+                            </div>
+                          ) : (
+                            <span className="text-gray-500 text-sm">-</span>
+                          )}
                         </div>
                       )}
                     </TableCell>
@@ -349,32 +411,12 @@ const RequestTable = ({
                           />
                         </div>
                       ) : (
-                        <div
-                          className={`w-fit cursor-pointer px-4 py-1.5 rounded-sm min-w-[89px] text-center ${
-                            (data.sub_status || "")
-                              .toLowerCase()
-                              .replace("_", " ") === "in progress"
-                              ? "bg-blue-500 text-white"
-                              : (data.sub_status || "").toLowerCase() ===
-                                  "approved" ||
-                                (data.sub_status || "").toLowerCase() ===
-                                  "completed"
-                              ? "bg-green-500 text-white"
-                              : (data.sub_status || "").toLowerCase() === "hold"
-                              ? "bg-orange-500 text-white"
-                              : (data.sub_status || "").toLowerCase() ===
-                                "rejected"
-                              ? "bg-red-500 text-white"
-                              : "bg-gray-500 text-white" // default
-                          }`}
-                        >
-                          <Typography size="sm" weight="semibold">
-                            {data.sub_status
-                              ? data.sub_status
-                                  .replace(/_/g, " ")
-                                  .replace(/\b\w/g, (l) => l.toUpperCase())
-                              : "-"}
-                          </Typography>
+                        <div className="w-fit">
+                          {data.sub_status ? (
+                            <StatusBadge code={mapStatusToCode(data.sub_status)} />
+                          ) : (
+                            <span className="text-gray-500 text-sm">-</span>
+                          )}
                         </div>
                       )}
                     </TableCell>
@@ -439,7 +481,7 @@ const RequestTable = ({
                                 role="menuitem"
                                 aria-label="Edit row"
                               >
-                                View Request
+                                {t("view_request")}
                               </button>
                               {user?.type === "user" && (
                                 <button
@@ -455,7 +497,7 @@ const RequestTable = ({
                                   role="menuitem"
                                   aria-label="Edit row"
                                 >
-                                  Edit
+                                  {t("edit")}
                                 </button>
                               )}
 
@@ -471,7 +513,7 @@ const RequestTable = ({
                                   role="menuitem"
                                   aria-label="Delete row"
                                 >
-                                  Delete
+                                  {t("delete")}
                                 </button>
                               )}
                             </div>
