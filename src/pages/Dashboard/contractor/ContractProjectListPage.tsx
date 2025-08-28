@@ -58,7 +58,7 @@ const ContractProjectListPage = () => {
   const [data, setData] = useState<Data[]>([]);
   const { setLoading } = useLoading();
 
-  const [total, setTotal] = useState(0);  
+  const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(8);
   const [offset, setOffset] = useState(0);
   // Dashboard card state
@@ -110,27 +110,31 @@ const ContractProjectListPage = () => {
       };
       const res = await contractService.getProjects(data);
       const projects = res.data.data || [];
-      console.log('Raw API response:', res.data);
-      console.log('Projects data:', projects);
-      
+      console.log("Raw API response:", res.data);
+      console.log("Projects data:", projects);
+
       const newProjectData: Data[] = projects.map(
         (project: projectResponseProps, index: number) => ({
           id: index + 1,
-          projectId: project.reference || '-',
-          projectName: project.name || '-',
-          currency: project.currency || 'USD',
+          projectId: project.reference || "-",
+          projectName: project.name || "-",
+          currency: project.currency || "USD",
           amount: project.amount || 0,
           createdDate: project.created_at || new Date().toISOString(),
           status: project.status,
-          endDate: project.end_date || '',
-          financeBy: project.funded_by || '',
+          endDate: project.end_date || "",
+          financeBy: project.funded_by || "",
           projectUuid: project.id,
-          projectManager: project.user ? `${project.user.first_name||""} ${project.user.last_name||""}`.trim() || '-' : '-',
+          projectManager: project.user
+            ? `${project.user.first_name || ""} ${
+                project.user.last_name || ""
+              }`.trim() || "-"
+            : "-",
           noOfRequest: 0, // Add missing property
         })
       );
-      
-      console.log('Transformed project data:', newProjectData);
+
+      console.log("Transformed project data:", newProjectData);
       setData(newProjectData);
       setTotal(res.data.total);
       setLoading(false);
@@ -272,7 +276,7 @@ const ContractProjectListPage = () => {
               </div>
             </div>
 
-            <div className="sm:mx-0 overflow-x-auto">
+            <div className="sm:mx-0">
               <ContractProjectListTable data={data} />
             </div>
 

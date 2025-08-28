@@ -141,7 +141,7 @@ const ContractListPage = () => {
     },
   });
 
-  useEffect(() => {    
+  useEffect(() => {
     contractMutaion.mutate();
   }, [debouncedSearchTerm, limit, offset, range]);
 
@@ -153,7 +153,7 @@ const ContractListPage = () => {
       clearTimeout(handler);
     };
   }, [searchTerm]);
-  
+
   const handlePageChange = (newPage: number) => {
     const newOffset = (newPage - 1) * limit;
     setOffset(newOffset);
@@ -335,14 +335,17 @@ const ContractListPage = () => {
                 </Button>
                 <div>
                   <span className="text-nowrap">
-                    {t("page_of_total", { current: currentPage, total: totalPages })}
+                    {t("page_of_total", {
+                      current: currentPage,
+                      total: totalPages,
+                    })}
                   </span>
                 </div>
                 <Button
                   variant="outline"
                   className="px-2 py-1 min-w-[32px] border-0"
                   disabled={currentPage === totalPages}
-                    onClick={() => handlePageChange(currentPage + 1)}
+                  onClick={() => handlePageChange(currentPage + 1)}
                 >
                   {currentPage === totalPages ? (
                     <ChevronRightLightIcon />

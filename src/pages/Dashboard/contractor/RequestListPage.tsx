@@ -235,7 +235,7 @@ const RequestListPage = () => {
               </motion.div>
             </div>
 
-            <div className="sm:mx-0 overflow-x-auto">
+            <div className="sm:mx-0">
               <RequestTable data={data} />
             </div>
 

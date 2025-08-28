@@ -50,7 +50,7 @@ const PhoneInput = ({
     }
 
     const input = e.currentTarget.value;
-    if (input.length >= 10) {
+    if (input.length >= 15) {
       e.preventDefault();
     }
   };
@@ -61,14 +61,14 @@ const PhoneInput = ({
     const currentValue = e.currentTarget.value;
     const newLength = currentValue.length + pastedData.length;
 
-    if (!isNumeric || newLength > 10) {
+    if (!isNumeric || newLength > 15) {
       e.preventDefault();
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    if (/^\d{0,10}$/.test(newValue)) {
+    if (/^\d{0,15}$/.test(newValue)) {
       onChange?.(e);
     }
   };
@@ -103,9 +103,9 @@ const PhoneInput = ({
         <Input
           value={value}
           type="tel"
-          maxLength={10}
+          maxLength={15}
           placeholder={t("phone_number")}
-          className="border-none flex-1"
+          className="border-none flex-1 min-w-[180px] w-full"
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           onChange={handleChange}

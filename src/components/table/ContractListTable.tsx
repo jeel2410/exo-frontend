@@ -40,7 +40,7 @@ interface TableCellProps {
 
 // Mock Table components
 export const Table: React.FC<TableProps> = ({ children }) => (
-  <table className="w-full border-collapse" role="grid">
+  <table className="w-full border-collapse min-w-[1200px]" role="grid">
     {children}
   </table>
 );
@@ -195,31 +195,31 @@ const ContractListTable = ({
     },
     {
       content: <div className="text-nowrap">{t("project_name")}</div>,
-      className: "min-w-[120px]",
+      className: "min-w-[180px] max-w-[220px]",
     },
     {
       content: <div className="text-nowrap">{t("signed_by")}</div>,
-      className: "min-w-[120px]",
+      className: "min-w-[140px]",
     },
     {
       content: <div className="text-nowrap">{t("position")}</div>,
-      className: "w-24",
-    },
-    {
-      content: <div className="text-nowrap">{t("amount_of_contract")}</div>,
       className: "min-w-[120px]",
     },
     {
+      content: <div className="text-nowrap">{t("amount_of_contract")}</div>,
+      className: "min-w-[150px]",
+    },
+    {
       content: <div className="text-nowrap">{t("organization")}</div>,
-      className: "w-24",
+      className: "min-w-[130px]",
     },
     {
       content: <div className="text-nowrap">{t("created_date")}</div>,
-      className: "w-24",
+      className: "min-w-[120px]",
     },
     {
       content: <div className="text-nowrap">{t("number_of_equests")}</div>,
-      className: "w-24",
+      className: "min-w-[120px]",
     },
     {
       content: <div>{t("actions")}</div>,
@@ -239,7 +239,7 @@ const ContractListTable = ({
     };
   }, []);
   return (
-    <div className="relative rounded-lg bg-white ">
+    <div className="relative rounded-lg bg-white">
       <div className="relative min-h-[225px]">
         <Table>
           <TableHeader className="border-b border-gray-100 bg-secondary-10 rounded-lg">
@@ -276,37 +276,37 @@ const ContractListTable = ({
                     <TableCell className="px-5 py-4 text-gray-500 text-sm">
                       {data.id}
                     </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6">
-                      <span className="block font-medium text-secondary-100 text-sm text-nowrap truncate">
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[180px] max-w-[220px]">
+                      <span className="block font-medium text-secondary-100 text-sm truncate">
                         {data.projectName}
                       </span>
                     </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6">
-                      <span className="block font-medium text-secondary-100 text-sm text-nowrap truncate">
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[140px]">
+                      <span className="block font-medium text-secondary-100 text-sm truncate">
                         {data.signedBy}
                       </span>
                     </TableCell>
 
-                    <TableCell className="px-5 py-4 sm:px-6">
-                      <span className="block font-medium text-secondary-100 text-sm text-nowrap truncate">
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[120px]">
+                      <span className="block font-medium text-secondary-100 text-sm truncate">
                         {data.position}
                       </span>
                     </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6">
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[150px]">
                       <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
                         {data.currency === "USD" ? (
-                          <USFlag width={24} height={14} />
+                          <USFlag width={20} height={12} />
                         ) : data.currency === "CDF" ? (
-                          <CDFFlag width={24} height={14} />
+                          <CDFFlag width={20} height={12} />
                         ) : null}
-                        <span className="text-gray-600">{data.currency}</span>
-                        <span className="block font-medium text-secondary-100 text-sm">
+                        <span className="text-gray-600 text-xs">{data.currency}</span>
+                        <span className="block font-medium text-secondary-100 text-sm truncate">
                           {Number(data.amountOfContract).toLocaleString()}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6">
-                      <span className="block font-medium text-secondary-100 text-sm text-nowrap">
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[130px]">
+                      <span className="block font-medium text-secondary-100 text-sm truncate">
                         {data.organization}
                       </span>
                     </TableCell>

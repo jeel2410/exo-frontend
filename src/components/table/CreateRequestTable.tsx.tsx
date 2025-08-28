@@ -89,6 +89,7 @@ export interface Order {
   tax_amount?: number;
   vat_included?: number;
   custom_duty?: string;
+  custom_duties?: string; // Add this for backward compatibility with API response
 }
 
 type SortOrder = "asc" | "desc" | null;
@@ -611,7 +612,8 @@ const CreateRequestTable = ({
                   ) : (
                     <span className="block font-medium text-secondary-100 text-sm">
                       {(() => {
-                        const customDutyValue = order.customDuty || order.custom_duty;
+                        // Try multiple field variations to find custom duty value
+                        const customDutyValue = order.customDuty || order.custom_duty || order.custom_duties || "";
                         const matchedOption = getCustomDutyOptions().find(
                           (opt) => opt.value === customDutyValue
                         );
@@ -619,12 +621,14 @@ const CreateRequestTable = ({
                           orderId: order.id,
                           orderCustomDuty: order.customDuty,
                           orderCustom_duty: order.custom_duty,
+                          orderCustom_duties: order.custom_duties,
                           finalValue: customDutyValue,
+                          currentTaxCategory: currentTaxCategory,
                           availableOptions: getCustomDutyOptions(),
                           matchedOption: matchedOption,
-                          displayLabel: matchedOption?.label || "-"
+                          displayLabel: matchedOption?.label || (customDutyValue || "-")
                         });
-                        return matchedOption?.label || "-";
+                        return matchedOption?.label || (customDutyValue || "-");
                       })()}
                     </span>
                   )}

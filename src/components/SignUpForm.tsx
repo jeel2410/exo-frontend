@@ -245,54 +245,53 @@ const SignUpForm = () => {
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="mt-4 lg:flex gap-5">
-          <div className="w-full">
-            <Label htmlFor="email">{t("email")}</Label>
-            <Input
-              type="email"
-              placeholder="example@gmail.com"
-              id="email"
-              name="email"
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.email && Boolean(formik.errors.email)}
-              hint={formik.touched.email ? formik.errors.email : undefined}
-            />
-          </div>
-          <div className="w-full mt-4 lg:mt-0">
-            <Label htmlFor="phoneNumber">{t("mobile_number")}</Label>
-            <div className="flex gap-2">
-              <div className="flex-shrink-0">
-                <CountryPicker
-                  value={formik.values.country_code ? 
-                    countries.find(country => country.phoneCode === formik.values.country_code) ? 
-                    {
-                      value: formik.values.country_code,
-                      label: countries.find(country => country.phoneCode === formik.values.country_code)?.name || formik.values.country_code,
-                      code: countries.find(country => country.phoneCode === formik.values.country_code)?.code || '',
-                      phoneCode: formik.values.country_code
-                    } : null
-                    : null
-                  }
-                  onChange={(selectedOption) =>
-                    formik.setFieldValue(
-                      "country_code",
-                      selectedOption ? selectedOption.value : ""
-                    )
-                  }
-                />
-              </div>
-              <div className="flex-1">
-                <PhoneInput
-                  name="mobile"
-                  value={formik.values.mobile}
-                  onChange={(e) => formik.setFieldValue("mobile", e.target.value)}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.mobile && Boolean(formik.errors.mobile)}
-                  hint={formik.touched.mobile ? formik.errors.mobile : undefined}
-                />
-              </div>
+        <motion.div variants={itemVariants} className="mt-4 w-full">
+          <Label htmlFor="email">{t("email")}</Label>
+          <Input
+            type="email"
+            placeholder="example@gmail.com"
+            id="email"
+            name="email"
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.email && Boolean(formik.errors.email)}
+            hint={formik.touched.email ? formik.errors.email : undefined}
+          />
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="mt-4 w-full">
+          <Label htmlFor="phoneNumber">{t("mobile_number")}</Label>
+          <div className="flex gap-2 w-full">
+            <div className="flex-shrink-0 min-w-[120px]">
+              <CountryPicker
+                value={formik.values.country_code ? 
+                  countries.find(country => country.phoneCode === formik.values.country_code) ? 
+                  {
+                    value: formik.values.country_code,
+                    label: countries.find(country => country.phoneCode === formik.values.country_code)?.name || formik.values.country_code,
+                    code: countries.find(country => country.phoneCode === formik.values.country_code)?.code || '',
+                    phoneCode: formik.values.country_code
+                  } : null
+                  : null
+                }
+                onChange={(selectedOption) =>
+                  formik.setFieldValue(
+                    "country_code",
+                    selectedOption ? selectedOption.value : ""
+                  )
+                }
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <PhoneInput
+                name="mobile"
+                value={formik.values.mobile}
+                onChange={(e) => formik.setFieldValue("mobile", e.target.value)}
+                onBlur={formik.handleBlur}
+                error={formik.touched.mobile && Boolean(formik.errors.mobile)}
+                hint={formik.touched.mobile ? formik.errors.mobile : undefined}
+              />
             </div>
           </div>
         </motion.div>

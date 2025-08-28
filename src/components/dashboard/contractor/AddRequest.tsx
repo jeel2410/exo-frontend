@@ -92,6 +92,7 @@ const AddRequest = () => {
   const [userData, setUserData] = useState<{ token: string } | undefined>();
   const [selectedAddresses, setSelectedAddresses] = useState<string[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [originalFiles, setOriginalFiles] = useState<UploadedFile[]>([]); // Track original files from API
   // const [mandatoryFiles, setMandatoryFiles] = useState<UploadedFile[]>([]);
   // const [additionalFiles, setAdditionalFiles] = useState<UploadedFile[]>([]);
   const [requestLetter, setRequestLetter] = useState("");
@@ -222,6 +223,7 @@ const AddRequest = () => {
         taxAmount: entity.tax_amount,
         vatIncluded: entity.vat_included,
         customDuty: entity.custom_duties || "",
+        custom_duties: entity.custom_duties || "", // Add this for backward compatibility
       };
     });
     // Note: For editing existing requests, tax_category will be fetched separately
@@ -390,14 +392,49 @@ const AddRequest = () => {
       return;
     }
 
+    // Helper function to check if files have changed
+    const getDocumentIdsForSubmission = () => {
+      // For new requests (no requestId), always pass all document IDs
+      if (!requestId) {
+        return uploadedFiles.length > 0
+          ? uploadedFiles.map((file) => file.id)?.join(",")
+          : undefined;
+      }
+
+      // For edit requests, compare current files with original files
+      const originalFileIds = new Set(originalFiles.map((f) => f.id));
+      const currentFileIds = new Set(uploadedFiles.map((f) => f.id));
+
+      // Check if files have changed
+      const filesChanged = 
+        originalFiles.length !== uploadedFiles.length ||
+        !Array.from(currentFileIds).every(id => originalFileIds.has(id)) ||
+        !Array.from(originalFileIds).every(id => currentFileIds.has(id));
+
+      console.log('📄 Document Change Detection:', {
+        isEditMode: !!requestId,
+        originalFileIds: Array.from(originalFileIds),
+        currentFileIds: Array.from(currentFileIds),
+        filesChanged,
+        willPassDocumentIds: filesChanged
+      });
+
+      // Only pass document_ids if files have changed
+      if (filesChanged && uploadedFiles.length > 0) {
+        return uploadedFiles.map((file) => file.id)?.join(",");
+      }
+
+      // Return undefined if no changes (this prevents the field from being sent to API)
+      return undefined;
+    };
+
+    const documentIds = getDocumentIdsForSubmission();
+
     const apiData: CreateRequestPayload = {
       project_id: projectId,
       address_id: selectedAddresses.join(","), // Convert array to comma-separated string
       request_letter: requestLetter,
-      document_ids:
-        uploadedFiles.length > 0
-          ? uploadedFiles.map((file) => file.id)?.join(",")
-          : undefined,
+      ...(documentIds !== undefined && { document_ids: documentIds }),
       request_entity: JSON.stringify(
         data.map((d) => ({
           label: d.label,
@@ -407,7 +444,7 @@ const AddRequest = () => {
           tax_rate: d.taxRate.toString(),
           tax_amount: d.taxAmount.toString(),
           vat_included: d.vatIncluded.toString(),
-          custom_duties: d.customDuty || "",
+          custom_duties: d.customDuty || d.custom_duty || "",
         }))
       ),
       tax_category: financialAuthority, // separate field outside entity JSON
@@ -552,6 +589,9 @@ const AddRequest = () => {
           file: undefined,
         }));
         setUploadedFiles(existingFiles);
+        setOriginalFiles(existingFiles); // Store original files for comparison
+      } else {
+        setOriginalFiles([]); // No original files
       }
 
       const res = await fetchProjectAddressesAsync(project_id);

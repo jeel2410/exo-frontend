@@ -64,7 +64,8 @@ const CountryPicker = ({
   const customStyles = {
     control: (provided: any) => ({
       ...provided,
-      minHeight: "40px",
+      height: "44px",
+      minHeight: "44px",
       border: "1px solid #e2e8f0",
       borderRadius: "8px",
       backgroundColor: "#f8fafc",
@@ -104,6 +105,21 @@ const CountryPicker = ({
       ...provided,
       fontSize: "14px",
       color: "#94a3b8",
+    }),
+    valueContainer: (provided: any) => ({
+      ...provided,
+      height: "42px",
+      padding: "0 8px",
+      display: "flex",
+      alignItems: "center",
+    }),
+    indicatorsContainer: (provided: any) => ({
+      ...provided,
+      height: "42px",
+    }),
+    dropdownIndicator: (provided: any) => ({
+      ...provided,
+      padding: "4px",
     }),
   };
 
