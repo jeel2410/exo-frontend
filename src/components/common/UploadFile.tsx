@@ -800,8 +800,8 @@ const UploadFile: React.FC<FileUploadProps> = ({
 
   // Determine which sections to show based on context and props
   const showMandatoryDocs = context === "create-request";
-  // Force show additional docs for now to debug
-  const shouldShowAdditionalDocs = true; // Always show for debugging
+  // Show additional docs based on prop
+  const shouldShowAdditionalDocs = Boolean(showAdditionalDocs);
   
   console.log('UploadFile render check:', {
     context,

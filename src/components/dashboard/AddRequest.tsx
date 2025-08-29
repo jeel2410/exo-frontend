@@ -641,7 +641,7 @@ const AddRequest = () => {
                 onUploadFile={handleUploadFile}
                 onDeleteFile={handleDeleteFile}
                 context="create-request"
-                showAdditionalDocs={true}
+                showAdditionalDocs={false}
                 taxCategory={financialAuthority}
               />
               {validationErrors.fileUpload && (

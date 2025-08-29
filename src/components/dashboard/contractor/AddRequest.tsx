@@ -901,8 +901,9 @@ const AddRequest = () => {
                 onRenameFile={handleRenameFile}
                 showAdditionalDocs={
                   requestId
-                    ? requestSubStatus === "hold" ||
-                      requestSubStatus === "Request Info"
+                    ? ["hold", "request_info"].includes(
+                        (requestSubStatus || "").toLowerCase()
+                      )
                     : false
                 }
                 taxCategory={financialAuthority}
