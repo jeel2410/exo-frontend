@@ -116,26 +116,63 @@ ProjectInfoFormProps) => {
     loadCityData();
   }, []);
 
-  // Dynamic location data from JSON
-  const getProvinceOptions = () => {
-    if (!cityData) return [];
-    return Object.keys(cityData).map(province => ({
-      value: province,
-      label: province
-    }));
+  // Helper function to check if a city has any available municipalities
+  const hasAvailableMunicipalities = (provinceName: string, cityName: string, currentAddressId?: number, existingAddresses: Address[] = []) => {
+    if (!cityData || !cityData[provinceName] || !cityData[provinceName][cityName]) {
+      return false;
+    }
+    
+    const municipalities = cityData[provinceName][cityName];
+    const usedMunicipalities = existingAddresses
+      .filter(addr => 
+        addr.id !== currentAddressId && 
+        addr.province === provinceName && 
+        addr.city === cityName && 
+        addr.municipality
+      )
+      .map(addr => addr.municipality);
+    
+    return municipalities.some((municipality: string) => !usedMunicipalities.includes(municipality));
   };
 
-  const getCityOptions = (selectedProvince: string) => {
+  // Helper function to check if a province has any cities with available municipalities
+  const hasAvailableCities = (provinceName: string, currentAddressId?: number, existingAddresses: Address[] = []) => {
+    if (!cityData || !cityData[provinceName]) {
+      return false;
+    }
+    
+    const cities = Object.keys(cityData[provinceName]);
+    return cities.some(city => hasAvailableMunicipalities(provinceName, city, currentAddressId, existingAddresses));
+  };
+
+  // Dynamic location data from JSON with intelligent filtering
+  const getProvinceOptions = (currentAddressId?: number, existingAddresses: Address[] = []) => {
+    if (!cityData) return [];
+    
+    // Only show provinces that have at least one city with available municipalities
+    return Object.keys(cityData)
+      .filter(province => hasAvailableCities(province, currentAddressId, existingAddresses))
+      .map(province => ({
+        value: province,
+        label: province
+      }));
+  };
+
+  const getCityOptions = (selectedProvince: string, currentAddressId?: number, existingAddresses: Address[] = []) => {
     if (!selectedProvince || !cityData || !cityData[selectedProvince]) {
       return [];
     }
-    return Object.keys(cityData[selectedProvince]).map(city => ({
-      value: city,
-      label: city
-    }));
+    
+    // Only show cities that have at least one available municipality
+    return Object.keys(cityData[selectedProvince])
+      .filter(city => hasAvailableMunicipalities(selectedProvince, city, currentAddressId, existingAddresses))
+      .map(city => ({
+        value: city,
+        label: city
+      }));
   };
 
-  const getMunicipalityOptions = (selectedProvince: string, selectedCity: string) => {
+  const getMunicipalityOptions = (selectedProvince: string, selectedCity: string, currentAddressId?: number, existingAddresses: Address[] = []) => {
     if (!selectedProvince || !selectedCity || !cityData || !cityData[selectedProvince]) {
       return [];
     }
@@ -144,15 +181,28 @@ ProjectInfoFormProps) => {
     if (!municipalities) {
       return [];
     }
-    return municipalities.map((municipality: string) => ({
-      value: municipality,
-      label: municipality
-    }));
+    
+    // Only show municipalities that are not already used for this province + city combination
+    const usedMunicipalities = existingAddresses
+      .filter(addr => 
+        addr.id !== currentAddressId && 
+        addr.province === selectedProvince && 
+        addr.city === selectedCity && 
+        addr.municipality
+      )
+      .map(addr => addr.municipality);
+    
+    return municipalities
+      .filter((municipality: string) => !usedMunicipalities.includes(municipality))
+      .map((municipality: string) => ({
+        value: municipality,
+        label: municipality
+      }));
   };
 
   const locationData = {
     countries: [{ value: "RD Congo", label: "RD Congo" }],
-    provinces: getProvinceOptions(),
+    provinces: [], // Will be populated dynamically with filtering
     cities: [], // Will be populated dynamically
     municipalities: [], // Will be populated dynamically
   };
@@ -758,7 +808,7 @@ ProjectInfoFormProps) => {
                             <td className="p-2">
                               {isFieldEditing(address.id, "province") ? (
                                 <CustomDropdown
-                                  options={getProvinceOptions()}
+                                  options={getProvinceOptions(address.id, values.addresses)}
                                   value={address.province}
                                   onChange={(value) => {
                                     updateAddress(
@@ -800,7 +850,7 @@ ProjectInfoFormProps) => {
                             <td className="p-2">
                               {isFieldEditing(address.id, "city") ? (
                                 <CustomDropdown
-                                  options={getCityOptions(address.province)}
+                                  options={getCityOptions(address.province, address.id, values.addresses)}
                                   value={address.city}
                                   onChange={(value) => {
                                     updateAddress(
@@ -842,7 +892,7 @@ ProjectInfoFormProps) => {
                             <td className="p-2">
                               {isFieldEditing(address.id, "municipality") ? (
                                 <CustomDropdown
-                                  options={getMunicipalityOptions(address.province, address.city)}
+                                  options={getMunicipalityOptions(address.province, address.city, address.id, values.addresses)}
                                   value={address.municipality}
                                   onChange={(value) => {
                                     updateAddress(

@@ -190,7 +190,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
                       <span>{t("sr_no")}</span>
                     </div> */}
                     <div>{t("country")}</div>
-                    <div>{t("Province")}</div>
+                    <div>{t("province")}</div>
                     <div>{t("city")}</div>
                     <div>{t("municipality")}</div>
                   </div>
@@ -238,7 +238,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
           <div className="space-y-3">
             <div className="flex">
               <div className="w-1/3 text-secondary-60">
-                <Label>Reference</Label>
+                <Label>{t("reference")}</Label>
               </div>
               <div className="w-2/3 text-secondary-100">
                 {projectData.contractReference || "-"}
@@ -247,7 +247,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
 
             <div className="flex">
               <div className="w-1/3 text-secondary-60">
-                <Label>Name</Label>
+                <Label>{t("name")}</Label>
               </div>
               <div className="w-2/3 text-secondary-100">
                 {projectData.contractName || "-"}

@@ -38,6 +38,7 @@ interface ContractProps {
   currency: "USD" | "CDF";
   amount?: string | number;
   reference?: string;
+  name?: string;
 }
 
 // Define the type for request data from API
@@ -375,6 +376,20 @@ const ContractDetails = () => {
                   weight="normal"
                 >
                   {contractData?.signed_by}
+                </Typography>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:gap-4">
+                <Typography
+                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
+                  weight="semibold"
+                >
+                  {t("name")}:
+                </Typography>
+                <Typography
+                  className="text-gray-900 break-words text-sm sm:text-base"
+                  weight="normal"
+                >
+                  {contractData?.name || "-"}
                 </Typography>
               </div>
               <div className="flex flex-col sm:flex-row sm:gap-4">
