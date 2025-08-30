@@ -9,12 +9,14 @@ import UserDropdown from "../components/header/UserDropdown";
 import LanguageSwitchLayout from "../pages/Auth/LanguageSwitchLayout";
 import { useTranslation } from "react-i18next";
 import { useRoleRoute } from "../hooks/useRoleRoute";
+import { useAuth } from "../context/AuthContext";
 
 const AppHeader: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { getRoute } = useRoleRoute();
+  const { user } = useAuth();
 
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
@@ -51,35 +53,62 @@ const AppHeader: React.FC = () => {
         <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200  sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
           <Logo width={179} height={40} className="hidden lg:block" />
           <div className="lg:flex gap-4 hidden">
-            <Button
-              variant="outline"
-              className={`border-none text-nowrap text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 ${
-                pathname === "/requests"
-                  ? "hover:bg-primary-10"
-                  : "hover:text-primary-150"
-              } hover:bg-primary-10 rounded-lg`}
-              onClick={() => navigate("/requests")}
-            >
-              {t("requests")}
-            </Button>
-            <Button
-              variant="outline"
-              className={`border-none text-nowrap text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 ${
-                pathname === "/contract"
-                  ? "hover:bg-primary-10"
-                  : "hover:text-primary-150"
-              } hover:bg-primary-10 rounded-lg`}
-              onClick={() => navigate("/contract")}
-            >
-              {t("contracts")}
-            </Button>
-            <Button
-              variant="outline"
-              className={`border-none text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 hover:text-primary-150 hover:bg-primary-10 rounded-lg`}
-              onClick={() => navigate(getRoute("help"))}
-            >
-              {t("help")}
-            </Button>
+            {user?.type === "project_manager" ? (
+              // Navigation for Project Managers
+              <>
+                <Button
+                  variant="outline"
+                  className={`border-none text-nowrap text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 ${
+                    pathname === "/projects" || pathname === "/"
+                      ? "hover:bg-primary-10"
+                      : "hover:text-primary-150"
+                  } hover:bg-primary-10 rounded-lg`}
+                  onClick={() => navigate("/project-dashboard")}
+                >
+                  {t("projects")}
+                </Button>
+                <Button
+                  variant="outline"
+                  className={`border-none text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 hover:text-primary-150 hover:bg-primary-10 rounded-lg`}
+                  onClick={() => navigate(getRoute("help"))}
+                >
+                  {t("help")}
+                </Button>
+              </>
+            ) : (
+              // Navigation for Regular Users
+              <>
+                <Button
+                  variant="outline"
+                  className={`border-none text-nowrap text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 ${
+                    pathname === "/requests"
+                      ? "hover:bg-primary-10"
+                      : "hover:text-primary-150"
+                  } hover:bg-primary-10 rounded-lg`}
+                  onClick={() => navigate("/requests")}
+                >
+                  {t("requests")}
+                </Button>
+                <Button
+                  variant="outline"
+                  className={`border-none text-nowrap text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 ${
+                    pathname === "/contract"
+                      ? "hover:bg-primary-10"
+                      : "hover:text-primary-150"
+                  } hover:bg-primary-10 rounded-lg`}
+                  onClick={() => navigate("/contract")}
+                >
+                  {t("contracts")}
+                </Button>
+                <Button
+                  variant="outline"
+                  className={`border-none text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 hover:text-primary-150 hover:bg-primary-10 rounded-lg`}
+                  onClick={() => navigate(getRoute("help"))}
+                >
+                  {t("help")}
+                </Button>
+              </>
+            )}
           </div>
           <button
             className="items-center justify-center w-10 h-10 text-gray-500 border-gray-200 rounded-lg z-99999 lg:hidden"

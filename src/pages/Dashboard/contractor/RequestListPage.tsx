@@ -20,6 +20,7 @@ import moment from "moment";
 import requestService from "../../../services/request.service";
 import RequestTable from "../../../components/table/RequestTable";
 import contractService from "../../../services/contract.service";
+import CreateRequestEmpty from "../../../components/dashboard/CreateRequestEmpty";
 
 export interface RequestData {
   id: number;
@@ -59,6 +60,7 @@ const RequestListPage = () => {
   const [hasContracts, setHasContracts] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [hasInitialData, setHasInitialData] = useState(false);
 
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -107,6 +109,11 @@ const RequestListPage = () => {
       );
       setData(newRequestData);
       setTotal(response.data.total);
+      
+      if (!hasInitialData && (response.data.total > 0 || debouncedSearchTerm)) {
+        setHasInitialData(true);
+      }
+      
       setLoading(false);
     },
     onError: async (error) => {
@@ -115,6 +122,10 @@ const RequestListPage = () => {
       // Clear data on error to prevent showing stale data
       setData([]);
       setTotal(0);
+      
+      if (!hasInitialData) {
+        // Show empty state if no initial data loaded
+      }
     },
   });
 
@@ -161,8 +172,61 @@ const RequestListPage = () => {
     }
   };
 
+  // Check if we have any active filters or search
+  const hasActiveFilters = debouncedSearchTerm;
+
   return (
     <AppLayout>
+      {data.length <= 0 && !hasActiveFilters && !hasInitialData ? (
+        <CreateRequestEmpty />
+      ) : data.length <= 0 && hasActiveFilters ? (
+        <div className="flex flex-col items-center justify-center min-h-[400px] px-4">
+          <div className="text-center">
+            <div className="mb-4">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33"
+                />
+              </svg>
+            </div>
+            <Typography
+              size="lg"
+              weight="semibold"
+              className="text-secondary-100 mb-2"
+            >
+              {t("no_data_found")}
+            </Typography>
+            <Typography size="base" className="text-secondary-60 mb-6">
+              {t("searching_request")}
+            </Typography>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button
+                variant="outline"
+                onClick={() => setSearchTerm("")}
+                className="px-4 py-2"
+              >
+                {t("clear_filters")}
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleCreateRequest}
+                className="px-4 py-2"
+              >
+                {t("create_request")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="relative">
         <motion.div
           className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-4 px-4 sm:px-0"
@@ -290,6 +354,7 @@ const RequestListPage = () => {
           </motion.div>
         </motion.div>
       </div>
+      )}
     </AppLayout>
   );
 };

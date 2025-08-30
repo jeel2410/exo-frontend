@@ -86,6 +86,7 @@ ProjectInfoFormProps) => {
   });
   const [formResetKey, setFormResetKey] = useState(Date.now().toString());
   const [isFormResetRequested, setIsFormResetRequested] = useState(false);
+  const [cityData, setCityData] = useState<any>(null);
 
   useEffect(() => {
     const resetFilesListener = () => {
@@ -99,25 +100,61 @@ ProjectInfoFormProps) => {
     };
   }, []);
 
+  // Load city data from JSON file
+  useEffect(() => {
+    const loadCityData = async () => {
+      try {
+        const response = await fetch('/city/city_data.json');
+        const data = await response.json();
+        setCityData(data);
+      } catch (error) {
+        console.error('Failed to load city data:', error);
+        // Fallback to empty object if loading fails
+        setCityData({});
+      }
+    };
+    loadCityData();
+  }, []);
+
+  // Dynamic location data from JSON
+  const getProvinceOptions = () => {
+    if (!cityData) return [];
+    return Object.keys(cityData).map(province => ({
+      value: province,
+      label: province
+    }));
+  };
+
+  const getCityOptions = (selectedProvince: string) => {
+    if (!selectedProvince || !cityData || !cityData[selectedProvince]) {
+      return [];
+    }
+    return Object.keys(cityData[selectedProvince]).map(city => ({
+      value: city,
+      label: city
+    }));
+  };
+
+  const getMunicipalityOptions = (selectedProvince: string, selectedCity: string) => {
+    if (!selectedProvince || !selectedCity || !cityData || !cityData[selectedProvince]) {
+      return [];
+    }
+    const provinceData = cityData[selectedProvince];
+    const municipalities = provinceData[selectedCity];
+    if (!municipalities) {
+      return [];
+    }
+    return municipalities.map((municipality: string) => ({
+      value: municipality,
+      label: municipality
+    }));
+  };
+
   const locationData = {
     countries: [{ value: "RD Congo", label: "RD Congo" }],
-    provinces: [
-      { value: "Kinshasa", label: "Kinshasa" },
-      { value: "Nord-Kivu", label: "Nord-Kivu" },
-      { value: "Kasai", label: "Kasai" },
-    ],
-    cities: [
-      { value: "Kinshasa", label: "Kinshasa" },
-      { value: "Goma", label: "Goma" },
-      { value: "Mbuji-Mayi", label: "Mbuji-Mayi" },
-    ],
-    municipalities: [
-      { value: "Munic", label: "Munic" },
-      { value: "Gombe", label: "Gombe" },
-      { value: "Kintambo", label: "Kintambo" },
-      { value: "Karisimbi", label: "Karisimbi" },
-      { value: "Dibindi", label: "Dibindi" },
-    ],
+    provinces: getProvinceOptions(),
+    cities: [], // Will be populated dynamically
+    municipalities: [], // Will be populated dynamically
   };
 
   const currencyOptions = [
@@ -701,7 +738,7 @@ ProjectInfoFormProps) => {
                                     }, 100);
                                   }}
                                   onBlur={stopEditing}
-                                  placeholder="Select country"
+                                  placeholder={t("select_country")}
                                   autoFocus
                                   className="text-sm"
                                 />
@@ -721,7 +758,7 @@ ProjectInfoFormProps) => {
                             <td className="p-2">
                               {isFieldEditing(address.id, "province") ? (
                                 <CustomDropdown
-                                  options={locationData.provinces}
+                                  options={getProvinceOptions()}
                                   value={address.province}
                                   onChange={(value) => {
                                     updateAddress(
@@ -737,7 +774,7 @@ ProjectInfoFormProps) => {
                                     }, 100);
                                   }}
                                   onBlur={stopEditing}
-                                  placeholder="Select province"
+                                  placeholder={t("select_province")}
                                   disabled={!address.country}
                                   autoFocus
                                   className="text-sm"
@@ -763,7 +800,7 @@ ProjectInfoFormProps) => {
                             <td className="p-2">
                               {isFieldEditing(address.id, "city") ? (
                                 <CustomDropdown
-                                  options={locationData.cities}
+                                  options={getCityOptions(address.province)}
                                   value={address.city}
                                   onChange={(value) => {
                                     updateAddress(
@@ -779,7 +816,7 @@ ProjectInfoFormProps) => {
                                     }, 100);
                                   }}
                                   onBlur={stopEditing}
-                                  placeholder="Select city"
+                                  placeholder={t("select_city")}
                                   disabled={!address.province}
                                   autoFocus
                                   className="text-sm"
@@ -805,7 +842,7 @@ ProjectInfoFormProps) => {
                             <td className="p-2">
                               {isFieldEditing(address.id, "municipality") ? (
                                 <CustomDropdown
-                                  options={locationData.municipalities}
+                                  options={getMunicipalityOptions(address.province, address.city)}
                                   value={address.municipality}
                                   onChange={(value) => {
                                     updateAddress(
@@ -818,7 +855,7 @@ ProjectInfoFormProps) => {
                                     stopEditing();
                                   }}
                                   onBlur={stopEditing}
-                                  placeholder="Select municipality"
+                                  placeholder={t("select_municipality")}
                                   disabled={!address.city}
                                   autoFocus
                                   className="text-sm"

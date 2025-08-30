@@ -204,22 +204,12 @@ export default function App() {
               }
             />
 
-            {/* User Routes (Regular Users) */}
+            {/* Home Route for all authenticated users */}
             <Route
               path="/"
               element={
-                <RoleBasedRoute allowedRoles={["project_manager"]}>
+                <RoleBasedRoute allowedRoles={["project_manager", "user"]}>
                   <Home />
-                </RoleBasedRoute>
-              }
-            />
-            
-            {/* Default route for users */}
-            <Route
-              path="/"
-              element={
-                <RoleBasedRoute allowedRoles={["user"]}>
-                  <RequestListPage />
                 </RoleBasedRoute>
               }
             />

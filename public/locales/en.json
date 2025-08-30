@@ -404,5 +404,11 @@
   "number_of_requests": "Number of Requests",
   "sum_of_requests": "Sum of Requests",
   "applications_accepted": "Applications Accepted",
-  "searching_request": "Searching requests..."
+  "searching_request": "Searching requests...",
+  "projects": "Projects",
+  "view_project": "View Project",
+  "select_country": "Select country",
+  "select_province": "Select province",
+  "select_city": "Select city",
+  "select_municipality": "Select municipality"
 }

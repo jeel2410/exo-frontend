@@ -511,7 +511,7 @@ const ListDashBoardTable = ({
                                 aria-label="View Project"
                               >
                                 <EyeDarkIcon />
-                                View Project
+                                {t("view_project")}
                               </button>
 
                               <button
@@ -524,7 +524,7 @@ const ListDashBoardTable = ({
                                 aria-label="Edit"
                               >
                                 <PencilIcon />
-                                Edit
+                                {t("edit")}
                               </button>
 
                               <button
@@ -539,7 +539,7 @@ const ListDashBoardTable = ({
                                 disabled={isArchiving}
                               >
                                 <ArchiveIconDark />
-                                {isArchiving ? "Archiving..." : "Archive"}
+                                {isArchiving ? t("archiving") : t("archive")}
                               </button>
 
                               {/* <button
