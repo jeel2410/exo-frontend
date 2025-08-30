@@ -10,7 +10,6 @@ import {
 import {
   CrossRedIcon,
   EyeDarkIcon,
-  PluseDarkIcon,
   RightGreenIcon,
   USFlag,
   CDFFlag,
@@ -21,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import StatusBadge, { StatusCode } from "../common/StatusBadge.tsx";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
+import Button from "../../lib/components/atoms/Button";
 
 export interface Data {
   id: number;
@@ -40,9 +40,11 @@ export interface Data {
 const ContractProjectListTable = ({
   data,
   onDataChange,
+  onSelectProject,
 }: {
   data: Data[];
   onDataChange?: (newData: Data[]) => void;
+  onSelectProject?: (projectId: string) => void;
 }) => {
   const [tableData, setTableData] = useState<Data[]>(data);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
@@ -174,9 +176,6 @@ const ContractProjectListTable = ({
   const handleViewProject = (projectId: string = "") => {
     navigate(`/project-details/${projectId}`);
   };
-  const addContract = (projectId: string = "") => {
-    navigate(`/create-contract/${projectId}`);
-  };
 
   const tableHeader: TableHeaderType[] = [
     // {
@@ -221,7 +220,7 @@ const ContractProjectListTable = ({
     },
     {
       content: <div>{t("actions")}</div>,
-      className: "w-20",
+      className: "min-w-[120px]",
     },
   ];
   return (
@@ -302,72 +301,78 @@ const ContractProjectListTable = ({
                         {data.projectManager?.trim() || "-"}
                       </span>
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-sm">
+                    <TableCell className="px-3 py-3 text-center">
                       {editingId === data.id ? (
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center justify-center space-x-2">
                           <RightGreenIcon
                             onClick={() => handleSaveEdit(data.id)}
-                            width={24}
-                            height={24}
+                            width={20}
+                            height={20}
                             className="cursor-pointer"
                           />
-
                           <CrossRedIcon
                             onClick={handleCancelEdit}
-                            width={24}
-                            height={24}
+                            width={20}
+                            height={20}
                             className="cursor-pointer"
                           />
                         </div>
                       ) : (
-                        <div
-                          className="relative"
-                          ref={openMenuId === data.id ? menuRef : null}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMenuToggle(data.id);
+                        <div className="flex items-center justify-center gap-2">
+                          {/* Primary Select Button */}
+                          <Button
+                            variant="primary"
+                            onClick={() => {
+                              onSelectProject?.(data.projectUuid);
                             }}
-                            className="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                            aria-label="Open actions menu"
-                            aria-haspopup="true"
-                            aria-expanded={openMenuId === data.id}>
-                            <svg
-                              className="w-4 h-4"
-                              fill="currentColor"
-                              viewBox="0 0 20 20">
-                              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                            </svg>
-                          </button>
-                          {openMenuId === data.id && (
-                            <div
-                              className="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-2"
-                              role="menu">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleViewProject(data?.projectUuid);
-                                }}
-                                className="rounded-sm flex items-center gap-2 w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors"
-                                role="menuitem"
-                                aria-label="View Project">
-                                <EyeDarkIcon />
-                                {t("view_project")}
-                              </button>
-
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  addContract(data?.projectUuid);
-                                }}
-                                className="rounded-sm flex items-center gap-2 w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors"
-                                role="menuitem"
-                                aria-label="Edit">
-                                <PluseDarkIcon />
-                                {t("add_contract")}
-                              </button>
-                            </div>
-                          )}
+                            className="text-xs px-3 py-1.5 min-w-[60px] h-7 whitespace-nowrap"
+                          >
+                            {t("select")}
+                          </Button>
+                          
+                          {/* Dropdown Menu for Additional Actions */}
+                          <div
+                            className="relative"
+                            ref={openMenuId === data.id ? menuRef : null}
+                          >
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMenuToggle(data.id);
+                              }}
+                              className="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                              aria-label="Open actions menu"
+                              aria-haspopup="true"
+                              aria-expanded={openMenuId === data.id}
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                              </svg>
+                            </button>
+                            {openMenuId === data.id && (
+                              <div
+                                className="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-2"
+                                role="menu"
+                              >
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewProject(data?.projectUuid);
+                                  }}
+                                  className="rounded-sm flex items-center gap-2 w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                                  role="menuitem"
+                                  aria-label="View Project"
+                                >
+                                  <EyeDarkIcon />
+                                  {t("view_project")}
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </TableCell>

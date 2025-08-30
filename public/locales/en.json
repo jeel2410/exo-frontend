@@ -32,6 +32,7 @@
   "otp": "OTP",
   "didn_t_receive_a_code": "Didn't receive a code?",
   "resend": "Resend",
+  "resending": "Resending...",
   "verify": "Verify",
   "set_new_password": "Set New Password",
   "create_a_strong_new_password_to_secure_your_account": "Create a strong new password to secure your account.",

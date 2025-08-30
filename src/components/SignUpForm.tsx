@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Checkbox from "../lib/components/atoms/Checkbox";
 import Input from "../lib/components/atoms/Input";
 import Label from "../lib/components/atoms/Label";
@@ -8,7 +8,7 @@ import Button from "../lib/components/atoms/Button";
 
 import PhoneInput from "../lib/components/atoms/PhoneInput";
 import CountryPicker from "../lib/components/atoms/CountryPicker";
-import { countries } from "../utils/constant/countries";
+import { useCountryLookup } from "../hooks/useCountryLookup";
 import { useTranslation } from "react-i18next";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -27,6 +27,7 @@ const SignUpForm = () => {
   const [remember, setRemember] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { byPhoneCode } = useCountryLookup();
   const {
     isOpen: isTermModel,
     openModal: openTermModel,
@@ -265,16 +266,16 @@ const SignUpForm = () => {
           <div className="flex gap-2 w-full">
             <div className="flex-shrink-0 min-w-[120px]">
               <CountryPicker
-                value={formik.values.country_code ? 
-                  countries.find(country => country.phoneCode === formik.values.country_code) ? 
-                  {
+                value={useMemo(() => {
+                  if (!formik.values.country_code) return null;
+                  const country = byPhoneCode.get(formik.values.country_code);
+                  return country ? {
                     value: formik.values.country_code,
-                    label: countries.find(country => country.phoneCode === formik.values.country_code)?.name || formik.values.country_code,
-                    code: countries.find(country => country.phoneCode === formik.values.country_code)?.code || '',
+                    label: country.name,
+                    code: country.code,
                     phoneCode: formik.values.country_code
-                  } : null
-                  : null
-                }
+                  } : null;
+                }, [formik.values.country_code, byPhoneCode])}
                 onChange={(selectedOption) =>
                   formik.setFieldValue(
                     "country_code",

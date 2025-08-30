@@ -1,0 +1,94 @@
+/* Modal HTML Content Styles */
+.modal-html-content {
+  line-height: 1.6;
+  color: rgb(113 113 122); /* text-secondary-60 equivalent */
+}
+
+.modal-html-content p {
+  margin-bottom: 1rem;
+  margin-top: 0;
+}
+
+.modal-html-content p:last-child {
+  margin-bottom: 0;
+}
+
+.modal-html-content h1,
+.modal-html-content h2,
+.modal-html-content h3,
+.modal-html-content h4,
+.modal-html-content h5,
+.modal-html-content h6 {
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: rgb(24 24 27); /* text-secondary-100 equivalent */
+}
+
+.modal-html-content h1 { font-size: 1.5rem; }
+.modal-html-content h2 { font-size: 1.375rem; }
+.modal-html-content h3 { font-size: 1.25rem; }
+.modal-html-content h4 { font-size: 1.125rem; }
+.modal-html-content h5 { font-size: 1rem; }
+.modal-html-content h6 { font-size: 0.875rem; }
+
+.modal-html-content ul,
+.modal-html-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.modal-html-content li {
+  margin-bottom: 0.5rem;
+}
+
+.modal-html-content strong,
+.modal-html-content b {
+  font-weight: 600;
+  color: rgb(24 24 27);
+}
+
+.modal-html-content em,
+.modal-html-content i {
+  font-style: italic;
+}
+
+.modal-html-content a {
+  color: rgb(59 130 246); /* blue-500 */
+  text-decoration: underline;
+}
+
+.modal-html-content a:hover {
+  color: rgb(37 99 235); /* blue-600 */
+}
+
+.modal-html-content br {
+  line-height: 1.6;
+}
+
+/* Handle divs that might be used as paragraphs */
+.modal-html-content div {
+  margin-bottom: 0.75rem;
+}
+
+.modal-html-content div:last-child {
+  margin-bottom: 0;
+}
+
+/* Block quotes */
+.modal-html-content blockquote {
+  border-left: 4px solid rgb(209 213 219);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: rgb(107 114 128);
+}
+
+/* Code formatting */
+.modal-html-content code {
+  background-color: rgb(243 244 246);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875rem;
+}

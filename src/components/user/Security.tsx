@@ -87,6 +87,22 @@ const Security = ({ userData,setUserDate }: UserInformationProps) => {
       return toast.error(t("otp_send_error"));
     },
   });
+
+  const resendOtpMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const res = await authService.sendOtp(email);
+      return res;
+    },
+    onSuccess: () => {
+      toast.success(t("otp_sent_successfully"));
+    },
+    onError: (error: any) => {
+      if (error.status === 412) {
+        return toast.error(t("email_is_already_registered"));
+      }
+      return toast.error(t("otp_send_error"));
+    },
+  });
   const handelSendOtp = async () => {
     console.log(changeEmialFields, "changeEmialFields");
     const res = await sendOtpMutation.mutateAsync(changeEmialFields.email);
@@ -94,6 +110,15 @@ const Security = ({ userData,setUserDate }: UserInformationProps) => {
       closeEmailModal();
       openOtpModal();
     }
+  };
+
+  const handleResendOtp = async () => {
+    // Clear the OTP field when resending
+    setChangeEmailFields((prev) => ({
+      ...prev,
+      otp: "",
+    }));
+    await resendOtpMutation.mutateAsync(changeEmialFields.email);
   };
   const changeEmail = useMutation({
     mutationFn: async (data: ChangeEmailFields) => {
@@ -336,8 +361,10 @@ const Security = ({ userData,setUserDate }: UserInformationProps) => {
         onClose={closeOtpModal}
         setOtp={setOtp}
         loading={changeEmail.isPending}
+        resendLoading={resendOtpMutation.isPending}
         fieldValue={changeEmialFields}
         verifyOTP={verifyOTP}
+        resendOTP={handleResendOtp}
       />
     </div>
   );

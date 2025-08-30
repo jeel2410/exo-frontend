@@ -32,6 +32,7 @@
   "otp": "OTP",
   "didn_t_receive_a_code": "Vous n’avez pas reçu de code ?",
   "resend": "Renvoyer",
+  "resending": "Renvoi en cours...",
   "verify": "Vérifier",
   "set_new_password": "Réinitialiser le mot de passe",
   "create_a_strong_new_password_to_secure_your_account": "Créez un nouveau mot de passe fort pour sécuriser votre compte.",

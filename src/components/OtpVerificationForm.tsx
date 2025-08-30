@@ -130,6 +130,11 @@ const OtpVerificationForm = () => {
   });
 
   const handleResendOtp = () => {
+    // Clear form errors and reset form state when resending OTP
+    formik.setErrors({});
+    formik.setTouched({}, false);
+    formik.setFieldValue('otp', '');
+    
     if (path === "sign-up") {
       sendOtpMutation.mutate(userData?.email || "");
     } else if (path == "forgot-password") {
@@ -189,15 +194,25 @@ const OtpVerificationForm = () => {
         </motion.div>
 
         <motion.div variants={itemVariants} className="mt-4">
-          <Typography size="sm" weight="semibold" className="text-secondary-60">
-            {t("didn_t_receive_a_code")}
-            <span
-              className="text-primary-150 pl-1 cursor-pointer"
+          <div className="flex items-center">
+            <Typography size="sm" weight="semibold" className="text-secondary-60">
+              {t("didn_t_receive_a_code")}
+            </Typography>
+            <button
               onClick={handleResendOtp}
+              disabled={sendOtpMutation.isPending || forgotPasswordMutation.isPending}
+              className="ml-1 text-primary-150 hover:text-primary-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold flex items-center transition-all duration-200"
             >
-              {t("resend")}
-            </span>
-          </Typography>
+              {(sendOtpMutation.isPending || forgotPasswordMutation.isPending) ? (
+                <div className="flex items-center">
+                  <div className="animate-spin h-4 w-4 border-2 border-primary-150 border-t-transparent rounded-full mr-1" />
+                  {t("resending")}
+                </div>
+              ) : (
+                t("resend")
+              )}
+            </button>
+          </div>
         </motion.div>
 
         <motion.div variants={itemVariants}>

@@ -8,14 +8,16 @@ import Typography from "../../lib/components/atoms/Typography";
 interface ChangeEmailModalProps {
   isOpen: boolean;
   loading?: boolean;
+  resendLoading?: boolean;
   onClose: () => void;
   verifyOTP: () => void;
+  resendOTP?: () => void;
   setOtp: (otp: string) => void;
   fieldValue: { email: string; otp: string };
   // fieldValue: { email: string; password: string; otp: string };
 }
 
-const VerifyOtpModal = ({ isOpen, onClose,setOtp,fieldValue,verifyOTP,loading }: ChangeEmailModalProps) => {
+const VerifyOtpModal = ({ isOpen, onClose,setOtp,fieldValue,verifyOTP,loading,resendLoading,resendOTP }: ChangeEmailModalProps) => {
   const { t } = useTranslation();
   return (
     <div className="w-fit">
@@ -34,15 +36,29 @@ const VerifyOtpModal = ({ isOpen, onClose,setOtp,fieldValue,verifyOTP,loading }:
         <div className="mt-7">
           <Label>{t("otp")}</Label>
           <OtpInput onChange={(e)=>setOtp(e)} value={fieldValue.otp} />
-          <Typography
-            size="sm"
-            weight="semibold"
-            className="text-secondary-60 mt-4"
-          >
-            {t("did_nt_receive_a_code")}
-
-            <span className="text-primary-150 ml-1">{t("resend")}</span>
-          </Typography>
+          <div className="flex items-center mt-4">
+            <Typography
+              size="sm"
+              weight="semibold"
+              className="text-secondary-60"
+            >
+              {t("did_nt_receive_a_code")}
+            </Typography>
+            <button
+              onClick={resendOTP}
+              disabled={resendLoading}
+              className="ml-1 text-primary-150 hover:text-primary-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold flex items-center transition-all duration-200"
+            >
+              {resendLoading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin h-4 w-4 border-2 border-primary-150 border-t-transparent rounded-full mr-1" />
+                  {t("resending")}
+                </div>
+              ) : (
+                t("resend")
+              )}
+            </button>
+          </div>
         </div>
         <div className="w-full flex gap-4 justify-end mt-6">
           <Button variant="primary" className="w-fit !py-3" onClick={verifyOTP} loading={loading}>

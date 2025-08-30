@@ -5,6 +5,8 @@ import Typography from "../../lib/components/atoms/Typography";
 import termsService from "../../services/terms.service";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { formatHtmlContent } from "../../utils/htmlSanitizer";
+import './modal-content.css';
 
 interface TermsConditionModalProps {
   isOpen: boolean;
@@ -43,16 +45,42 @@ const PrivacyModal = ({
   // Update policy data when API data is received
   useEffect(() => {
     if (data) {
-      const transformedData: PolicyData = {
-        lastUpdated: data.lastUpdated || "May 10, 2025",
-        sections: data.sections ||
-          data.content || [
-            {
-              title: "Privacy Policy",
-              content: typeof data === "string" ? data : JSON.stringify(data),
-            },
-          ],
-      };
+      console.log(data, "Privacy API data received");
+
+      // Transform API data to match your PolicyData interface
+      let transformedData: PolicyData;
+      
+      if (Array.isArray(data)) {
+        // Handle array response
+        transformedData = {
+          lastUpdated: "May 10, 2025",
+          sections: data.map((item, index) => ({
+            title: item.title || `Section ${index + 1}`,
+            content: item.content || item.description || (typeof item === "string" ? item : JSON.stringify(item))
+          }))
+        };
+      } else if (data && typeof data === 'object') {
+        // Handle object response
+        transformedData = {
+          lastUpdated: data.lastUpdated || data.updated_at || "May 10, 2025",
+          sections: data.sections || (data.content ? [{
+            title: "Privacy Policy",
+            content: data.content
+          }] : [{
+            title: "Privacy Policy",
+            content: JSON.stringify(data)
+          }])
+        };
+      } else {
+        // Handle string or other response
+        transformedData = {
+          lastUpdated: "May 10, 2025",
+          sections: [{
+            title: "Privacy Policy",
+            content: typeof data === "string" ? data : JSON.stringify(data)
+          }]
+        };
+      }
 
       setPolicyData(transformedData);
     }
@@ -102,13 +130,10 @@ const PrivacyModal = ({
                   >
                     {section.title}
                   </Typography>
-                  <Typography
-                    size="sm"
-                    weight="normal"
-                    className="text-secondary-60 whitespace-pre-line"
-                  >
-                    {section.content}
-                  </Typography>
+                  <div 
+                    className="text-sm font-normal text-secondary-60 modal-html-content"
+                    dangerouslySetInnerHTML={{ __html: formatHtmlContent(section.content) }}
+                  />
                 </div>
               ))}
             </div>

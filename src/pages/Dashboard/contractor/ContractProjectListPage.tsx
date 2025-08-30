@@ -174,6 +174,10 @@ const ContractProjectListPage = () => {
     setIsDatePickerOpen(false);
   };
 
+  const handleSelectProject = (projectId: string) => {
+    navigate(`/create-contract/${projectId}`);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -226,7 +230,7 @@ const ContractProjectListPage = () => {
                   </div>
                   <Input
                     type="text"
-                    placeholder={t("Search By Project ID or Project Name...")}
+                    placeholder={t("search_placeholder")}
                     className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10"
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -277,12 +281,15 @@ const ContractProjectListPage = () => {
             </div>
 
             <div className="sm:mx-0">
-              <ContractProjectListTable data={data} />
+              <ContractProjectListTable
+                data={data}
+                onSelectProject={handleSelectProject}
+              />
             </div>
 
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-4 sm:px-0">
               <div className="flex items-center gap-2 text-sm">
-                <span>Rows per page:</span>
+                <span>{t("rows_per_page")}</span>
                 <select
                   value={limit}
                   onChange={(e) => handleLimitChange(Number(e.target.value))}

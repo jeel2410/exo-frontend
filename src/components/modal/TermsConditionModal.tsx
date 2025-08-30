@@ -5,6 +5,8 @@ import Typography from "../../lib/components/atoms/Typography";
 import termsService from "../../services/terms.service";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { formatHtmlContent } from "../../utils/htmlSanitizer";
+import './modal-content.css';
 
 interface TermsConditionModalProps {
   isOpen: boolean;
@@ -46,17 +48,39 @@ const TermsConditionModal = ({
       console.log(data, "API data received");
 
       // Transform API data to match your PolicyData interface
-      // Adjust this based on your actual API response structure
-      const transformedData: PolicyData = {
-        lastUpdated: data.lastUpdated || "May 10, 2025",
-        sections: data.sections ||
-          data.content || [
-            {
-              title: "Terms and Conditions",
-              content: typeof data === "string" ? data : JSON.stringify(data),
-            },
-          ],
-      };
+      let transformedData: PolicyData;
+      
+      if (Array.isArray(data)) {
+        // Handle array response
+        transformedData = {
+          lastUpdated: "May 10, 2025",
+          sections: data.map((item, index) => ({
+            title: item.title || `Section ${index + 1}`,
+            content: item.content || item.description || (typeof item === "string" ? item : JSON.stringify(item))
+          }))
+        };
+      } else if (data && typeof data === 'object') {
+        // Handle object response
+        transformedData = {
+          lastUpdated: data.lastUpdated || data.updated_at || "May 10, 2025",
+          sections: data.sections || (data.content ? [{
+            title: "Terms and Conditions",
+            content: data.content
+          }] : [{
+            title: "Terms and Conditions",
+            content: JSON.stringify(data)
+          }])
+        };
+      } else {
+        // Handle string or other response
+        transformedData = {
+          lastUpdated: "May 10, 2025",
+          sections: [{
+            title: "Terms and Conditions",
+            content: typeof data === "string" ? data : JSON.stringify(data)
+          }]
+        };
+      }
 
       setPolicyData(transformedData);
     }
@@ -106,13 +130,10 @@ const TermsConditionModal = ({
                   >
                     {section.title}
                   </Typography>
-                  <Typography
-                    size="sm"
-                    weight="normal"
-                    className="text-secondary-60 whitespace-pre-line"
-                  >
-                    {section.content}
-                  </Typography>
+                  <div 
+                    className="text-sm font-normal text-secondary-60 modal-html-content"
+                    dangerouslySetInnerHTML={{ __html: formatHtmlContent(section.content) }}
+                  />
                 </div>
               ))}
             </div>
