@@ -37,6 +37,7 @@ interface ContractProps {
   requests_data: [];
   currency: "USD" | "CDF";
   amount?: string | number;
+  reference?: string;
 }
 
 // Define the type for request data from API
@@ -418,6 +419,37 @@ const ContractDetails = () => {
                   {contractData?.requests_data_count}
                 </Typography>
               </div>
+              <div className="flex flex-col sm:flex-row sm:gap-4">
+                <Typography
+                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
+                  weight="semibold"
+                >
+                  {t("contract_amount")}:
+                </Typography>
+                <Typography
+                  className="text-gray-900 break-words text-sm sm:text-base"
+                  weight="normal"
+                >
+                  {contractData?.currency}{" "}
+                  {contractData?.amount
+                    ? Number(contractData.amount).toLocaleString()
+                    : "0"}
+                </Typography>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:gap-4">
+                <Typography
+                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
+                  weight="semibold"
+                >
+                  {t("reference")}:
+                </Typography>
+                <Typography
+                  className="text-gray-900 break-words text-sm sm:text-base"
+                  weight="normal"
+                >
+                  {contractData?.reference || "-"}
+                </Typography>
+              </div>
             </div>
 
             {/* Right Column */}
@@ -573,7 +605,7 @@ const ContractDetails = () => {
                     size="sm"
                     weight="semibold"
                   >
-                    {t("Filter")}
+                    {t("filter")}
                   </Typography>
                 </Button>
 
@@ -604,7 +636,7 @@ const ContractDetails = () => {
                       size="sm"
                       weight="normal"
                     >
-                      Searching requests...
+                      {t("searching_request")}
                     </Typography>
                   </div>
                 </div>
@@ -625,6 +657,7 @@ const ContractDetails = () => {
                             ? String(req.request_unique_number)
                             : String(idx + 1),
                           amount: finalAmount,
+                          currency: contractData?.currency || "USD", // Add currency from contract data
                           createdDate: req.created_at
                             ? moment(req.created_at).format("YYYY-MM-DD")
                             : "",

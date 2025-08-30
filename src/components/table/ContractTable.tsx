@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "./CreateRequestTable.tsx";
+import { USFlag, CDFFlag } from "../../icons";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 
@@ -130,10 +131,19 @@ const ContractTable = ({ data }: { data: ContractData[] | [] }) => {
                       </span>
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6">
-                      <span className="block font-medium text-secondary-100 text-sm">
-                        <span className="text-gray-500">{data.currency} </span>
-                        {data.amountByContract.toLocaleString()}
-                      </span>
+                      <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
+                        {data.currency === "USD" ? (
+                          <USFlag width={24} height={14} />
+                        ) : data.currency === "CDF" ? (
+                          <CDFFlag width={24} height={14} />
+                        ) : null}
+                        <span className="text-gray-600">
+                          {data.currency || "USD"}
+                        </span>
+                        <span className="block font-medium text-secondary-100 text-sm">
+                          {data.amountByContract.toLocaleString()}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6">
                       <span className="block font-medium text-secondary-100 text-sm">

@@ -246,8 +246,8 @@
   "sum_of_approved_amount": "Sum of Approved Amount",
   "location": "location",
   "contract_details": "Contract Details",
-  "number_of_request": "Number of Request",
-  "sum_of_request": "Sum of Request",
+  "number_of_request": "Number of Requests",
+  "sum_of_request": "Sum of Requests",
   "accepted_requests": "Accepted Requests",
   "requests": "Requests",
   "create_contract": "Create Contract",
@@ -369,7 +369,6 @@
   "document_name": "Document Name",
   "view": "View",
   "no_documents_available": "No documents available",
-  "contract_info": "Contract Info",
   "reference": "Reference",
   "reference_required": "Reference is required",
   "name_required": "Name is required",
@@ -398,5 +397,12 @@
   "ok": "OK",
   "request_status_updated": "Request Status Updated",
   "your_request_has_been_moved_from": "Your request has been moved from",
-  "to": "to"
+  "contract_amount": "Contract Amount",
+  "contract_information": "Contract Information",
+  "job": "Job",
+  "creation_date": "Creation Date",
+  "number_of_requests": "Number of Requests",
+  "sum_of_requests": "Sum of Requests",
+  "applications_accepted": "Applications Accepted",
+  "searching_request": "Searching requests..."
 }
