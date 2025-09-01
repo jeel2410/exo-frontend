@@ -188,7 +188,7 @@ const ContractInfoForm = ({
     try {
       const response = await projectService.changeDocumentName(newName, fileId);
       console.log("File renamed successfully:", response);
-      
+
       // Update the file name in the local state
       const updatedFiles = files.map((file: UploadedFile) => {
         if (file.id === fileId) {
@@ -196,23 +196,23 @@ const ContractInfoForm = ({
             ...file,
             file: {
               ...file.file,
-              name: response.data?.new_name || newName
+              name: response.data?.new_name || newName,
             },
-            original_name: response.data?.new_name || newName
+            original_name: response.data?.new_name || newName,
           };
         }
         return file;
       });
-      
+
       setFieldValue("contractFiles", updatedFiles);
-      
+
       return { status: true, newName: response.data?.new_name || newName };
     } catch (error) {
       console.error("Failed to rename file:", error);
       return { status: false };
     }
   };
-  
+
   console.log("Initial values:", initialValues);
 
   return (
@@ -275,23 +275,23 @@ const ContractInfoForm = ({
                 className="text-red-500 text-sm"
               />
             </div>
-            <div className="w-full">
-              <Label htmlFor="name">
-                {t("name")}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Field
-                id="name"
-                as={Input}
-                name="name"
-                placeholder="Contract Name"
-              />
-              <ErrorMessage
-                name="name"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
+          </div>
+          <div className="w-full">
+            <Label htmlFor="name">
+              {t("name")}
+              <span className="text-red-500">*</span>
+            </Label>
+            <Field
+              id="name"
+              as={Input}
+              name="name"
+              placeholder="Contract Name"
+            />
+            <ErrorMessage
+              name="name"
+              component="div"
+              className="text-red-500 text-sm"
+            />
           </div>
 
           <div className="flex gap-5 w-full">
@@ -379,7 +379,12 @@ const ContractInfoForm = ({
             <Label htmlFor="place">
               {t("place")} :<span className="text-red-500">*</span>
             </Label>
-            <Field as={Input} name="place" id="place" placeholder={t("place")} />
+            <Field
+              as={Input}
+              name="place"
+              id="place"
+              placeholder={t("place")}
+            />
             <ErrorMessage
               name="place"
               component="div"
@@ -435,9 +440,14 @@ const ContractInfoForm = ({
               onRenameFile={async (fileId: string, newName: string) => {
                 console.log("Renaming file:", fileId, newName);
                 // if (!newName) {
-                  // return { status: false, newName: "" };
+                // return { status: false, newName: "" };
                 // }
-                return await handleRenameFile(fileId, newName, setFieldValue, values.contractFiles);
+                return await handleRenameFile(
+                  fileId,
+                  newName,
+                  setFieldValue,
+                  values.contractFiles
+                );
               }}
               onDeleteFile={async (fileId: string) => {
                 return handleDeleteFile(

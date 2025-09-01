@@ -2,6 +2,8 @@ import { useTranslation } from "react-i18next";
 import {
   BlueCopyIcon,
   PdfIcon,
+  USFlag,
+  CDFFlag,
   // PdfIcon,
 } from "../../icons";
 import AppLayout from "../../layout/AppLayout";
@@ -339,11 +341,21 @@ const TestRequestDetails = () => {
                         >
                           {t("amount")}
                         </Typography>
-                        <Typography className="text-secondary-100" size="sm">
-                          {requestData
-                            ? requestData.amount_summary.total_amount
-                            : 0}
-                        </Typography>
+                        <div className="flex items-center gap-2">
+                          {(requestData?.amount_summary.contract_currency || "USD") === "USD" ? (
+                            <USFlag width={20} height={12} />
+                          ) : (
+                            <CDFFlag width={20} height={12} />
+                          )}
+                          <span className="text-gray-600 text-sm">
+                            {requestData?.amount_summary.contract_currency || "USD"}
+                          </span>
+                          <Typography className="text-secondary-100" size="sm">
+                            {requestData
+                              ? requestData.amount_summary.total_amount
+                              : 0}
+                          </Typography>
+                        </div>
                       </div>
 
                       <div className="flex flex-col md:flex-row gap-2 md:gap-8">
@@ -518,6 +530,7 @@ const TestRequestDetails = () => {
                             vat_included: entity.vat_included,
                             customDuty: (entity as any).custom_duties,
                             custom_duty: (entity as any).custom_duties,
+                            currency: requestData.amount_summary.contract_currency,
                           })) || []
                         }
                         showActions={false}

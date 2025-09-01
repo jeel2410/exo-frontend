@@ -254,6 +254,8 @@
   "contracts": "Contrats",
   "select_project_to_continue": "Sélectionnez un projet pour continuer",
   "add_contract": "Ajouter un contrat",
+  "selected_project": "Projet sélectionné",
+  "selected_contract": "Contrat sélectionné",
   "view_project": "Voir le projet",
   "contract_info_description": "Remplissez les informations pour compléter le formulaire de contrat.",
   "contract_submitted": "Contrat soumis pour vérification",

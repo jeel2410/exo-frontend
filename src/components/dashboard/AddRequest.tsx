@@ -79,7 +79,9 @@ const AddRequest = () => {
     totalAmountWithTax: 0,
   });
   const { getRoute } = useRoleRoute();
-  const [financialAuthority, setFinancialAuthority] = useState<string>("location_acquisition");
+  const [financialAuthority, setFinancialAuthority] = useState<string>(
+    "location_acquisition"
+  );
   const [autoEditId, setAutoEditId] = useState<number | null>(null);
   const [validationErrors, setValidationErrors] = useState<{
     address?: string;
@@ -218,9 +220,10 @@ const AddRequest = () => {
     },
     onSuccess: (response) => {
       toast.success(t("request_updated_successfully"));
-      
+
       // Extract request ID from response and redirect to request details
-      const requestId = response?.data?.data?.id || response?.data?.data?.request_id;
+      const requestId =
+        response?.data?.data?.id || response?.data?.data?.request_id;
       if (requestId) {
         navigate(`/request-details/${requestId}`);
       } else {
@@ -229,6 +232,8 @@ const AddRequest = () => {
       }
     },
     onError: (error: unknown) => {
+      console.log(error, "error");
+
       const errorMessage =
         error && typeof error === "object" && "error" in error
           ? (error as { error: { message: string } }).error.message
@@ -243,7 +248,7 @@ const AddRequest = () => {
       requestLetter?: string;
       fileUpload?: string;
     } = {};
-    
+
     if (!selectedAddress) {
       errors.address = t("address_is_required");
     }
