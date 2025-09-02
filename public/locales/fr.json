@@ -413,5 +413,7 @@
   "select_country": "Sélectionnez le pays",
   "select_province": "Sélectionnez la province",
   "select_city": "Sélectionnez la ville",
-  "select_municipality": "Sélectionnez la municipalité"
+  "select_municipality": "Sélectionnez la municipalité",
+  "selected": "Sélectionné",
+  "contract_amount_exceeded": "Le montant de la demande dépasse le montant du contrat"
 }

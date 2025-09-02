@@ -413,5 +413,6 @@
   "select_country": "Select country",
   "select_province": "Select province",
   "select_city": "Select city",
-  "select_municipality": "Select municipality"
+  "select_municipality": "Select municipality",
+  "selected": "selected"
 }

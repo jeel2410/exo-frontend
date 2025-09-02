@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AppLayout from "../../../layout/AppLayout";
 import { motion } from "framer-motion";
 import Typography from "../../../lib/components/atoms/Typography";
@@ -10,10 +10,12 @@ import {
   ChevronLeftLightIcon,
   ChevronRightIcon,
   ChevronRightLightIcon,
+  FilterIcon,
   SearchIcon,
   WhitePlusIcon,
 } from "../../../icons";
 import Input from "../../../lib/components/atoms/Input";
+import Filter from "../../../lib/components/molecules/Filter";
 import { useMutation } from "@tanstack/react-query";
 import { useLoading } from "../../../context/LoaderProvider";
 import moment from "moment";
@@ -21,6 +23,21 @@ import requestService from "../../../services/request.service";
 import RequestTable from "../../../components/table/RequestTable";
 import contractService from "../../../services/contract.service";
 import CreateRequestEmpty from "../../../components/dashboard/CreateRequestEmpty";
+
+// Stage options for the filter dropdown
+const STAGE_OPTIONS = [
+  { value: "", label: "All Stages" },
+  { value: "Application Submission", label: "Application Submission" },
+  { value: "Secretariat Review", label: "Secretariat Review" },
+  { value: "Coordinator Review", label: "Coordinator Review" },
+  { value: "Financial Review", label: "Financial Review" },
+  { value: "Calculation Notes Transmission", label: "Calculation Notes Transmission" },
+  { value: "FO Preparation", label: "FO Preparation" },
+  { value: "Transmission to Secretariat", label: "Transmission to Secretariat" },
+  { value: "Coordinator Final Validation", label: "Coordinator Final Validation" },
+  { value: "Ministerial Review", label: "Ministerial Review" },
+  { value: "Title Generation", label: "Title Generation" },
+];
 
 export interface RequestData {
   id: number;
@@ -53,6 +70,8 @@ export interface RequestDetails {
 }
 
 const RequestListPage = () => {
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState<boolean>(false);
+  const [selectedStage, setSelectedStage] = useState<string>("");
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(8);
   const [offset, setOffset] = useState(0);
@@ -61,6 +80,16 @@ const RequestListPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [hasInitialData, setHasInitialData] = useState(false);
+
+  const [range, setRange] = useState<{
+    startDate: Date | null;
+    endDate: Date | null;
+  }>({
+    startDate: null,
+    endDate: null,
+  });
+
+  const datePickerRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -74,6 +103,23 @@ const RequestListPage = () => {
     setOffset(0); // Reset to first page when changing limit
   };
 
+  const handleApplyDateFilter = (newRange: {
+    startDate: Date | null;
+    endDate: Date | null;
+  }) => {
+    setRange(newRange);
+    setIsDatePickerOpen(false);
+  };
+
+  const formateDate = (date: Date | null) => {
+    if (!date) return;
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    const formattedDate = `${year}-${month}-${day}`;
+    return formattedDate;
+  };
+
   const requestMutaion = useMutation({
     mutationFn: async () => {
       setLoading(true);
@@ -81,6 +127,9 @@ const RequestListPage = () => {
         limit,
         offset,
         search: debouncedSearchTerm,
+        start_date: formateDate(range.startDate),
+        end_date: formateDate(range.endDate),
+        ...(selectedStage && { stage: selectedStage }),
       };
       const response = await requestService.getAllRequestList(payload);
       const requests: RequestDetails[] = response.data.data;
@@ -157,7 +206,22 @@ const RequestListPage = () => {
     if (debouncedSearchTerm === "") {
       checkContracts.mutate();
     }
-  }, [debouncedSearchTerm, limit, offset]);
+  }, [debouncedSearchTerm, limit, offset, range, selectedStage]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        datePickerRef.current &&
+        !datePickerRef.current.contains(event.target as Node)
+      ) {
+        setIsDatePickerOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handlePageChange = (newPage: number) => {
     const newOffset = (newPage - 1) * limit;
@@ -173,7 +237,7 @@ const RequestListPage = () => {
   };
 
   // Check if we have any active filters or search
-  const hasActiveFilters = debouncedSearchTerm;
+  const hasActiveFilters = debouncedSearchTerm || range.startDate || range.endDate || selectedStage;
 
   return (
     <AppLayout>
@@ -211,7 +275,11 @@ const RequestListPage = () => {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button
                 variant="outline"
-                onClick={() => setSearchTerm("")}
+                onClick={() => {
+                  setSearchTerm("");
+                  setRange({ startDate: null, endDate: null });
+                  setSelectedStage("");
+                }}
                 className="px-4 py-2"
               >
                 {t("clear_filters")}
@@ -274,29 +342,86 @@ const RequestListPage = () => {
           >
             {/* Search Section */}
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center sm:gap-4 mb-4 sm:mb-5">
-              <motion.div
-                className="w-full sm:w-1/2"
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-2.5 sm:left-3 flex items-center pointer-events-none">
-                    <SearchIcon className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-50" />
-                  </div>
-                  <Input
-                    type="text"
-                    placeholder={t("search_placeholder")}
-                    className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10"
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    value={searchTerm}
-                  />
-                  {requestMutaion.isPending && (
-                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-2/3">
+                <motion.div
+                  className="w-full sm:w-1/2"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-2.5 sm:left-3 flex items-center pointer-events-none">
+                      <SearchIcon className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-50" />
                     </div>
-                  )}
-                </div>
-              </motion.div>
+                    <Input
+                      type="text"
+                      placeholder={t("search_placeholder")}
+                      className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10"
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      value={searchTerm}
+                    />
+                    {requestMutaion.isPending && (
+                      <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+                
+                {/* Stage Filter Dropdown */}
+                <motion.div
+                  className="w-full sm:w-1/2"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <select
+                    value={selectedStage}
+                    onChange={(e) => setSelectedStage(e.target.value)}
+                    className="w-full h-9 sm:h-10 px-3 text-sm sm:text-base border border-secondary-30 rounded-lg bg-white text-secondary-100 focus:outline-hidden focus:border-primary-50 focus:ring-0"
+                  >
+                    {STAGE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </motion.div>
+              </div>
+
+              <div className="flex gap-2 sm:gap-3 justify-end relative">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Button
+                    variant="outline"
+                    className="flex justify-center items-center gap-1.5 sm:gap-2 py-2 px-3 sm:py-2.5 sm:px-4 min-w-[90px] sm:min-w-[120px] h-9 sm:h-10"
+                    onClick={() => setIsDatePickerOpen(true)}
+                  >
+                    <FilterIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                    <Typography
+                      className="text-secondary-60"
+                      element="span"
+                      size="sm"
+                      weight="semibold"
+                    >
+                      {t("filter")}
+                    </Typography>
+                  </Button>
+                </motion.div>
+                {isDatePickerOpen && (
+                  <div
+                    ref={datePickerRef}
+                    className="absolute top-[100%] right-0 w-max z-50 mt-2 bg-white border border-secondary-30 rounded-lg shadow-lg p-4"
+                  >
+                    <Filter
+                      startDate={range.startDate}
+                      endDate={range.endDate}
+                      onApply={handleApplyDateFilter}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="sm:mx-0">

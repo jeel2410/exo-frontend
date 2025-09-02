@@ -8,7 +8,12 @@ import CurrencyInput from "../../lib/components/atoms/CurrencyInput";
 import Typography from "../../lib/components/atoms/Typography";
 import TextEditor from "../../lib/components/atoms/TextEditor";
 import UploadFile, { UploadedFile } from "../common/UploadFile";
-import { ArrowRightIconButton, SaveDraftIcon, TrashIcon, WhitePlusIcon } from "../../icons";
+import {
+  ArrowRightIconButton,
+  SaveDraftIcon,
+  TrashIcon,
+  WhitePlusIcon,
+} from "../../icons";
 import { USFlag, CDFFlag } from "../../icons";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
@@ -104,11 +109,11 @@ ProjectInfoFormProps) => {
   useEffect(() => {
     const loadCityData = async () => {
       try {
-        const response = await fetch('/city/city_data.json');
+        const response = await fetch("/city/city_data.json");
         const data = await response.json();
         setCityData(data);
       } catch (error) {
-        console.error('Failed to load city data:', error);
+        console.error("Failed to load city data:", error);
         // Fallback to empty object if loading fails
         setCityData({});
       }
@@ -117,63 +122,112 @@ ProjectInfoFormProps) => {
   }, []);
 
   // Helper function to check if a city has any available municipalities
-  const hasAvailableMunicipalities = (provinceName: string, cityName: string, currentAddressId?: number, existingAddresses: Address[] = []) => {
-    if (!cityData || !cityData[provinceName] || !cityData[provinceName][cityName]) {
+  const hasAvailableMunicipalities = (
+    provinceName: string,
+    cityName: string,
+    currentAddressId?: number,
+    existingAddresses: Address[] = []
+  ) => {
+    if (
+      !cityData ||
+      !cityData[provinceName] ||
+      !cityData[provinceName][cityName]
+    ) {
       return false;
     }
-    
+
     const municipalities = cityData[provinceName][cityName];
     const usedMunicipalities = existingAddresses
-      .filter(addr => 
-        addr.id !== currentAddressId && 
-        addr.province === provinceName && 
-        addr.city === cityName && 
-        addr.municipality
+      .filter(
+        (addr) =>
+          addr.id !== currentAddressId &&
+          addr.province === provinceName &&
+          addr.city === cityName &&
+          addr.municipality
       )
-      .map(addr => addr.municipality);
-    
-    return municipalities.some((municipality: string) => !usedMunicipalities.includes(municipality));
+      .map((addr) => addr.municipality);
+
+    return municipalities.some(
+      (municipality: string) => !usedMunicipalities.includes(municipality)
+    );
   };
 
   // Helper function to check if a province has any cities with available municipalities
-  const hasAvailableCities = (provinceName: string, currentAddressId?: number, existingAddresses: Address[] = []) => {
+  const hasAvailableCities = (
+    provinceName: string,
+    currentAddressId?: number,
+    existingAddresses: Address[] = []
+  ) => {
     if (!cityData || !cityData[provinceName]) {
       return false;
     }
-    
+
     const cities = Object.keys(cityData[provinceName]);
-    return cities.some(city => hasAvailableMunicipalities(provinceName, city, currentAddressId, existingAddresses));
+    return cities.some((city) =>
+      hasAvailableMunicipalities(
+        provinceName,
+        city,
+        currentAddressId,
+        existingAddresses
+      )
+    );
   };
 
   // Dynamic location data from JSON with intelligent filtering
-  const getProvinceOptions = (currentAddressId?: number, existingAddresses: Address[] = []) => {
+  const getProvinceOptions = (
+    currentAddressId?: number,
+    existingAddresses: Address[] = []
+  ) => {
     if (!cityData) return [];
-    
+
     // Only show provinces that have at least one city with available municipalities
     return Object.keys(cityData)
-      .filter(province => hasAvailableCities(province, currentAddressId, existingAddresses))
-      .map(province => ({
+      .filter((province) =>
+        hasAvailableCities(province, currentAddressId, existingAddresses)
+      )
+      .map((province) => ({
         value: province,
-        label: province
+        label: province,
       }));
   };
 
-  const getCityOptions = (selectedProvince: string, currentAddressId?: number, existingAddresses: Address[] = []) => {
+  const getCityOptions = (
+    selectedProvince: string,
+    currentAddressId?: number,
+    existingAddresses: Address[] = []
+  ) => {
     if (!selectedProvince || !cityData || !cityData[selectedProvince]) {
       return [];
     }
-    
+
     // Only show cities that have at least one available municipality
     return Object.keys(cityData[selectedProvince])
-      .filter(city => hasAvailableMunicipalities(selectedProvince, city, currentAddressId, existingAddresses))
-      .map(city => ({
+      .filter((city) =>
+        hasAvailableMunicipalities(
+          selectedProvince,
+          city,
+          currentAddressId,
+          existingAddresses
+        )
+      )
+      .map((city) => ({
         value: city,
-        label: city
+        label: city,
       }));
   };
 
-  const getMunicipalityOptions = (selectedProvince: string, selectedCity: string, currentAddressId?: number, existingAddresses: Address[] = []) => {
-    if (!selectedProvince || !selectedCity || !cityData || !cityData[selectedProvince]) {
+  const getMunicipalityOptions = (
+    selectedProvince: string,
+    selectedCity: string,
+    currentAddressId?: number,
+    existingAddresses: Address[] = []
+  ) => {
+    if (
+      !selectedProvince ||
+      !selectedCity ||
+      !cityData ||
+      !cityData[selectedProvince]
+    ) {
       return [];
     }
     const provinceData = cityData[selectedProvince];
@@ -181,22 +235,25 @@ ProjectInfoFormProps) => {
     if (!municipalities) {
       return [];
     }
-    
+
     // Only show municipalities that are not already used for this province + city combination
     const usedMunicipalities = existingAddresses
-      .filter(addr => 
-        addr.id !== currentAddressId && 
-        addr.province === selectedProvince && 
-        addr.city === selectedCity && 
-        addr.municipality
+      .filter(
+        (addr) =>
+          addr.id !== currentAddressId &&
+          addr.province === selectedProvince &&
+          addr.city === selectedCity &&
+          addr.municipality
       )
-      .map(addr => addr.municipality);
-    
+      .map((addr) => addr.municipality);
+
     return municipalities
-      .filter((municipality: string) => !usedMunicipalities.includes(municipality))
+      .filter(
+        (municipality: string) => !usedMunicipalities.includes(municipality)
+      )
       .map((municipality: string) => ({
         value: municipality,
-        label: municipality
+        label: municipality,
       }));
   };
 
@@ -414,6 +471,8 @@ ProjectInfoFormProps) => {
     onProgress: (percent: number) => void
   ) => {
     const response = await uploadMutation.mutateAsync({ file, onProgress });
+    console.log(response, "response");
+
     return response;
   };
 
@@ -753,10 +812,16 @@ ProjectInfoFormProps) => {
                       <thead>
                         <tr className="bg-gray-50 border-b border-secondary-30 text-xs text-secondary-60">
                           <th className="p-2 text-left w-16">{t("sr_no")}</th>
-                          <th className="p-2 text-left w-1/5">{t("country")}</th>
-                          <th className="p-2 text-left w-1/5">{t("province")}</th>
+                          <th className="p-2 text-left w-1/5">
+                            {t("country")}
+                          </th>
+                          <th className="p-2 text-left w-1/5">
+                            {t("province")}
+                          </th>
                           <th className="p-2 text-left w-1/5">{t("city")}</th>
-                          <th className="p-2 text-left w-1/5">{t("municipality")}</th>
+                          <th className="p-2 text-left w-1/5">
+                            {t("municipality")}
+                          </th>
                           <th className="p-2 text-left w-16">{t("action")}</th>
                         </tr>
                       </thead>
@@ -808,7 +873,10 @@ ProjectInfoFormProps) => {
                             <td className="p-2">
                               {isFieldEditing(address.id, "province") ? (
                                 <CustomDropdown
-                                  options={getProvinceOptions(address.id, values.addresses)}
+                                  options={getProvinceOptions(
+                                    address.id,
+                                    values.addresses
+                                  )}
                                   value={address.province}
                                   onChange={(value) => {
                                     updateAddress(
@@ -850,7 +918,11 @@ ProjectInfoFormProps) => {
                             <td className="p-2">
                               {isFieldEditing(address.id, "city") ? (
                                 <CustomDropdown
-                                  options={getCityOptions(address.province, address.id, values.addresses)}
+                                  options={getCityOptions(
+                                    address.province,
+                                    address.id,
+                                    values.addresses
+                                  )}
                                   value={address.city}
                                   onChange={(value) => {
                                     updateAddress(
@@ -892,7 +964,12 @@ ProjectInfoFormProps) => {
                             <td className="p-2">
                               {isFieldEditing(address.id, "municipality") ? (
                                 <CustomDropdown
-                                  options={getMunicipalityOptions(address.province, address.city, address.id, values.addresses)}
+                                  options={getMunicipalityOptions(
+                                    address.province,
+                                    address.city,
+                                    address.id,
+                                    values.addresses
+                                  )}
                                   value={address.municipality}
                                   onChange={(value) => {
                                     updateAddress(

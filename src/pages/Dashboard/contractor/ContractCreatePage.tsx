@@ -433,14 +433,14 @@ const ContractCreatePage = () => {
               {/* Project Info Section */}
               {(projectId || editProjectId) && contractReview.projectName && (
                 <div className="mt-6 mb-2">
-                  <div className="bg-gradient-to-r from-primary-50 to-primary-25 border border-primary-100 rounded-xl p-5 shadow-sm">
+                  <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0">
-                          <div className="w-12 h-12 bg-primary-150 rounded-xl flex items-center justify-center shadow-sm">
+                          <div className="w-10 h-10 bg-primary-150 rounded-lg flex items-center justify-center">
                             <svg
-                              width="24"
-                              height="24"
+                              width="20"
+                              height="20"
                               viewBox="0 0 24 24"
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
@@ -452,8 +452,6 @@ const ContractCreatePage = () => {
                                 strokeWidth="2"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                fill="currentColor"
-                                fillOpacity="0.2"
                               />
                             </svg>
                           </div>
@@ -463,25 +461,25 @@ const ContractCreatePage = () => {
                             <Typography
                               size="xs"
                               weight="semibold"
-                              className="text-primary-150 uppercase tracking-wider"
+                              className="text-primary-150 uppercase tracking-wide"
                             >
                               {t("selected_project")}
                             </Typography>
-                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                           </div>
                           <Typography
-                            size="lg"
-                            weight="bold"
+                            size="base"
+                            weight="semibold"
                             className="text-gray-900 truncate"
                           >
                             {contractReview.projectName}
                           </Typography>
-                          <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                          <div className="flex items-center space-x-3 mt-1">
                             {contractReview.projectAmount && (
-                              <div className="flex items-center space-x-1">
+                              <div className="flex items-center space-x-1 text-sm text-gray-600">
                                 <svg
-                                  width="14"
-                                  height="14"
+                                  width="12"
+                                  height="12"
                                   viewBox="0 0 24 24"
                                   fill="none"
                                   xmlns="http://www.w3.org/2000/svg"
@@ -495,17 +493,16 @@ const ContractCreatePage = () => {
                                     strokeLinejoin="round"
                                   />
                                 </svg>
-                                <span>
-                                  {contractReview.projectAmount}{" "}
-                                  {contractReview.projectCurrency}
+                                <span className="font-medium">
+                                  {contractReview.projectAmount} {contractReview.projectCurrency}
                                 </span>
                               </div>
                             )}
                             {contractReview.reference && (
-                              <div className="flex items-center space-x-1">
+                              <div className="flex items-center space-x-1 text-sm text-gray-600">
                                 <svg
-                                  width="14"
-                                  height="14"
+                                  width="12"
+                                  height="12"
                                   viewBox="0 0 24 24"
                                   fill="none"
                                   xmlns="http://www.w3.org/2000/svg"
@@ -526,7 +523,7 @@ const ContractCreatePage = () => {
                                     strokeLinejoin="round"
                                   />
                                 </svg>
-                                <span className="truncate max-w-32">
+                                <span className="truncate max-w-28 font-medium">
                                   {contractReview.reference}
                                 </span>
                               </div>
@@ -544,11 +541,11 @@ const ContractCreatePage = () => {
                               }`
                             )
                           }
-                          className="px-4 py-2.5 bg-white text-primary-150 border-2 border-primary-150 rounded-lg hover:bg-primary-150 hover:text-white transition-all duration-200 flex items-center space-x-2 font-medium shadow-sm hover:shadow-md group"
+                          className="px-3 py-2 text-primary-150 border border-primary-150 rounded-md hover:bg-primary-150 hover:text-white transition-all duration-200 flex items-center space-x-2 text-sm font-medium group"
                         >
                           <svg
-                            width="16"
-                            height="16"
+                            width="14"
+                            height="14"
                             viewBox="0 0 24 24"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"

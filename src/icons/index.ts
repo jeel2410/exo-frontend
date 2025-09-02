@@ -96,6 +96,7 @@ import { ReactComponent as RightGrayIcon } from "./right-icon.svg?react";
 
 import USFlag from "./USFlag";
 import CDFFlag from "./CDFFlag";
+import UploadIcon from "./UploadIcon";
 
 export {
   GreenRightIcon,
@@ -191,5 +192,6 @@ export {
   ChevronRightIcon,
   ChevronRightLightIcon,
   PluseDarkIcon,
-  RightGrayIcon
+  RightGrayIcon,
+  UploadIcon
 };

@@ -2,10 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import {
   FileVioletIcon,
   WhitePlusIcon,
-  UsdGreenIcon,
-  UsdOrangeIcon,
-  UsdVioletIcon,
 } from "../../../icons";
+import CurrencyBadge from "../../common/CurrencyBadge";
 import Label from "../../../lib/components/atoms/Label";
 import Typography from "../../../lib/components/atoms/Typography";
 import { useTranslation } from "react-i18next";
@@ -326,7 +324,7 @@ const AddRequest = () => {
       const errorMessage =
         error && typeof error === "object" && "error" in error
           ? (error as { error: { message: string } }).error.message
-          : "Failed to upload file.";
+          : t("contract_amount_exceeded");
       toast.error(errorMessage);
     },
   });
@@ -414,14 +412,6 @@ const AddRequest = () => {
         originalFiles.length !== uploadedFiles.length ||
         !Array.from(currentFileIds).every((id) => originalFileIds.has(id)) ||
         !Array.from(originalFileIds).every((id) => currentFileIds.has(id));
-
-      console.log("📄 Document Change Detection:", {
-        isEditMode: !!requestId,
-        originalFileIds: Array.from(originalFileIds),
-        currentFileIds: Array.from(currentFileIds),
-        filesChanged,
-        willPassDocumentIds: filesChanged,
-      });
 
       // Only pass document_ids if files have changed
       if (filesChanged && uploadedFiles.length > 0) {
@@ -1006,17 +996,38 @@ const AddRequest = () => {
               title={t("total_items")}
             />
             <DashBoardCard
-              icon={<UsdGreenIcon width={44} height={44} />}
+              icon={
+                <CurrencyBadge
+                  currency={(contractData?.currency as "USD" | "CDF") || "USD"}
+                  variant="green"
+                  width={44}
+                  height={44}
+                />
+              }
               count={totals.totalAmount}
               title={t("total_amount")}
             />
             <DashBoardCard
-              icon={<UsdVioletIcon width={44} height={44} />}
+              icon={
+                <CurrencyBadge
+                  currency={(contractData?.currency as "USD" | "CDF") || "USD"}
+                  variant="violet"
+                  width={44}
+                  height={44}
+                />
+              }
               count={totals.totalTaxAmount}
               title={t("total_tax_amount")}
             />
             <DashBoardCard
-              icon={<UsdOrangeIcon width={44} height={44} />}
+              icon={
+                <CurrencyBadge
+                  currency={(contractData?.currency as "USD" | "CDF") || "USD"}
+                  variant="orange"
+                  width={44}
+                  height={44}
+                />
+              }
               count={totals.totalAmountWithTax}
               title={t("total_amount_with_tax")}
             />
@@ -1025,7 +1036,10 @@ const AddRequest = () => {
           {/* Table Section */}
           <div className="mt-3 md:mt-5 mb-2">
             <CreateRequestTable
-              data={data}
+              data={data.map(item => ({
+                ...item,
+                currency: contractData?.currency || "USD"
+              }))}
               onDataChange={handleTableDataChange}
               autoEditId={autoEditId}
               onEditComplete={handleEditComplete}
