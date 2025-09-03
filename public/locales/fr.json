@@ -384,6 +384,7 @@
   "status_publish": "Publié",
   "status_rejected": "Rejeté",
   "status_approved": "Approuvé",
+  "status_request_info": "Infos Demande",
   "contract_creation_failed": "Échec de la création du contrat",
   "contract_update_failed": "Échec de la mise à jour du contrat",
   "contract_validation_error": "La validation du contrat a échoué. Veuillez vérifier votre saisie.",
@@ -407,7 +408,6 @@
   "applications_accepted": "Demandes acceptées",
   "searching_request": "Recherche de demandes...",
   "projects": "Projets",
-  "view_project": "Voir le projet",
   "archiver": "Archiver",
   "modifier": "Modifier",
   "select_country": "Sélectionnez le pays",
@@ -415,5 +415,6 @@
   "select_city": "Sélectionnez la ville",
   "select_municipality": "Sélectionnez la municipalité",
   "selected": "Sélectionné",
-  "contract_amount_exceeded": "Le montant de la demande dépasse le montant du contrat"
+  "contract_amount_exceeded": "Le montant de la demande dépasse le montant du contrat",
+  "all_stages": "Toutes les étapes"
 }

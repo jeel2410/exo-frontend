@@ -24,21 +24,6 @@ import RequestTable from "../../../components/table/RequestTable";
 import contractService from "../../../services/contract.service";
 import CreateRequestEmpty from "../../../components/dashboard/CreateRequestEmpty";
 
-// Stage options for the filter dropdown
-const STAGE_OPTIONS = [
-  { value: "", label: "All Stages" },
-  { value: "Application Submission", label: "Application Submission" },
-  { value: "Secretariat Review", label: "Secretariat Review" },
-  { value: "Coordinator Review", label: "Coordinator Review" },
-  { value: "Financial Review", label: "Financial Review" },
-  { value: "Calculation Notes Transmission", label: "Calculation Notes Transmission" },
-  { value: "FO Preparation", label: "FO Preparation" },
-  { value: "Transmission to Secretariat", label: "Transmission to Secretariat" },
-  { value: "Coordinator Final Validation", label: "Coordinator Final Validation" },
-  { value: "Ministerial Review", label: "Ministerial Review" },
-  { value: "Title Generation", label: "Title Generation" },
-];
-
 export interface RequestData {
   id: number;
   requestNo: string;
@@ -80,6 +65,31 @@ const RequestListPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [hasInitialData, setHasInitialData] = useState(false);
+  const { t } = useTranslation();
+
+  // Stage options for the filter dropdown
+  const STAGE_OPTIONS = [
+    { value: "", label: t("all_stages") },
+    { value: "Application Submission", label: t("application_submission") },
+    { value: "Secretariat Review", label: t("secretariat_review") },
+    { value: "Coordinator Review", label: t("coordinator_review") },
+    { value: "Financial Review", label: t("financial_review") },
+    {
+      value: "Calculation Notes Transmission",
+      label: t("calculation_notes_transmission"),
+    },
+    { value: "FO Preparation", label: t("fO_preparation") },
+    {
+      value: "Transmission to Secretariat",
+      label: t("transmission_to_secretariat"),
+    },
+    {
+      value: "Coordinator Final Validation",
+      label: t("coordinator_final_validation"),
+    },
+    { value: "Ministerial Review", label: t("ministerial_review") },
+    { value: "Title Generation", label: t("title_generation") },
+  ];
 
   const [range, setRange] = useState<{
     startDate: Date | null;
@@ -92,7 +102,6 @@ const RequestListPage = () => {
   const datePickerRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const { setLoading } = useLoading();
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
@@ -158,11 +167,11 @@ const RequestListPage = () => {
       );
       setData(newRequestData);
       setTotal(response.data.total);
-      
+
       if (!hasInitialData && (response.data.total > 0 || debouncedSearchTerm)) {
         setHasInitialData(true);
       }
-      
+
       setLoading(false);
     },
     onError: async (error) => {
@@ -171,7 +180,7 @@ const RequestListPage = () => {
       // Clear data on error to prevent showing stale data
       setData([]);
       setTotal(0);
-      
+
       if (!hasInitialData) {
         // Show empty state if no initial data loaded
       }
@@ -237,7 +246,8 @@ const RequestListPage = () => {
   };
 
   // Check if we have any active filters or search
-  const hasActiveFilters = debouncedSearchTerm || range.startDate || range.endDate || selectedStage;
+  const hasActiveFilters =
+    debouncedSearchTerm || range.startDate || range.endDate || selectedStage;
 
   return (
     <AppLayout>
@@ -295,190 +305,190 @@ const RequestListPage = () => {
           </div>
         </div>
       ) : (
-      <div className="relative">
-        <motion.div
-          className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-4 px-4 sm:px-0"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        >
-          <Typography
-            size="xl"
-            weight="extrabold"
-            className="text-secondary-100 text-center sm:text-left"
-          >
-            {t("requests")}
-          </Typography>
-
+        <div className="relative">
           <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="w-full sm:w-auto"
-          >
-            <Button
-              variant="primary"
-              className="flex items-center justify-center w-full sm:w-fit gap-2 py-2.5 px-4"
-              onClick={handleCreateRequest}
-            >
-              <WhitePlusIcon
-                width={12}
-                height={12}
-                className="sm:w-[13px] sm:h-[13px]"
-              />
-              <Typography size="sm" className="sm:text-base">
-                {t("create_request")}
-              </Typography>
-            </Button>
-          </motion.div>
-        </motion.div>
-
-        <motion.div className="px-4 sm:px-0">
-          <motion.div
-            className="bg-white p-3 sm:p-4 rounded-lg shadow-sm"
+            className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-4 px-4 sm:px-0"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
           >
-            {/* Search Section */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center sm:gap-4 mb-4 sm:mb-5">
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-2/3">
-                <motion.div
-                  className="w-full sm:w-1/2"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-2.5 sm:left-3 flex items-center pointer-events-none">
-                      <SearchIcon className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-50" />
-                    </div>
-                    <Input
-                      type="text"
-                      placeholder={t("search_placeholder")}
-                      className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10"
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      value={searchTerm}
-                    />
-                    {requestMutaion.isPending && (
-                      <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-                
-                {/* Stage Filter Dropdown */}
-                <motion.div
-                  className="w-full sm:w-1/2"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <select
-                    value={selectedStage}
-                    onChange={(e) => setSelectedStage(e.target.value)}
-                    className="w-full h-9 sm:h-10 px-3 text-sm sm:text-base border border-secondary-30 rounded-lg bg-white text-secondary-100 focus:outline-hidden focus:border-primary-50 focus:ring-0"
+            <Typography
+              size="xl"
+              weight="extrabold"
+              className="text-secondary-100 text-center sm:text-left"
+            >
+              {t("requests")}
+            </Typography>
+
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="w-full sm:w-auto"
+            >
+              <Button
+                variant="primary"
+                className="flex items-center justify-center w-full sm:w-fit gap-2 py-2.5 px-4"
+                onClick={handleCreateRequest}
+              >
+                <WhitePlusIcon
+                  width={12}
+                  height={12}
+                  className="sm:w-[13px] sm:h-[13px]"
+                />
+                <Typography size="sm" className="sm:text-base">
+                  {t("create_request")}
+                </Typography>
+              </Button>
+            </motion.div>
+          </motion.div>
+
+          <motion.div className="px-4 sm:px-0">
+            <motion.div
+              className="bg-white p-3 sm:p-4 rounded-lg shadow-sm"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
+            >
+              {/* Search Section */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center sm:gap-4 mb-4 sm:mb-5">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-2/3">
+                  <motion.div
+                    className="w-full sm:w-1/2"
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    {STAGE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-2.5 sm:left-3 flex items-center pointer-events-none">
+                        <SearchIcon className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-50" />
+                      </div>
+                      <Input
+                        type="text"
+                        placeholder={t("search_placeholder")}
+                        className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10"
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        value={searchTerm}
+                      />
+                      {requestMutaion.isPending && (
+                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+
+                  {/* Stage Filter Dropdown */}
+                  <motion.div
+                    className="w-full sm:w-1/2"
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <select
+                      value={selectedStage}
+                      onChange={(e) => setSelectedStage(e.target.value)}
+                      className="w-full h-9 sm:h-10 px-3 text-sm sm:text-base border border-secondary-30 rounded-lg bg-white text-secondary-100 focus:outline-hidden focus:border-primary-50 focus:ring-0"
+                    >
+                      {STAGE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </motion.div>
+                </div>
+
+                <div className="flex gap-2 sm:gap-3 justify-end relative">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Button
+                      variant="outline"
+                      className="flex justify-center items-center gap-1.5 sm:gap-2 py-2 px-3 sm:py-2.5 sm:px-4 min-w-[90px] sm:min-w-[120px] h-9 sm:h-10"
+                      onClick={() => setIsDatePickerOpen(true)}
+                    >
+                      <FilterIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                      <Typography
+                        className="text-secondary-60"
+                        element="span"
+                        size="sm"
+                        weight="semibold"
+                      >
+                        {t("filter")}
+                      </Typography>
+                    </Button>
+                  </motion.div>
+                  {isDatePickerOpen && (
+                    <div
+                      ref={datePickerRef}
+                      className="absolute top-[100%] right-0 w-max z-50 mt-2 bg-white border border-secondary-30 rounded-lg shadow-lg p-4"
+                    >
+                      <Filter
+                        startDate={range.startDate}
+                        endDate={range.endDate}
+                        onApply={handleApplyDateFilter}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="sm:mx-0">
+                <RequestTable data={data} />
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-4 sm:px-0">
+                <div className="flex items-center gap-2 text-sm">
+                  <span>{t("rows_per_page")}:</span>
+                  <select
+                    value={limit}
+                    onChange={(e) => handleLimitChange(Number(e.target.value))}
+                    className="border rounded px-2 py-1 text-sm bg-white"
+                  >
+                    {[8, 16, 32].map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
                       </option>
                     ))}
                   </select>
-                </motion.div>
-              </div>
+                </div>
 
-              <div className="flex gap-2 sm:gap-3 justify-end relative">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                >
+                <div className="flex items-center gap-2 text-sm">
                   <Button
                     variant="outline"
-                    className="flex justify-center items-center gap-1.5 sm:gap-2 py-2 px-3 sm:py-2.5 sm:px-4 min-w-[90px] sm:min-w-[120px] h-9 sm:h-10"
-                    onClick={() => setIsDatePickerOpen(true)}
+                    className="px-2 py-1 min-w-[32px] border-0 disabled:text-gray-400"
+                    disabled={currentPage === 1}
+                    onClick={() => handlePageChange(currentPage - 1)}
                   >
-                    <FilterIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                    <Typography
-                      className="text-secondary-60"
-                      element="span"
-                      size="sm"
-                      weight="semibold"
-                    >
-                      {t("filter")}
-                    </Typography>
+                    {currentPage === 1 ? (
+                      <ChevronLeftLightIcon />
+                    ) : (
+                      <ChevronLeftIcon />
+                    )}
                   </Button>
-                </motion.div>
-                {isDatePickerOpen && (
-                  <div
-                    ref={datePickerRef}
-                    className="absolute top-[100%] right-0 w-max z-50 mt-2 bg-white border border-secondary-30 rounded-lg shadow-lg p-4"
-                  >
-                    <Filter
-                      startDate={range.startDate}
-                      endDate={range.endDate}
-                      onApply={handleApplyDateFilter}
-                    />
+                  <div>
+                    <span className="text-nowrap">
+                      {t("page")} {currentPage} {t("of")} {totalPages}
+                    </span>
                   </div>
-                )}
-              </div>
-            </div>
-
-            <div className="sm:mx-0">
-              <RequestTable data={data} />
-            </div>
-
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-4 sm:px-0">
-              <div className="flex items-center gap-2 text-sm">
-                <span>{t("rows_per_page")}:</span>
-                <select
-                  value={limit}
-                  onChange={(e) => handleLimitChange(Number(e.target.value))}
-                  className="border rounded px-2 py-1 text-sm bg-white"
-                >
-                  {[8, 16, 32].map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm">
-                <Button
-                  variant="outline"
-                  className="px-2 py-1 min-w-[32px] border-0 disabled:text-gray-400"
-                  disabled={currentPage === 1}
-                  onClick={() => handlePageChange(currentPage - 1)}
-                >
-                  {currentPage === 1 ? (
-                    <ChevronLeftLightIcon />
-                  ) : (
-                    <ChevronLeftIcon />
-                  )}
-                </Button>
-                <div>
-                  <span className="text-nowrap">
-                    {t("page")} {currentPage} {t("of")} {totalPages}
-                  </span>
+                  <Button
+                    variant="outline"
+                    className="px-2 py-1 min-w-[32px] border-0"
+                    disabled={currentPage === totalPages}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                  >
+                    {currentPage === totalPages ? (
+                      <ChevronRightLightIcon />
+                    ) : (
+                      <ChevronRightIcon />
+                    )}
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  className="px-2 py-1 min-w-[32px] border-0"
-                  disabled={currentPage === totalPages}
-                  onClick={() => handlePageChange(currentPage + 1)}
-                >
-                  {currentPage === totalPages ? (
-                    <ChevronRightLightIcon />
-                  ) : (
-                    <ChevronRightIcon />
-                  )}
-                </Button>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      </div>
+        </div>
       )}
     </AppLayout>
   );

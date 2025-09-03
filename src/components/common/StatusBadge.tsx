@@ -10,12 +10,13 @@ export const statusList = {
   schedule: "status_schedule",
   publish: "status_publish",
   rejected: "status_rejected",
-  approved: "status_approved"
+  approved: "status_approved",
+  request_info: "status_request_info"
 } as const;
 
 
 export type StatusCode = keyof typeof statusList;
-// "progress" | "draft" | "expired" | "schedule" | "publish" | "rejected" | "approved"
+// "progress" | "draft" | "expired" | "schedule" | "publish" | "rejected" | "approved" | "request_info"
 
 
 const statusColors: Record<StatusCode, string> = {
@@ -26,6 +27,7 @@ const statusColors: Record<StatusCode, string> = {
   publish: "bg-green-100 text-green-600",
   approved: "bg-green-100 text-green-600",
   rejected: "bg-red-100 text-red-600",
+  request_info: "bg-orange-100 text-orange-600",
 };
 
 const StatusBadge=({ code }: StatusBadgeProps) =>{

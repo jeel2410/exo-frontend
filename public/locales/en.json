@@ -383,6 +383,7 @@
   "status_publish": "Published",
   "status_rejected": "Rejected",
   "status_approved": "Approved",
+  "status_request_info": "Request Info",
   "status": "Status",
   "stage": "Stage",
   "contract_creation_failed": "Failed to create contract",
@@ -409,10 +410,10 @@
   "applications_accepted": "Applications Accepted",
   "searching_request": "Searching requests...",
   "projects": "Projects",
-  "view_project": "View Project",
   "select_country": "Select country",
   "select_province": "Select province",
   "select_city": "Select city",
   "select_municipality": "Select municipality",
-  "selected": "selected"
+  "selected": "selected",
+  "all_stages": "All Stages"
 }

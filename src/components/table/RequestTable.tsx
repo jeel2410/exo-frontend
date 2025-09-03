@@ -42,6 +42,9 @@ const mapStatusToCode = (status: string): StatusCode => {
     case 'completed':
     case 'success':
       return 'approved';
+    case 'requestinfo':
+    case 'request_info':
+      return 'request_info';
     default:
       return 'progress'; // default fallback
   }
