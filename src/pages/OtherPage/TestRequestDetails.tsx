@@ -2,8 +2,6 @@ import { useTranslation } from "react-i18next";
 import {
   BlueCopyIcon,
   PdfIcon,
-  USFlag,
-  CDFFlag,
   // PdfIcon,
 } from "../../icons";
 import AppLayout from "../../layout/AppLayout";
@@ -51,6 +49,7 @@ export interface RequestAddress {
 export interface RequestEntity {
   label: string;
   quantity: number;
+  unit?: string;
   unit_price: number;
   total: number;
   tax_rate: number;
@@ -566,7 +565,7 @@ const TestRequestDetails = () => {
                   {/* Details List - cards moved outside */}
                   <div className="px-4 md:px-6 py-5">
                     <div className="space-y-4">
-                      <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8">
+                      {/* <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8">
                         <Typography
                           className="text-secondary-60 min-w-[100px]"
                           size="sm"
@@ -590,7 +589,7 @@ const TestRequestDetails = () => {
                               : 0}
                           </Typography>
                         </div>
-                      </div>
+                      </div> */}
 
                       <div className="flex flex-col md:flex-row gap-2 md:gap-8">
                         <Typography
@@ -749,24 +748,32 @@ const TestRequestDetails = () => {
                     <div className="overflow-x-auto">
                       <CreateRequestTable
                         data={
-                          requestData.entities?.map((entity, index) => ({
-                            id: index + 1,
-                            label: entity.label,
-                            quantity: entity.quantity,
-                            unitPrice: entity.unit_price,
-                            unit_price: entity.unit_price,
-                            total: entity.total,
-                            taxRate: entity.tax_rate,
-                            tax_rate: entity.tax_rate,
-                            taxAmount: entity.tax_amount,
-                            tax_amount: entity.tax_amount,
-                            vatIncluded: entity.vat_included,
-                            vat_included: entity.vat_included,
-                            customDuty: (entity as any).custom_duties,
-                            custom_duty: (entity as any).custom_duties,
-                            currency:
-                              requestData.amount_summary.contract_currency,
-                          })) || []
+                          requestData.entities?.map((entity, index) => {
+                            const mappedEntity = {
+                              id: index + 1,
+                              label: entity.label,
+                              quantity: entity.quantity,
+                              unitPrice: entity.unit_price,
+                              unit: entity.unit,
+                              unit_price: entity.unit_price,
+                              total: entity.total,
+                              taxRate: entity.tax_rate,
+                              tax_rate: entity.tax_rate,
+                              taxAmount: entity.tax_amount,
+                              tax_amount: entity.tax_amount,
+                              vatIncluded: entity.vat_included,
+                              vat_included: entity.vat_included,
+                              customDuty: (entity as any).custom_duties,
+                              custom_duty: (entity as any).custom_duties,
+                              currency:
+                                requestData.amount_summary.contract_currency,
+                            };
+                            console.log("🚀 Mapped entity with unit:", {
+                              original: entity,
+                              mapped: mappedEntity,
+                            });
+                            return mappedEntity;
+                          }) || []
                         }
                         showActions={false}
                       />

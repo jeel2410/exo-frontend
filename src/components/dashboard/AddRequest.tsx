@@ -46,6 +46,7 @@ interface Entity {
   total: number;
   unit_price: number;
   vat_included: number;
+  unit?: string;
 }
 
 // Type for create request payload
@@ -133,7 +134,7 @@ const AddRequest = () => {
   });
 
   const recalculateTableData = (tableData: Order[]): Order[] => {
-    return tableData.map((row) => {
+    const result = tableData.map((row) => {
       const total = row.quantity * row.unitPrice;
       const taxAmount = (total * row.taxRate) / 100;
       const vatIncluded = total + taxAmount;
@@ -144,6 +145,8 @@ const AddRequest = () => {
         vatIncluded,
       };
     });
+    console.log('🚀 recalculateTableData preserving units:', result.map(r => ({ id: r.id, unit: r.unit })));
+    return result;
   };
 
   const handleAddEntity = () => {
@@ -154,6 +157,7 @@ const AddRequest = () => {
       label: "",
       quantity: 1,
       unitPrice: 0,
+      unit: "",
       total: 0,
       taxRate: 0,
       taxAmount: 0,
@@ -170,6 +174,7 @@ const AddRequest = () => {
       label: entity.label,
       quantity: entity.quantity,
       unitPrice: entity.unit_price,
+      unit: entity.unit || "",
       total: entity.total,
       taxRate: entity.tax_rate,
       taxAmount: entity.tax_amount,
@@ -187,6 +192,8 @@ const AddRequest = () => {
   };
 
   const handleTableDataChange = (newData: Order[]) => {
+    console.log('🚀 handleTableDataChange called with data:', newData);
+    console.log('🚀 Unit values in received data:', newData.map(d => ({ id: d.id, unit: d.unit })));
     setData(recalculateTableData(newData));
   };
 
@@ -302,6 +309,23 @@ const AddRequest = () => {
       return;
     }
 
+    // Debug: Log the current data state before API call
+    console.log('🚀 Form data before API call:', data);
+    
+    const requestEntities = data.map((d) => ({
+      label: d.label,
+      quantity: d.quantity.toString(),
+      unit: d.unit || "",
+      unit_price: d.unitPrice.toString(),
+      total: d.total.toString(),
+      tax_rate: d.taxRate.toString(),
+      tax_amount: d.taxAmount.toString(),
+      vat_included: d.vatIncluded.toString(),
+      financial_authority: financialAuthority,
+    }));
+    
+    console.log('🚀 Request entities before stringify:', requestEntities);
+    
     const apiData: CreateRequestPayload = {
       project_id: projectId,
       address_id: selectedAddress,
@@ -310,20 +334,12 @@ const AddRequest = () => {
         uploadedFiles.length > 0
           ? uploadedFiles.map((file) => file.id)?.join(",")
           : undefined,
-      request_entity: JSON.stringify(
-        data.map((d) => ({
-          label: d.label,
-          quantity: d.quantity.toString(),
-          unit_price: d.unitPrice.toString(),
-          total: d.total.toString(),
-          tax_rate: d.taxRate.toString(),
-          tax_amount: d.taxAmount.toString(),
-          vat_included: d.vatIncluded.toString(),
-          financial_authority: financialAuthority,
-        }))
-      ),
+      request_entity: JSON.stringify(requestEntities),
       ...(requestId && { request_id: requestId }),
     };
+    
+    console.log('🚀 Final API payload:', apiData);
+    console.log('🚀 Stringified request_entity:', apiData.request_entity);
     createRequestMutation.mutate(apiData);
   };
   const fileUploadMutation = async ({

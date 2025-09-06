@@ -28,6 +28,7 @@ export interface RequestData {
   id: number;
   requestNo: string;
   amount: string;
+  total_amount?: string;
   currency?: string;
   createdDate: string;
   status: string;
@@ -78,7 +79,7 @@ const RequestListPage = () => {
       value: "Calculation Notes Transmission",
       label: t("calculation_notes_transmission"),
     },
-    { value: "FO Preparation", label: t("fO_preparation") },
+    { value: "FO Preparation", label: t("fo_preparation") },
     {
       value: "Transmission to Secretariat",
       label: t("transmission_to_secretariat"),
@@ -155,7 +156,8 @@ const RequestListPage = () => {
           return {
             id: Number(index + 1),
             requestNo: request.id,
-            amount: finalAmount,
+            amount: request.amount || "0",
+            total_amount: request.total_amount || finalAmount,
             currency: request.currency || "USD",
             createdDate: moment(request.created_at).format("YYYY/MM/DD"),
             status: request.current_status || request.status,

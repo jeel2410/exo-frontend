@@ -18,66 +18,66 @@ import StatusBadge, { StatusCode } from "../common/StatusBadge.tsx";
 
 // Map API status values to StatusBadge codes
 const mapStatusToCode = (status: string): StatusCode => {
-  const normalizedStatus = status.toLowerCase().replace(/[_\s]/g, '');
-  
+  const normalizedStatus = status.toLowerCase().replace(/[_\s]/g, "");
+
   switch (normalizedStatus) {
-    case 'inprogress':
-    case 'progress':
-    case 'pending':
-      return 'progress';
-    case 'draft':
-      return 'draft';
-    case 'expired':
-      return 'expired';
-    case 'scheduled':
-    case 'schedule':
-      return 'schedule';
-    case 'published':
-    case 'publish':
-      return 'publish';
-    case 'rejected':
-    case 'reject':
-      return 'rejected';
-    case 'approved':
-    case 'completed':
-    case 'success':
-      return 'approved';
-    case 'requestinfo':
-    case 'request_info':
-      return 'request_info';
+    case "inprogress":
+    case "progress":
+    case "pending":
+      return "progress";
+    case "draft":
+      return "draft";
+    case "expired":
+      return "expired";
+    case "scheduled":
+    case "schedule":
+      return "schedule";
+    case "published":
+    case "publish":
+      return "publish";
+    case "rejected":
+    case "reject":
+      return "rejected";
+    case "approved":
+    case "completed":
+    case "success":
+      return "approved";
+    case "requestinfo":
+    case "request_info":
+      return "request_info";
     default:
-      return 'progress'; // default fallback
+      return "progress"; // default fallback
   }
 };
 
 // Map API stage values to translation keys
 const mapStageToTranslationKey = (stage: string): string => {
-  const normalizedStage = stage.toLowerCase().replace(/[_\s]/g, '');
-  
+  const normalizedStage = stage.toLowerCase().replace(/[_\s]/g, "");
+
   switch (normalizedStage) {
-    case 'secretariatreview':
-    case 'secretariat':
-      return 'secretariat_review';
-    case 'coordinatorreview':
-    case 'coordinator':
-      return 'coordinator_review';
-    case 'financialreview':
-    case 'financial':
-      return 'financial_review';
-    case 'calculationnotestransmission':
-      return 'calculation_notes_transmission';
-    case 'fopreparation':
-      return 'fo_preparation';
-    case 'transmissiontosecretariat':
-      return 'transmission_to_secretariat';
-    case 'coordinatorfinalvalidation':
-      return 'coordinator_final_validation';
-    case 'applicationsubmission':
-      return 'application_submission';
-    case 'ministerialreview':
-      return 'ministerial_review';
-    case 'titlegeneration':
-      return 'title_generation';
+    case "secretariatreview":
+    case "secretariat":
+      return "secretariat_review";
+    case "coordinatorreview":
+    case "coordinator":
+      return "coordinator_review";
+    case "financialreview":
+    case "financial":
+      return "financial_review";
+    case "calculationnotestransmission":
+      return "calculation_notes_transmission";
+    case "fopreparation":
+      return "fo_preparation";
+    case "transmissiontosecretariat":
+      return "transmission_to_secretariat";
+    case "coordinatorfinalvalidation":
+      return "coordinator_final_validation";
+    case "applicationsubmission":
+      return "application_submission";
+    case "ministerialreview":
+      return "ministerial_review";
+    case "titlegeneration":
+      return "title_generation";
     default:
       return stage; // return original if no mapping found
   }
@@ -87,6 +87,7 @@ export interface Data {
   id: number;
   requestNo: string;
   amount: string;
+  total_amount?: string;
   currency?: string;
   createdDate: string;
   status: string;
@@ -147,6 +148,7 @@ const RequestTable = ({
             ...order,
             requestNo: editFormData.requestNo || order.requestNo,
             amount: editFormData.amount ?? order.amount,
+            total_amount: editFormData.total_amount ?? order.total_amount,
             createdDate: editFormData.createdDate ?? order.createdDate,
             status: editFormData.status ?? order.status,
           };
@@ -190,7 +192,7 @@ const RequestTable = ({
 
   const handleInputChange = (field: keyof Data, value: string | number) => {
     // Handle numeric fields
-    if (field === "amount" || field === "requestNo" || field === "id") {
+    if (field === "amount" || field === "total_amount" || field === "requestNo" || field === "id") {
       const parsedValue = value === "" ? 0 : parseFloat(value as string);
       setEditFormData((prev) => ({
         ...prev,
@@ -316,9 +318,9 @@ const RequestTable = ({
                         <div className="flex flex-col gap-1">
                           <input
                             type="text"
-                            value={editFormData.amount ?? ""}
+                            value={editFormData.total_amount ?? editFormData.amount ?? (data.total_amount || data.amount) ?? ""}
                             onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                              handleInputChange("amount", e.target.value)
+                              handleInputChange(data.total_amount ? "total_amount" : "amount", e.target.value)
                             }
                             className="block w-full px-2 py-1 text-sm rounded-md bg-secondary-10 focus:border focus:outline-none border-secondary-30"
                             placeholder="Add Tax Rate"
@@ -337,7 +339,9 @@ const RequestTable = ({
                           </span>
                           <span className="block font-medium text-secondary-100 text-sm">
                             {(() => {
-                              const amount = parseFloat(data.amount || "0");
+                              // Use total_amount if available, otherwise fallback to amount
+                              const amountToDisplay = data.total_amount || data.amount || "0";
+                              const amount = parseFloat(amountToDisplay);
                               return isNaN(amount)
                                 ? "0"
                                 : amount.toLocaleString();
@@ -416,7 +420,9 @@ const RequestTable = ({
                       ) : (
                         <div className="w-fit">
                           {data.sub_status ? (
-                            <StatusBadge code={mapStatusToCode(data.sub_status)} />
+                            <StatusBadge
+                              code={mapStatusToCode(data.sub_status)}
+                            />
                           ) : (
                             <span className="text-gray-500 text-sm">-</span>
                           )}

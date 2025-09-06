@@ -1,8 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import {
-  FileVioletIcon,
-  WhitePlusIcon,
-} from "../../../icons";
+import { FileVioletIcon, WhitePlusIcon } from "../../../icons";
 import CurrencyBadge from "../../common/CurrencyBadge";
 import Label from "../../../lib/components/atoms/Label";
 import Typography from "../../../lib/components/atoms/Typography";
@@ -434,6 +431,7 @@ const AddRequest = () => {
           label: d.label,
           quantity: d.quantity.toString(),
           unit_price: d.unitPrice.toString(),
+          unit: d?.unit?.toString(),
           total: d.total.toString(),
           tax_rate: d.taxRate.toString(),
           tax_amount: d.taxAmount.toString(),
@@ -1036,9 +1034,9 @@ const AddRequest = () => {
           {/* Table Section */}
           <div className="mt-3 md:mt-5 mb-2">
             <CreateRequestTable
-              data={data.map(item => ({
+              data={data.map((item) => ({
                 ...item,
-                currency: contractData?.currency || "USD"
+                currency: contractData?.currency || "USD",
               }))}
               onDataChange={handleTableDataChange}
               autoEditId={autoEditId}

@@ -416,5 +416,10 @@
   "select_municipality": "Sélectionnez la municipalité",
   "selected": "Sélectionné",
   "contract_amount_exceeded": "Le montant de la demande dépasse le montant du contrat",
-  "all_stages": "Toutes les étapes"
+  "all_stages": "Toutes les étapes",
+  "unit_option_kg": "kg",
+  "unit_option_m": "m",
+  "unit_option_l": "l",
+  "unit": "Unité",
+  "select_unit": "Sélectionner l'unité"
 }

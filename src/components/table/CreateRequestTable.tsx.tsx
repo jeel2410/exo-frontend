@@ -3,6 +3,9 @@ import { useTranslation } from "react-i18next";
 import Typography from "../../lib/components/atoms/Typography";
 import { CrossRedIcon, RightGreenIcon, USFlag, CDFFlag } from "../../icons";
 
+// Debug: Verify file is loading
+console.log("🚀 CreateRequestTable.tsx loaded at:", new Date().toISOString());
+
 export interface TableHeader {
   content: React.ReactNode;
   onClick?: () => void;
@@ -78,6 +81,7 @@ export interface Order {
   label: string;
   quantity: number;
   unitPrice: number;
+  unit?: string; // Add unit field
   total: number;
   taxRate: number;
   taxAmount: number;
@@ -247,6 +251,9 @@ const CreateRequestTable = ({
   };
 
   const handleSaveEdit = (orderId: number) => {
+    // Debug: Log edit form data before save
+    console.log("🚀 Edit form data before save:", editFormData);
+
     // Validation: Check if all required fields are filled
     const isLabelValid = editFormData.label && editFormData.label.trim() !== "";
     const isQuantityValid = editFormData.quantity && editFormData.quantity > 0;
@@ -290,20 +297,24 @@ const CreateRequestTable = ({
         if (order.id === orderId) {
           const { total, taxAmount, vatIncluded } =
             calculateTaxAndVat(editFormData);
-          return {
+          const updatedOrder = {
             ...order,
             label: editFormData.label || order.label,
             quantity: editFormData.quantity || order.quantity,
             unitPrice: editFormData.unitPrice ?? order.unitPrice,
+            unit: editFormData.unit || order.unit,
             total,
             taxRate: editFormData.taxRate ?? order.taxRate,
             taxAmount,
             vatIncluded,
             customDuty: editFormData.customDuty || order.customDuty,
           };
+          console.log("🚀 Updated order after save:", updatedOrder);
+          return updatedOrder;
         }
         return order;
       });
+      console.log("🚀 New table data after save:", newData);
       onDataChange?.(newData); // Notify parent of changes
       return newData;
     });
@@ -344,6 +355,13 @@ const CreateRequestTable = ({
   };
 
   const handleInputChange = (field: keyof Order, value: string | number) => {
+    // Debug: Log ALL input changes
+    console.log("🚀 handleInputChange called:", {
+      field,
+      value,
+      currentEditFormData: editFormData,
+    });
+
     let parsedValue: string | number = value;
     if (
       [
@@ -363,7 +381,17 @@ const CreateRequestTable = ({
       const updatedFormData = { ...prev, [field]: parsedValue };
       const { total, taxAmount, vatIncluded } =
         calculateTaxAndVat(updatedFormData);
-      return { ...updatedFormData, total, taxAmount, vatIncluded };
+      const finalFormData = {
+        ...updatedFormData,
+        total,
+        taxAmount,
+        vatIncluded,
+      };
+
+      // Debug: Log updated form data
+      console.log("🚀 Final form data after change:", { field, finalFormData });
+
+      return finalFormData;
     });
   };
 
@@ -449,18 +477,9 @@ const CreateRequestTable = ({
     return `${constraints.min}%-${constraints.max}%`;
   };
 
-  // Helper function to render currency with flag
-  const renderCurrencyWithFlag = (
-    amount: number | string,
-    currency?: string
-  ) => {
+  // Helper function to render currency with flag (for currency column)
+  const renderCurrencyDisplay = (currency?: string) => {
     const currencyType = currency || "USD";
-    const numericAmount =
-      typeof amount === "string" ? parseFloat(amount) : amount;
-    const formattedAmount = isNaN(numericAmount)
-      ? "0"
-      : numericAmount.toLocaleString();
-
     return (
       <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
         {currencyType === "USD" ? (
@@ -469,10 +488,22 @@ const CreateRequestTable = ({
           <CDFFlag width={20} height={12} />
         ) : null}
         <span className="text-gray-600">{currencyType}</span>
-        <span className="block font-medium text-secondary-100 text-sm">
-          {formattedAmount}
-        </span>
       </div>
+    );
+  };
+
+  // Helper function to render amounts as numbers only
+  const renderAmountOnly = (amount: number | string) => {
+    const numericAmount =
+      typeof amount === "string" ? parseFloat(amount) : amount;
+    const formattedAmount = isNaN(numericAmount)
+      ? "0"
+      : numericAmount.toLocaleString();
+
+    return (
+      <span className="block font-medium text-secondary-100 text-sm">
+        {formattedAmount}
+      </span>
     );
   };
 
@@ -509,6 +540,14 @@ const CreateRequestTable = ({
         </div>
       ),
       onClick: handleQuantitySort,
+      className: "w-24",
+    },
+    {
+      content: <div>{t("unit")}</div>,
+      className: "w-20",
+    },
+    {
+      content: <div>{t("currency")}</div>,
       className: "w-24",
     },
     {
@@ -613,11 +652,15 @@ const CreateRequestTable = ({
                     <span className="block font-medium text-secondary-100 text-sm">
                       {(() => {
                         // Try multiple field variations to find custom duty value
-                        const customDutyValue = order.customDuty || order.custom_duty || order.custom_duties || "";
+                        const customDutyValue =
+                          order.customDuty ||
+                          order.custom_duty ||
+                          order.custom_duties ||
+                          "";
                         const matchedOption = getCustomDutyOptions().find(
                           (opt) => opt.value === customDutyValue
                         );
-                        console.log('🏷️ Custom Duty Display Debug:', {
+                        console.log("🏷️ Custom Duty Display Debug:", {
                           orderId: order.id,
                           orderCustomDuty: order.customDuty,
                           orderCustom_duty: order.custom_duty,
@@ -626,9 +669,10 @@ const CreateRequestTable = ({
                           currentTaxCategory: currentTaxCategory,
                           availableOptions: getCustomDutyOptions(),
                           matchedOption: matchedOption,
-                          displayLabel: matchedOption?.label || (customDutyValue || "-")
+                          displayLabel:
+                            matchedOption?.label || customDutyValue || "-",
                         });
-                        return matchedOption?.label || (customDutyValue || "-");
+                        return matchedOption?.label || customDutyValue || "-";
                       })()}
                     </span>
                   )}
@@ -716,6 +760,60 @@ const CreateRequestTable = ({
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6">
                   {editingId === order.id ? (
+                    <div className="flex flex-col gap-1 relative">
+                      <select
+                        value={editFormData.unit ?? ""}
+                        onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                          console.log("🚀 UNIT DROPDOWN CHANGED:", {
+                            newValue: e.target.value,
+                            currentEditFormData: editFormData,
+                            orderId: order.id,
+                          });
+                          handleInputChange("unit", e.target.value);
+                        }}
+                        disabled={!editFormData.customDuty}
+                        className={`block w-full min-w-[120px] px-3 py-2 text-sm border rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none ${
+                          !editFormData.customDuty
+                            ? "bg-gray-100 cursor-not-allowed border-gray-300 text-gray-400"
+                            : "border-gray-300 text-gray-900 hover:border-gray-400"
+                        }`}
+                        style={{
+                          backgroundImage: `url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>')`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundPosition: "right 8px center",
+                          backgroundSize: "12px",
+                          paddingRight: "32px",
+                        }}
+                        aria-label="Unit"
+                      >
+                        <option value="" className="text-gray-500">
+                          {t("select_unit")}
+                        </option>
+                        <option value="Unité" className="text-gray-900">
+                          Unité
+                        </option>
+                        <option value="kilogramme" className="text-gray-900">
+                          kilogramme
+                        </option>
+                        <option value="mètre" className="text-gray-900">
+                          mètre
+                        </option>
+                        <option value="litre" className="text-gray-900">
+                          litre
+                        </option>
+                      </select>
+                    </div>
+                  ) : (
+                    <span className="block font-medium text-secondary-100 text-sm">
+                      {order.unit || "-"}
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className="px-5 py-4 sm:px-6">
+                  {renderCurrencyDisplay(order.currency)}
+                </TableCell>
+                <TableCell className="px-5 py-4 sm:px-6">
+                  {editingId === order.id ? (
                     <div className="flex flex-col gap-1">
                       <input
                         type="text"
@@ -741,10 +839,7 @@ const CreateRequestTable = ({
                       />
                     </div>
                   ) : (
-                    renderCurrencyWithFlag(
-                      order.unitPrice || order.unit_price || 0,
-                      order.currency
-                    )
+                    renderAmountOnly(order.unitPrice || order.unit_price || 0)
                   )}
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6">
@@ -759,7 +854,7 @@ const CreateRequestTable = ({
                       </Typography>
                     </div>
                   ) : (
-                    renderCurrencyWithFlag(order.total || 0, order.currency)
+                    renderAmountOnly(order.total || 0)
                   )}
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6">
@@ -849,10 +944,7 @@ const CreateRequestTable = ({
                       </Typography>
                     </div>
                   ) : (
-                    renderCurrencyWithFlag(
-                      order.taxAmount || order.tax_amount || 0,
-                      order.currency
-                    )
+                    renderAmountOnly(order.taxAmount || order.tax_amount || 0)
                   )}
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6">
@@ -867,9 +959,8 @@ const CreateRequestTable = ({
                       </Typography>
                     </div>
                   ) : (
-                    renderCurrencyWithFlag(
-                      order.vatIncluded || order.vat_included || 0,
-                      order.currency
+                    renderAmountOnly(
+                      order.vatIncluded || order.vat_included || 0
                     )
                   )}
                 </TableCell>

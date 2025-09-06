@@ -415,5 +415,10 @@
   "select_city": "Select city",
   "select_municipality": "Select municipality",
   "selected": "selected",
-  "all_stages": "All Stages"
+  "all_stages": "All Stages",
+  "unit_option_kg": "kg",
+  "unit_option_m": "m",
+  "unit_option_l": "l",
+  "unit": "Unit",
+  "select_unit": "Select Unit"
 }
