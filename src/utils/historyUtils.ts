@@ -12,22 +12,88 @@ export interface TrackItem {
 }
 
 /**
+ * Deduplicate tracks by stage/status, keeping the most recent (by created_at)
+ */
+export const dedupeTracksByStatus = (tracks: TrackItem[]): TrackItem[] => {
+  if (!tracks || !Array.isArray(tracks)) return [];
+
+  const byStatus = new Map<string, TrackItem>();
+  for (const tr of tracks) {
+    const key = (tr.status || tr.role || '').toLowerCase();
+    if (!byStatus.has(key)) {
+      byStatus.set(key, tr);
+    } else {
+      const prev = byStatus.get(key)!;
+      const prevTime = new Date(prev.created_at).getTime();
+      const currTime = new Date(tr.created_at).getTime();
+      if (!isNaN(currTime) && (isNaN(prevTime) || currTime >= prevTime)) {
+        byStatus.set(key, tr);
+      }
+    }
+  }
+  // Return sorted chronologically by created_at
+  return Array.from(byStatus.values()).sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+};
+
+/**
+ * Apply dedupe and then slice to show N-1 tracks
+ */
+export const getVisibleTracks = (
+  tracks: TrackItem[],
+  options?: { includeCurrent?: boolean }
+): TrackItem[] => {
+  const deduped = dedupeTracksByStatus(tracks || []);
+  if (!deduped.length) return deduped;
+  if (options?.includeCurrent) return deduped;
+  return deduped.slice(0, -1);
+};
+
+/** Options for transforming tracks into history items */
+export interface HistoryTransformOptions {
+  includeStatus?: boolean; // default false: don't include Status in description
+  lastEntrySubStatus?: string | null | undefined; // if provided, append to last item's description
+  translateStatus?: (status: string) => string; // optional translator for titles
+  labels?: {
+    approvedAt: string;
+    remarks: string;
+    comment: string;
+    subStatus: string;
+  };
+}
+
+/**
  * Transforms tracks data from API response into History component format
  * @param tracks - Array of track items from API response
  * @returns Array of HistoryItem objects for the History component
  */
-export const transformTracksToHistory = (tracks: TrackItem[]): HistoryItem[] => {
+export const transformTracksToHistory = (
+  tracks: TrackItem[],
+  options?: HistoryTransformOptions
+): HistoryItem[] => {
   if (!tracks || !Array.isArray(tracks)) {
     return [];
   }
 
-  return tracks.map((track, index) => ({
-    id: `track-${index}`, // Use index as unique identifier
-    date: moment(track.created_at).format("MMM DD, YYYY"), // Format: Aug 04, 2025
-    time: moment(track.created_at).format("hh:mm A"), // Format: 08:08 PM
-    title: `${track.status}`, // Main title showing the status
-    description: createTrackDescription(track), // Detailed description
+  const includeStatus = options?.includeStatus ?? false;
+
+  const items = tracks.map((track, index) => ({
+    id: `track-${index}`,
+    date: moment(track.created_at).format("MMM DD, YYYY"),
+    time: moment(track.created_at).format("hh:mm A"),
+    title: options?.translateStatus ? options.translateStatus(track.status) : `${track.status}`,
+    description: createTrackDescription(track, includeStatus, options?.labels),
   }));
+
+  if (items.length > 0 && options?.lastEntrySubStatus) {
+    const lastIdx = items.length - 1;
+    const label = options?.labels?.subStatus || "Sub status";
+    const suffix = `\n${label}: ${options.lastEntrySubStatus}`;
+    items[lastIdx].description = (items[lastIdx].description || "") + suffix;
+  }
+
+  return items;
 };
 
 /**
@@ -35,26 +101,30 @@ export const transformTracksToHistory = (tracks: TrackItem[]): HistoryItem[] => 
  * @param track - Individual track item
  * @returns Formatted description string
  */
-const createTrackDescription = (track: TrackItem): string => {
+const createTrackDescription = (
+  track: TrackItem,
+  includeStatus: boolean = false,
+  labels?: { approvedAt: string; remarks: string; comment: string }
+): string => {
   const parts: string[] = [];
 
   // Add approved/created date
   if (track.created_at) {
-    parts.push(`Approved at: ${track.created_at}`);
+    parts.push(`${labels?.approvedAt || "Approved at"}: ${track.created_at}`);
   }
 
   // Add remarks if available
   if (track.remarks && track.remarks.trim()) {
-    parts.push(`Remarks: ${track.remarks}`);
+    parts.push(`${labels?.remarks || "Remarks"}: ${track.remarks}`);
   }
 
   // Add comment if available
   if (track.comment && track.comment.trim()) {
-    parts.push(`Comment: ${track.comment}`);
+    parts.push(`${labels?.comment || "Comment"}: ${track.comment}`);
   }
 
-  // Add status
-  if (track.status) {
+  // Optionally include status
+  if (includeStatus && track.status) {
     parts.push(`Status: ${track.status}`);
   }
 

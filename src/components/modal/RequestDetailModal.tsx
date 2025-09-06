@@ -138,7 +138,7 @@ const RequestDetailModal = ({
               icon={
                 <CurrencyBadge
                   currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
-                  variant="blue"
+                  variant="green"
                   width={44}
                   height={44}
                 />
@@ -150,7 +150,7 @@ const RequestDetailModal = ({
               icon={
                 <CurrencyBadge
                   currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
-                  variant="red"
+                  variant="violet"
                   width={44}
                   height={44}
                 />

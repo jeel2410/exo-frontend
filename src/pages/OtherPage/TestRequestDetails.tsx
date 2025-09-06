@@ -23,7 +23,11 @@ import { useModal } from "../../hooks/useModal";
 import RequestDetailModal from "../../components/modal/RequestDetailModal";
 import History from "../../components/dashboard/History";
 import { useLoading } from "../../context/LoaderProvider";
-import { transformTracksToHistory, TrackItem } from "../../utils/historyUtils";
+import {
+  transformTracksToHistory,
+  TrackItem,
+  getVisibleTracks,
+} from "../../utils/historyUtils";
 import { HistoryItem } from "../../components/dashboard/History";
 import { useRoleRoute } from "../../hooks/useRoleRoute";
 import Breadcrumbs from "../../components/common/Breadcrumbs";
@@ -90,6 +94,7 @@ export interface RequestDetails {
   contract_currency?: string; // Currency from contract
   project_amount?: number; // Project amount from API
   contract_amount?: number; // Contract amount from API
+  sub_status?: string; // Current sub-status (e.g., request_info)
 }
 export interface ProgressStep {
   id: number;
@@ -174,8 +179,8 @@ const TestRequestDetails = () => {
       setLoading(false);
 
       const tracks = res.data.data.tracks;
-      // Show n-1 tracks (exclude the latest)
-      const visibleTracks = Array.isArray(tracks) && tracks.length > 0 ? tracks.slice(0, -1) : tracks;
+      // Deduplicate by stage, then show N-1 (exclude current)
+      const visibleTracks = getVisibleTracks(tracks);
 
       const newSteps: ProgressStep[] = getProgressSteps(t).map(
         (step, index) => {
@@ -256,12 +261,24 @@ const TestRequestDetails = () => {
   useEffect(() => {
     if (!requestData?.tracks) return;
 
-    const tracksToShow = Array.isArray(requestData.tracks) && requestData.tracks.length > 0
-      ? requestData.tracks.slice(0, -1)
-      : requestData.tracks;
-    const res = transformTracksToHistory(tracksToShow as any);
+    const tracksForHistory = getVisibleTracks(requestData.tracks as any, {
+      includeCurrent: requestData?.sub_status === "request_info",
+    });
+    const res = transformTracksToHistory(tracksForHistory as any, {
+      includeStatus: false,
+      lastEntrySubStatus: requestData?.sub_status
+        ? translateSubStatus(requestData?.sub_status)
+        : undefined,
+      translateStatus: (status: string) => translateStage(status),
+      labels: {
+        approvedAt: t("approved_at"),
+        remarks: t("remarks"),
+        comment: t("comment"),
+        subStatus: t("sub_status"),
+      },
+    });
     setHistory(res);
-  }, [requestData]);
+  }, [requestData, i18n.language]);
 
   // Recompute progress steps and history on language change without page refresh
   useEffect(() => {
@@ -270,60 +287,85 @@ const TestRequestDetails = () => {
 
     // Rebuild steps with translated titles
     if (requestData?.tracks) {
-      const tracksToShow = Array.isArray(requestData.tracks) && requestData.tracks.length > 0
-        ? requestData.tracks.slice(0, -1)
-        : requestData.tracks;
-      const newSteps: ProgressStep[] = getProgressSteps(t).map((step, index) => {
-        let status: ProgressStep["status"] = "pending";
+      // For the progress steps (left sidebar), we always exclude the current stage (N-1)
+      const tracksForSteps = getVisibleTracks(requestData.tracks as any);
+      const newSteps: ProgressStep[] = getProgressSteps(t).map(
+        (step, index) => {
+          let status: ProgressStep["status"] = "pending";
 
-        const matchingTrack = tracksToShow.find((track: any) => {
-          const trackRole = track.role?.toLowerCase();
-          const stepTitle = step.title.toLowerCase();
+          const matchingTrack = tracksForSteps.find((track: any) => {
+            const trackRole = track.role?.toLowerCase();
+            const stepTitle = step.title.toLowerCase();
 
-          if (trackRole === "applicant" && stepTitle.includes("application")) {
-            return true;
-          }
-          if (trackRole === "secretariat" && stepTitle.includes("secretariat")) {
-            return true;
-          }
-          if (trackRole === "coordinator" && stepTitle.includes("coordinator")) {
-            return true;
-          }
-          if (trackRole === "financial" && stepTitle.includes("financial")) {
-            return true;
-          }
-          return false;
-        });
+            if (
+              trackRole === "applicant" &&
+              stepTitle.includes("application")
+            ) {
+              return true;
+            }
+            if (
+              trackRole === "secretariat" &&
+              stepTitle.includes("secretariat")
+            ) {
+              return true;
+            }
+            if (
+              trackRole === "coordinator" &&
+              stepTitle.includes("coordinator")
+            ) {
+              return true;
+            }
+            if (trackRole === "financial" && stepTitle.includes("financial")) {
+              return true;
+            }
+            return false;
+          });
 
-        if (matchingTrack) {
-          if (
-            matchingTrack.status === "Application Submission" ||
-            matchingTrack.status === "Completed" ||
-            matchingTrack.status === "Approved"
-          ) {
-            status = "completed";
-          } else if (matchingTrack.status === "Rejected") {
-            status = "pending";
+          if (matchingTrack) {
+            if (
+              matchingTrack.status === "Application Submission" ||
+              matchingTrack.status === "Completed" ||
+              matchingTrack.status === "Approved"
+            ) {
+              status = "completed";
+            } else if (matchingTrack.status === "Rejected") {
+              status = "pending";
+            } else {
+              status = "completed";
+            }
           } else {
-            status = "completed";
+            const completedTracksCount = tracksForSteps.length;
+            if (index < completedTracksCount) {
+              status = "completed";
+            } else if (index === completedTracksCount) {
+              status = "current";
+            } else {
+              status = "pending";
+            }
           }
-        } else {
-          const completedTracksCount = tracksToShow.length;
-          if (index < completedTracksCount) {
-            status = "completed";
-          } else if (index === completedTracksCount) {
-            status = "current";
-          } else {
-            status = "pending";
-          }
+
+          return { ...step, status };
         }
-
-        return { ...step, status };
-      });
+      );
       setSteps(newSteps);
 
       // Recompute history to apply new locale formatting
-      const historyItems = transformTracksToHistory(tracksToShow as any);
+      const tracksForHistory = getVisibleTracks(requestData.tracks as any, {
+        includeCurrent: requestData?.sub_status === "request_info",
+      });
+      const historyItems = transformTracksToHistory(tracksForHistory as any, {
+        includeStatus: false,
+        lastEntrySubStatus: requestData?.sub_status
+          ? translateSubStatus(requestData?.sub_status)
+          : undefined,
+        translateStatus: (status: string) => translateStage(status),
+        labels: {
+          approvedAt: t("approved_at"),
+          remarks: t("remarks"),
+          comment: t("comment"),
+          subStatus: t("sub_status"),
+        },
+      });
       setHistory(historyItems);
     }
   }, [i18n.language, requestData?.tracks]);
@@ -332,6 +374,36 @@ const TestRequestDetails = () => {
     const user = localStorageService.getUser() || "";
     setUserData(JSON.parse(user));
   }, []);
+
+  // Map backend stage names to i18n keys, then to localized strings
+  const translateStage = (status: string) => {
+    const map: Record<string, string> = {
+      "Application Submission": "application_submission",
+      "Secretariat Review": "secretariat_review",
+      "Coordinator Review": "coordinator_review",
+      "Financial Review": "financial_review",
+      "Calculation Notes Transmission": "calculation_notes_transmission",
+      "FO Preparation": "fo_preparation",
+      "Transmission to Secretariat": "transmission_to_secretariat",
+      "Coordinator Final Validation": "coordinator_final_validation",
+      "Ministerial Review": "ministerial_review",
+      "Title Generation": "title_generation",
+    };
+    const key = map[status] || status;
+    return map[status] ? t(key) : status;
+  };
+
+  const translateSubStatus = (sub: string) => {
+    const map: Record<string, string> = {
+      request_info: "status_request_info",
+      approved: "status_approved",
+      rejected: "status_rejected",
+      draft: "status_draft",
+      publish: "status_publish",
+      progress: "status_progress",
+    };
+    return map[sub] ? t(map[sub]) : sub;
+  };
 
   const crumbs = [
     { label: "dashboard", path: getRoute("dashboard") },
@@ -419,13 +491,14 @@ const TestRequestDetails = () => {
                               <div className="flex items-center space-x-2">
                                 <Typography
                                   size="xs"
-                                  weight="medium"
+                                  weight="semibold"
                                   className="text-gray-600"
                                 >
                                   {t("project_amount")}:
                                 </Typography>
                                 <div className="flex items-center space-x-2">
-                                  {(requestData?.amount_summary?.contract_currency || "USD") === "USD" ? (
+                                  {(requestData?.amount_summary
+                                    ?.contract_currency || "USD") === "USD" ? (
                                     <USFlag width={20} height={12} />
                                   ) : (
                                     <CDFFlag width={20} height={12} />
@@ -435,7 +508,8 @@ const TestRequestDetails = () => {
                                     weight="semibold"
                                     className="text-gray-600"
                                   >
-                                    {requestData?.amount_summary?.contract_currency || "USD"}
+                                    {requestData?.amount_summary
+                                      ?.contract_currency || "USD"}
                                   </Typography>
                                   <Typography
                                     size="sm"
@@ -443,7 +517,9 @@ const TestRequestDetails = () => {
                                     className="text-gray-900"
                                   >
                                     {requestData?.project_amount
-                                      ? Number(requestData.project_amount).toLocaleString()
+                                      ? Number(
+                                          requestData.project_amount
+                                        ).toLocaleString()
                                       : "0"}
                                   </Typography>
                                 </div>
@@ -546,13 +622,14 @@ const TestRequestDetails = () => {
                               <div className="flex items-center space-x-2">
                                 <Typography
                                   size="xs"
-                                  weight="medium"
+                                  weight="semibold"
                                   className="text-gray-600"
                                 >
                                   {t("contract_amount")}:
                                 </Typography>
                                 <div className="flex items-center space-x-2">
-                                  {(requestData?.amount_summary?.contract_currency || "USD") === "USD" ? (
+                                  {(requestData?.amount_summary
+                                    ?.contract_currency || "USD") === "USD" ? (
                                     <USFlag width={20} height={12} />
                                   ) : (
                                     <CDFFlag width={20} height={12} />
@@ -562,7 +639,8 @@ const TestRequestDetails = () => {
                                     weight="semibold"
                                     className="text-gray-600"
                                   >
-                                    {requestData?.amount_summary?.contract_currency || "USD"}
+                                    {requestData?.amount_summary
+                                      ?.contract_currency || "USD"}
                                   </Typography>
                                   <Typography
                                     size="sm"
@@ -570,7 +648,9 @@ const TestRequestDetails = () => {
                                     className="text-gray-900"
                                   >
                                     {requestData?.contract_amount
-                                      ? Number(requestData.contract_amount).toLocaleString()
+                                      ? Number(
+                                          requestData.contract_amount
+                                        ).toLocaleString()
                                       : "0"}
                                   </Typography>
                                 </div>
