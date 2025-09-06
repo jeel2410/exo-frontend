@@ -242,6 +242,7 @@
   "project_has_been_created_successfully": "Project has been created successfully",
   "create_another_project": "Create Another Project",
   "project_amount": "Project Amount",
+  "contract_amount": "Contract Amount",
   "sum_of_contracts_amount": "Sum of Contracts Amount",
   "sum_of_requests_amount": "Sum of Requests Amount",
   "sum_of_approved_amount": "Sum of Approved Amount",

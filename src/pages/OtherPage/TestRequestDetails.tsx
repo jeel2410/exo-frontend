@@ -2,8 +2,12 @@ import { useTranslation } from "react-i18next";
 import {
   BlueCopyIcon,
   PdfIcon,
+  USFlag,
+  CDFFlag,
   // PdfIcon,
 } from "../../icons";
+import moment from "moment";
+import "moment/locale/fr";
 import AppLayout from "../../layout/AppLayout";
 import Typography from "../../lib/components/atoms/Typography";
 import DashBoardCard from "../../lib/components/molecules/DashBoardCard";
@@ -84,6 +88,8 @@ export interface RequestDetails {
   files?: any[];
   tracks: TrackItem[];
   contract_currency?: string; // Currency from contract
+  project_amount?: number; // Project amount from API
+  contract_amount?: number; // Contract amount from API
 }
 export interface ProgressStep {
   id: number;
@@ -141,7 +147,7 @@ export const comments: CommentProps[] = [
 ];
 
 const TestRequestDetails = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [userData, setUserData] = useState<UserData | undefined>();
   const [requestData, setRequestData] = useState<RequestDetails | null>(null);
   const { setLoading } = useLoading();
@@ -168,14 +174,15 @@ const TestRequestDetails = () => {
       setLoading(false);
 
       const tracks = res.data.data.tracks;
-      // const trackLength = tracks.length;
+      // Show n-1 tracks (exclude the latest)
+      const visibleTracks = Array.isArray(tracks) && tracks.length > 0 ? tracks.slice(0, -1) : tracks;
 
       const newSteps: ProgressStep[] = getProgressSteps(t).map(
         (step, index) => {
           let status: ProgressStep["status"] = "pending";
 
           // Find matching track based on role and step mapping
-          const matchingTrack = tracks.find((track: any) => {
+          const matchingTrack = visibleTracks.find((track: any) => {
             const trackRole = track.role?.toLowerCase();
             const stepTitle = step.title.toLowerCase();
 
@@ -220,7 +227,7 @@ const TestRequestDetails = () => {
             }
           } else {
             // For steps without matching tracks, determine status based on order
-            const completedTracksCount = tracks.length;
+            const completedTracksCount = visibleTracks.length;
 
             if (index < completedTracksCount) {
               // This should not happen, but handle gracefully
@@ -249,9 +256,77 @@ const TestRequestDetails = () => {
   useEffect(() => {
     if (!requestData?.tracks) return;
 
-    const res = transformTracksToHistory(requestData.tracks);
+    const tracksToShow = Array.isArray(requestData.tracks) && requestData.tracks.length > 0
+      ? requestData.tracks.slice(0, -1)
+      : requestData.tracks;
+    const res = transformTracksToHistory(tracksToShow as any);
     setHistory(res);
   }, [requestData]);
+
+  // Recompute progress steps and history on language change without page refresh
+  useEffect(() => {
+    // Update moment locale for date/time formatting in history
+    moment.locale(i18n.language === "fr" ? "fr" : "en");
+
+    // Rebuild steps with translated titles
+    if (requestData?.tracks) {
+      const tracksToShow = Array.isArray(requestData.tracks) && requestData.tracks.length > 0
+        ? requestData.tracks.slice(0, -1)
+        : requestData.tracks;
+      const newSteps: ProgressStep[] = getProgressSteps(t).map((step, index) => {
+        let status: ProgressStep["status"] = "pending";
+
+        const matchingTrack = tracksToShow.find((track: any) => {
+          const trackRole = track.role?.toLowerCase();
+          const stepTitle = step.title.toLowerCase();
+
+          if (trackRole === "applicant" && stepTitle.includes("application")) {
+            return true;
+          }
+          if (trackRole === "secretariat" && stepTitle.includes("secretariat")) {
+            return true;
+          }
+          if (trackRole === "coordinator" && stepTitle.includes("coordinator")) {
+            return true;
+          }
+          if (trackRole === "financial" && stepTitle.includes("financial")) {
+            return true;
+          }
+          return false;
+        });
+
+        if (matchingTrack) {
+          if (
+            matchingTrack.status === "Application Submission" ||
+            matchingTrack.status === "Completed" ||
+            matchingTrack.status === "Approved"
+          ) {
+            status = "completed";
+          } else if (matchingTrack.status === "Rejected") {
+            status = "pending";
+          } else {
+            status = "completed";
+          }
+        } else {
+          const completedTracksCount = tracksToShow.length;
+          if (index < completedTracksCount) {
+            status = "completed";
+          } else if (index === completedTracksCount) {
+            status = "current";
+          } else {
+            status = "pending";
+          }
+        }
+
+        return { ...step, status };
+      });
+      setSteps(newSteps);
+
+      // Recompute history to apply new locale formatting
+      const historyItems = transformTracksToHistory(tracksToShow as any);
+      setHistory(historyItems);
+    }
+  }, [i18n.language, requestData?.tracks]);
 
   useEffect(() => {
     const user = localStorageService.getUser() || "";
@@ -295,187 +370,255 @@ const TestRequestDetails = () => {
             {/* Project and Contract Information Cards */}
             {requestData &&
               (requestData.project_name || requestData.contract_name) && (
-                <div className="mb-6 space-y-4">
-                  {/* Project Information Card */}
-                  {requestData.project_name && requestData.project_id && (
-                    <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex-shrink-0">
-                            <div className="w-10 h-10 bg-primary-150 rounded-lg flex items-center justify-center">
+                <div className="mb-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Project Information Card */}
+                    {requestData.project_name && requestData.project_id && (
+                      <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-3 flex-1">
+                            <div className="flex-shrink-0">
+                              <div className="w-10 h-10 bg-primary-150 rounded-lg flex items-center justify-center">
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="text-white"
+                                >
+                                  <path
+                                    d="M19 21V5C19 4.44772 18.5523 4 18 4H6C5.44772 4 5 4.44772 5 5V21L12 17L19 21Z"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <Typography
+                                  size="xs"
+                                  weight="semibold"
+                                  className="text-primary-150 uppercase tracking-wide"
+                                >
+                                  {t("selected_project")}
+                                </Typography>
+                                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                              </div>
+                              <Typography
+                                size="base"
+                                weight="semibold"
+                                className="text-gray-900 mb-2"
+                              >
+                                {requestData.project_name}
+                              </Typography>
+                              {/* Project Amount */}
+                              <div className="flex items-center space-x-2">
+                                <Typography
+                                  size="xs"
+                                  weight="medium"
+                                  className="text-gray-600"
+                                >
+                                  {t("project_amount")}:
+                                </Typography>
+                                <div className="flex items-center space-x-2">
+                                  {(requestData?.amount_summary?.contract_currency || "USD") === "USD" ? (
+                                    <USFlag width={20} height={12} />
+                                  ) : (
+                                    <CDFFlag width={20} height={12} />
+                                  )}
+                                  <Typography
+                                    size="xs"
+                                    weight="semibold"
+                                    className="text-gray-600"
+                                  >
+                                    {requestData?.amount_summary?.contract_currency || "USD"}
+                                  </Typography>
+                                  <Typography
+                                    size="sm"
+                                    weight="bold"
+                                    className="text-gray-900"
+                                  >
+                                    {requestData?.project_amount
+                                      ? Number(requestData.project_amount).toLocaleString()
+                                      : "0"}
+                                  </Typography>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 ml-3">
+                            <Button
+                              variant="outline"
+                              onClick={() =>
+                                navigate(
+                                  `${getRoute("projectDetails")}/${
+                                    requestData.project_id
+                                  }`
+                                )
+                              }
+                              className="px-3 py-2 text-primary-150 border border-primary-150 rounded-md hover:bg-primary-150 hover:text-white transition-all duration-200 flex items-center space-x-2 text-sm font-medium group"
+                            >
                               <svg
-                                width="20"
-                                height="20"
+                                width="14"
+                                height="14"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="text-white"
+                                className="transition-transform group-hover:scale-110"
                               >
                                 <path
-                                  d="M19 21V5C19 4.44772 18.5523 4 18 4H6C5.44772 4 5 4.44772 5 5V21L12 17L19 21Z"
+                                  d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z"
                                   stroke="currentColor"
                                   strokeWidth="2"
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
                                 />
+                                <circle
+                                  cx="12"
+                                  cy="12"
+                                  r="3"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                />
                               </svg>
-                            </div>
+                              <span>{t("view_project")}</span>
+                            </Button>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <Typography
-                                size="xs"
-                                weight="semibold"
-                                className="text-primary-150 uppercase tracking-wide"
-                              >
-                                {t("selected_project")}
-                              </Typography>
-                              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                            </div>
-                            <Typography
-                              size="base"
-                              weight="semibold"
-                              className="text-gray-900 truncate"
-                            >
-                              {requestData.project_name}
-                            </Typography>
-                          </div>
-                        </div>
-                        <div className="flex-shrink-0">
-                          <Button
-                            variant="outline"
-                            onClick={() =>
-                              navigate(
-                                `${getRoute("projectDetails")}/${
-                                  requestData.project_id
-                                }`
-                              )
-                            }
-                            className="px-3 py-2 text-primary-150 border border-primary-150 rounded-md hover:bg-primary-150 hover:text-white transition-all duration-200 flex items-center space-x-2 text-sm font-medium group"
-                          >
-                            <svg
-                              width="14"
-                              height="14"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="transition-transform group-hover:scale-110"
-                            >
-                              <path
-                                d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <circle
-                                cx="12"
-                                cy="12"
-                                r="3"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              />
-                            </svg>
-                            <span>{t("view_project")}</span>
-                          </Button>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Contract Information Card */}
-                  {requestData.contract_name && requestData.contract_id && (
-                    <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex-shrink-0">
-                            <div className="w-10 h-10 bg-primary-150 rounded-lg flex items-center justify-center">
+                    {/* Contract Information Card */}
+                    {requestData.contract_name && requestData.contract_id && (
+                      <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-3 flex-1">
+                            <div className="flex-shrink-0">
+                              <div className="w-10 h-10 bg-primary-150 rounded-lg flex items-center justify-center">
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="text-white"
+                                >
+                                  <path
+                                    d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                  <path
+                                    d="M14 2V8H20"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <Typography
+                                  size="xs"
+                                  weight="semibold"
+                                  className="text-primary-150 uppercase tracking-wide"
+                                >
+                                  {t("selected_contract")}
+                                </Typography>
+                                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                              </div>
+                              <Typography
+                                size="base"
+                                weight="semibold"
+                                className="text-gray-900 mb-2"
+                              >
+                                {requestData.contract_name}
+                              </Typography>
+                              {/* Contract Amount */}
+                              <div className="flex items-center space-x-2">
+                                <Typography
+                                  size="xs"
+                                  weight="medium"
+                                  className="text-gray-600"
+                                >
+                                  {t("contract_amount")}:
+                                </Typography>
+                                <div className="flex items-center space-x-2">
+                                  {(requestData?.amount_summary?.contract_currency || "USD") === "USD" ? (
+                                    <USFlag width={20} height={12} />
+                                  ) : (
+                                    <CDFFlag width={20} height={12} />
+                                  )}
+                                  <Typography
+                                    size="xs"
+                                    weight="semibold"
+                                    className="text-gray-600"
+                                  >
+                                    {requestData?.amount_summary?.contract_currency || "USD"}
+                                  </Typography>
+                                  <Typography
+                                    size="sm"
+                                    weight="bold"
+                                    className="text-gray-900"
+                                  >
+                                    {requestData?.contract_amount
+                                      ? Number(requestData.contract_amount).toLocaleString()
+                                      : "0"}
+                                  </Typography>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 ml-3">
+                            <Button
+                              variant="outline"
+                              onClick={() =>
+                                navigate(
+                                  `${getRoute("contractDetails")}/${
+                                    requestData.contract_id
+                                  }`
+                                )
+                              }
+                              className="px-3 py-2 text-primary-150 border border-primary-150 rounded-md hover:bg-primary-150 hover:text-white transition-all duration-200 flex items-center space-x-2 text-sm font-medium group"
+                            >
                               <svg
-                                width="20"
-                                height="20"
+                                width="14"
+                                height="14"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="text-white"
+                                className="transition-transform group-hover:scale-110"
                               >
                                 <path
-                                  d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
+                                  d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z"
                                   stroke="currentColor"
                                   strokeWidth="2"
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
                                 />
-                                <path
-                                  d="M14 2V8H20"
+                                <circle
+                                  cx="12"
+                                  cy="12"
+                                  r="3"
                                   stroke="currentColor"
                                   strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
                                 />
                               </svg>
-                            </div>
+                              <span>{t("view_contract")}</span>
+                            </Button>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <Typography
-                                size="xs"
-                                weight="semibold"
-                                className="text-primary-150 uppercase tracking-wide"
-                              >
-                                {t("selected_contract")}
-                              </Typography>
-                              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                            </div>
-                            <Typography
-                              size="base"
-                              weight="semibold"
-                              className="text-gray-900 truncate"
-                            >
-                              {requestData.contract_name}
-                            </Typography>
-                          </div>
-                        </div>
-                        <div className="flex-shrink-0">
-                          <Button
-                            variant="outline"
-                            onClick={() =>
-                              navigate(
-                                `${getRoute("contractDetails")}/${
-                                  requestData.contract_id
-                                }`
-                              )
-                            }
-                            className="px-3 py-2 text-primary-150 border border-primary-150 rounded-md hover:bg-primary-150 hover:text-white transition-all duration-200 flex items-center space-x-2 text-sm font-medium group"
-                          >
-                            <svg
-                              width="14"
-                              height="14"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="transition-transform group-hover:scale-110"
-                            >
-                              <path
-                                d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <circle
-                                cx="12"
-                                cy="12"
-                                r="3"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              />
-                            </svg>
-                            <span>{t("view_contract")}</span>
-                          </Button>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               )}
 

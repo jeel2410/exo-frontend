@@ -45,6 +45,8 @@ export interface RequestDetails {
   amount_summary: AmountSummary;
   tracks: any[]; // Use a specific interface if `tracks` has a defined shape
   contract_currency?: string; // Currency from contract
+  project_amount?: number; // Project amount from API
+  contract_amount?: number; // Contract amount from API
 }
 
 interface RequestDetailsProps {
@@ -90,7 +92,7 @@ const RequestDetailModal = ({
           </div>
         </div>
         <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-5">
             <DashBoardCard
               icon={<FileVioletIcon width={44} height={44} />}
               count={total_quantity || 0}
@@ -131,6 +133,30 @@ const RequestDetailModal = ({
               }
               count={vat_included || 0}
               title={t("total_amount_with_tax")}
+            />
+            <DashBoardCard
+              icon={
+                <CurrencyBadge
+                  currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
+                  variant="blue"
+                  width={44}
+                  height={44}
+                />
+              }
+              count={requestDetails?.project_amount || 0}
+              title={t("project_amount")}
+            />
+            <DashBoardCard
+              icon={
+                <CurrencyBadge
+                  currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
+                  variant="red"
+                  width={44}
+                  height={44}
+                />
+              }
+              count={requestDetails?.contract_amount || 0}
+              title={t("contract_amount")}
             />
           </div>
         </div>
