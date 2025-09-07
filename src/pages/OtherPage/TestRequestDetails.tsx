@@ -95,6 +95,7 @@ export interface RequestDetails {
   project_amount?: number; // Project amount from API
   contract_amount?: number; // Contract amount from API
   sub_status?: string; // Current sub-status (e.g., request_info)
+  last_completed_stage?: string; // New: last completed stage (English)
 }
 export interface ProgressStep {
   id: number;
@@ -178,80 +179,34 @@ const TestRequestDetails = () => {
       });
       setLoading(false);
 
-      const tracks = res.data.data.tracks;
-      // Deduplicate by stage, then show N-1 (exclude current)
-      const visibleTracks = getVisibleTracks(tracks);
+      // Compute progress solely from last_completed_stage (tracks are only for history)
+      const lastCompleted: string | undefined = res?.data?.data?.last_completed_stage;
+      const stageOrder = [
+        "Application Submission",
+        "Secretariat Review",
+        "Coordinator Review",
+        "Financial Review",
+        "Calculation Notes Transmission",
+        "FO Preparation",
+        "Transmission to Secretariat",
+        "Coordinator Final Validation",
+        "Ministerial Review",
+        "Title Generation",
+      ];
+      const normalize = (s: string) => s.toLowerCase().trim();
+      // If last_completed_stage is null/undefined/empty, treat Application Submission as completed
+      const computedLastIndex = (() => {
+        if (!lastCompleted || normalize(String(lastCompleted)) === "null") return 0;
+        const idx = stageOrder.findIndex((s) => normalize(s) === normalize(String(lastCompleted)));
+        return idx < 0 ? 0 : idx;
+      })();
 
-      const newSteps: ProgressStep[] = getProgressSteps(t).map(
-        (step, index) => {
-          let status: ProgressStep["status"] = "pending";
+      const newSteps: ProgressStep[] = getProgressSteps(t).map((step, index) => {
+        if (computedLastIndex >= 0 && index <= computedLastIndex) return { ...step, status: "completed" };
+        if (index === computedLastIndex + 1) return { ...step, status: "current" };
+        return { ...step, status: "pending" };
+      });
 
-          // Find matching track based on role and step mapping
-          const matchingTrack = visibleTracks.find((track: any) => {
-            const trackRole = track.role?.toLowerCase();
-            const stepTitle = step.title.toLowerCase();
-
-            // Map track roles to step titles
-            if (
-              trackRole === "applicant" &&
-              stepTitle.includes("application")
-            ) {
-              return true;
-            }
-            if (
-              trackRole === "secretariat" &&
-              stepTitle.includes("secretariat")
-            ) {
-              return true;
-            }
-            if (
-              trackRole === "coordinator" &&
-              stepTitle.includes("coordinator")
-            ) {
-              return true;
-            }
-            if (trackRole === "financial" && stepTitle.includes("financial")) {
-              return true;
-            }
-
-            return false;
-          });
-
-          if (matchingTrack) {
-            // If track exists and completed, mark as completed
-            if (
-              matchingTrack.status === "Application Submission" ||
-              matchingTrack.status === "Completed" ||
-              matchingTrack.status === "Approved"
-            ) {
-              status = "completed";
-            } else if (matchingTrack.status === "Rejected") {
-              status = "pending";
-            } else {
-              status = "completed"; // Default for existing tracks
-            }
-          } else {
-            // For steps without matching tracks, determine status based on order
-            const completedTracksCount = visibleTracks.length;
-
-            if (index < completedTracksCount) {
-              // This should not happen, but handle gracefully
-              status = "completed";
-            } else if (index === completedTracksCount) {
-              // This is the next step to be processed
-              status = "current";
-            } else {
-              // Future steps are pending
-              status = "pending";
-            }
-          }
-
-          return {
-            ...step,
-            status,
-          };
-        }
-      );
       setSteps(newSteps);
       setRequestData(res.data.data);
       return res.data;
@@ -262,7 +217,7 @@ const TestRequestDetails = () => {
     if (!requestData?.tracks) return;
 
     const tracksForHistory = getVisibleTracks(requestData.tracks as any, {
-      includeCurrent: requestData?.sub_status === "request_info",
+      preserveAll: true,
     });
     const res = transformTracksToHistory(tracksForHistory as any, {
       includeStatus: false,
@@ -285,90 +240,57 @@ const TestRequestDetails = () => {
     // Update moment locale for date/time formatting in history
     moment.locale(i18n.language === "fr" ? "fr" : "en");
 
-    // Rebuild steps with translated titles
-    if (requestData?.tracks) {
-      // For the progress steps (left sidebar), we always exclude the current stage (N-1)
-      const tracksForSteps = getVisibleTracks(requestData.tracks as any);
-      const newSteps: ProgressStep[] = getProgressSteps(t).map(
-        (step, index) => {
-          let status: ProgressStep["status"] = "pending";
+    // Rebuild steps with translated titles based on last_completed_stage only
+    if (requestData) {
+      const stageOrder = [
+        "Application Submission",
+        "Secretariat Review",
+        "Coordinator Review",
+        "Financial Review",
+        "Calculation Notes Transmission",
+        "FO Preparation",
+        "Transmission to Secretariat",
+        "Coordinator Final Validation",
+        "Ministerial Review",
+        "Title Generation",
+      ];
+      const normalize = (s: string) => s.toLowerCase().trim();
+      const computedLastIndex = (() => {
+        const lc = requestData.last_completed_stage as any;
+        if (!lc || normalize(String(lc)) === "null") return 0; // default: first step completed
+        const idx = stageOrder.findIndex((s) => normalize(s) === normalize(String(lc)));
+        return idx < 0 ? 0 : idx;
+      })();
 
-          const matchingTrack = tracksForSteps.find((track: any) => {
-            const trackRole = track.role?.toLowerCase();
-            const stepTitle = step.title.toLowerCase();
-
-            if (
-              trackRole === "applicant" &&
-              stepTitle.includes("application")
-            ) {
-              return true;
-            }
-            if (
-              trackRole === "secretariat" &&
-              stepTitle.includes("secretariat")
-            ) {
-              return true;
-            }
-            if (
-              trackRole === "coordinator" &&
-              stepTitle.includes("coordinator")
-            ) {
-              return true;
-            }
-            if (trackRole === "financial" && stepTitle.includes("financial")) {
-              return true;
-            }
-            return false;
-          });
-
-          if (matchingTrack) {
-            if (
-              matchingTrack.status === "Application Submission" ||
-              matchingTrack.status === "Completed" ||
-              matchingTrack.status === "Approved"
-            ) {
-              status = "completed";
-            } else if (matchingTrack.status === "Rejected") {
-              status = "pending";
-            } else {
-              status = "completed";
-            }
-          } else {
-            const completedTracksCount = tracksForSteps.length;
-            if (index < completedTracksCount) {
-              status = "completed";
-            } else if (index === completedTracksCount) {
-              status = "current";
-            } else {
-              status = "pending";
-            }
-          }
-
-          return { ...step, status };
-        }
-      );
+      const newSteps: ProgressStep[] = getProgressSteps(t).map((step, index) => {
+        if (computedLastIndex >= 0 && index <= computedLastIndex) return { ...step, status: "completed" };
+        if (index === computedLastIndex + 1) return { ...step, status: "current" };
+        return { ...step, status: "pending" };
+      });
       setSteps(newSteps);
 
-      // Recompute history to apply new locale formatting
-      const tracksForHistory = getVisibleTracks(requestData.tracks as any, {
-        includeCurrent: requestData?.sub_status === "request_info",
-      });
-      const historyItems = transformTracksToHistory(tracksForHistory as any, {
-        includeStatus: false,
-        lastEntrySubStatus: requestData?.sub_status
-          ? translateSubStatus(requestData?.sub_status)
-          : undefined,
-        translateStatus: (status: string) => translateStage(status),
-        labels: {
-          approvedAt: t("approved_at"),
-          remarks: t("remarks"),
-          comment: t("comment"),
-          subStatus: t("sub_status"),
-        },
-      });
-      setHistory(historyItems);
+      // Recompute history to apply new locale formatting (tracks still used for history)
+      if (requestData.tracks) {
+        const tracksForHistory = getVisibleTracks(requestData.tracks as any, {
+          preserveAll: true,
+        });
+        const historyItems = transformTracksToHistory(tracksForHistory as any, {
+          includeStatus: false,
+          lastEntrySubStatus: requestData?.sub_status
+            ? translateSubStatus(requestData?.sub_status)
+            : undefined,
+          translateStatus: (status: string) => translateStage(status),
+          labels: {
+            approvedAt: t("approved_at"),
+            remarks: t("remarks"),
+            comment: t("comment"),
+            subStatus: t("sub_status"),
+          },
+        });
+        setHistory(historyItems);
+      }
     }
-  }, [i18n.language, requestData?.tracks]);
+  }, [i18n.language, requestData?.last_completed_stage, requestData?.tracks]);
 
   useEffect(() => {
     const user = localStorageService.getUser() || "";
@@ -394,15 +316,29 @@ const TestRequestDetails = () => {
   };
 
   const translateSubStatus = (sub: string) => {
+    if (!sub) return "";
+    const norm = sub.toLowerCase().trim();
     const map: Record<string, string> = {
       request_info: "status_request_info",
+      requestinfo: "status_request_info",
       approved: "status_approved",
+      completed: "status_approved",
+      success: "status_approved",
       rejected: "status_rejected",
+      reject: "status_rejected",
       draft: "status_draft",
       publish: "status_publish",
+      published: "status_publish",
+      schedule: "status_schedule",
+      scheduled: "status_schedule",
+      expired: "status_expired",
       progress: "status_progress",
+      inprogress: "status_progress",
+      in_progress: "status_progress",
+      pending: "status_progress",
+      processing: "status_progress",
     };
-    return map[sub] ? t(map[sub]) : sub;
+    return map[norm] ? t(map[norm]) : sub.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
   const crumbs = [

@@ -38,15 +38,20 @@ export const dedupeTracksByStatus = (tracks: TrackItem[]): TrackItem[] => {
 };
 
 /**
- * Apply dedupe and then slice to show N-1 tracks
+ * Apply dedupe and then slice to show tracks based on options
  */
 export const getVisibleTracks = (
   tracks: TrackItem[],
-  options?: { includeCurrent?: boolean }
+  options?: { includeCurrent?: boolean; preserveAll?: boolean }
 ): TrackItem[] => {
+  // First deduplicate tracks by status
   const deduped = dedupeTracksByStatus(tracks || []);
   if (!deduped.length) return deduped;
-  if (options?.includeCurrent) return deduped;
+  
+  // Return all tracks if includeCurrent or preserveAll is true
+  if (options?.includeCurrent || options?.preserveAll) return deduped;
+  
+  // Otherwise, return all except the last one (N-1)
   return deduped.slice(0, -1);
 };
 

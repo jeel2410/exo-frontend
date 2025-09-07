@@ -328,6 +328,7 @@
   "approved_at": "Approved at",
   "remarks": "Remarks",
   "sub_status": "Sub status",
+  "status_archived": "Archived",
   "copyright_text": "© {{year}} ExoTrack, All rights reserved.",
   "date_range": "Date Range",
   "from": "From",

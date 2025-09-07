@@ -329,6 +329,7 @@
   "approved_at": "Approuvé le",
   "remarks": "Remarques",
   "sub_status": "Sous-statut",
+  "status_archived": "Archivé",
   "copyright_text": "© {{year}} ExoTrack, Tous droits réservés.",
   "date_range": "Plage de dates",
   "from": "De",

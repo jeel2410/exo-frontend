@@ -102,6 +102,9 @@ const ListDashBoard = () => {
             status: string;
             end_date: string;
             funded_by: string;
+            // Some APIs return `is_archived`, others return `in_archive`
+            is_archived?: boolean;
+            in_archive?: boolean;
           },
           idx: number
         ) => ({
@@ -113,7 +116,8 @@ const ListDashBoard = () => {
           createdDate: item.created_at,
           noOfRequest: item.requests_count || 0,
           projectUuid: item.id,
-          status: item.status,
+          // If the project is archived, always override the status shown in the table
+          status: ((item.is_archived ?? item.in_archive) ? "archived" : item.status) as any,
           endDate: item.end_date,
           fundedBy: item.funded_by,
         })

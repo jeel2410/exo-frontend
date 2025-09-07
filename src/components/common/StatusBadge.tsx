@@ -11,7 +11,8 @@ export const statusList = {
   publish: "status_publish",
   rejected: "status_rejected",
   approved: "status_approved",
-  request_info: "status_request_info"
+  request_info: "status_request_info",
+  archived: "status_archived",
 } as const;
 
 
@@ -28,6 +29,7 @@ const statusColors: Record<StatusCode, string> = {
   approved: "bg-green-100 text-green-600",
   rejected: "bg-red-100 text-red-600",
   request_info: "bg-orange-100 text-orange-600",
+  archived: "bg-gray-300 text-gray-700",
 };
 
 const StatusBadge=({ code }: StatusBadgeProps) =>{
