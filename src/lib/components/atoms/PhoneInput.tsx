@@ -34,6 +34,7 @@ const PhoneInput = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow special keys (backspace, tab, enter, escape, delete, arrows)
     if (
       [8, 9, 13, 27, 46].includes(e.keyCode) ||
       (e.ctrlKey && [65, 67, 86, 88].includes(e.keyCode)) ||
@@ -42,10 +43,11 @@ const PhoneInput = ({
       return;
     }
 
-    if (
-      (e.shiftKey || e.keyCode < 48 || e.keyCode > 57) &&
-      (e.keyCode < 96 || e.keyCode > 105)
-    ) {
+    // Check if the key produces a numeric character
+    // This handles both QWERTY and AZERTY keyboards properly
+    const isNumericKey = /[0-9]/.test(e.key);
+    
+    if (!isNumericKey) {
       e.preventDefault();
     }
 
@@ -68,7 +70,20 @@ const PhoneInput = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    if (/^\d{0,15}$/.test(newValue)) {
+    // Extract only numeric characters and limit to 15 digits
+    const numericValue = newValue.replace(/\D/g, '').slice(0, 15);
+    
+    if (numericValue !== newValue) {
+      // If the value had non-numeric characters, create a new event with cleaned value
+      const syntheticEvent = {
+        ...e,
+        target: {
+          ...e.target,
+          value: numericValue
+        }
+      } as React.ChangeEvent<HTMLInputElement>;
+      onChange?.(syntheticEvent);
+    } else {
       onChange?.(e);
     }
   };

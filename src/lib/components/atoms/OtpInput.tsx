@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import React, { useRef, useState, KeyboardEvent, ClipboardEvent } from "react";
+import React, { useRef, useState, KeyboardEvent, ClipboardEvent, useEffect } from "react";
 import { twMerge } from "tailwind-merge";
 
 interface Props {
@@ -22,16 +22,24 @@ const OtpInput: React.FC<Props> = ({
   );
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  // Sync internal state with external value prop changes
+  useEffect(() => {
+    const newOtp = value.split("").slice(0, 6).concat(Array(6).fill("")).slice(0, 6);
+    setOtp(newOtp);
+  }, [value]);
+
   const handleChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
+    // Extract only numeric characters from the input
+    const numericValue = value.replace(/\D/g, '');
+    if (!numericValue && value !== '') return; // Allow empty string for deletion
 
     const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
+    newOtp[index] = numericValue.slice(-1); // Take only the last numeric character
     setOtp(newOtp);
 
     onChange?.(newOtp.join(""));
 
-    if (value && index < 5) {
+    if (numericValue && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
   };

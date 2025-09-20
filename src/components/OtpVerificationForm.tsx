@@ -186,7 +186,10 @@ const OtpVerificationForm = () => {
           <Label htmlFor="otp">{t("otp")}</Label>
           <OtpInput
             value={formik.values.otp}
-            onChange={(value) => formik.setFieldValue("otp", value)}
+            onChange={(value) => {
+              formik.setFieldValue("otp", value);
+              formik.setFieldTouched("otp", true);
+            }}
             onBlur={formik.handleBlur}
             error={formik.touched.otp && Boolean(formik.errors.otp)}
             hint={formik.touched.otp ? formik.errors.otp : undefined}
@@ -220,7 +223,12 @@ const OtpVerificationForm = () => {
             variant="primary"
             className="py-3 mt-4"
             type="submit"
-            disable={!formik.isValid || signUpMutation.isPending}
+            disable={
+              !formik.values.otp ||
+              formik.values.otp.length !== 6 ||
+              !/^[0-9]{6}$/.test(formik.values.otp) ||
+              signUpMutation.isPending
+            }
             loading={
               signUpMutation.isPending || otpVerificationMutation.isPending
             }
