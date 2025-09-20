@@ -145,7 +145,10 @@ const AddRequest = () => {
         vatIncluded,
       };
     });
-    console.log('🚀 recalculateTableData preserving units:', result.map(r => ({ id: r.id, unit: r.unit })));
+    console.log(
+      "🚀 recalculateTableData preserving units:",
+      result.map((r) => ({ id: r.id, unit: r.unit }))
+    );
     return result;
   };
 
@@ -192,8 +195,11 @@ const AddRequest = () => {
   };
 
   const handleTableDataChange = (newData: Order[]) => {
-    console.log('🚀 handleTableDataChange called with data:', newData);
-    console.log('🚀 Unit values in received data:', newData.map(d => ({ id: d.id, unit: d.unit })));
+    console.log("🚀 handleTableDataChange called with data:", newData);
+    console.log(
+      "🚀 Unit values in received data:",
+      newData.map((d) => ({ id: d.id, unit: d.unit }))
+    );
     setData(recalculateTableData(newData));
   };
 
@@ -226,6 +232,7 @@ const AddRequest = () => {
       );
     },
     onSuccess: (response) => {
+      console.log(response, "response in req");
       toast.success(t("request_updated_successfully"));
 
       // Extract request ID from response and redirect to request details
@@ -310,8 +317,8 @@ const AddRequest = () => {
     }
 
     // Debug: Log the current data state before API call
-    console.log('🚀 Form data before API call:', data);
-    
+    console.log("🚀 Form data before API call:", data);
+
     const requestEntities = data.map((d) => ({
       label: d.label,
       quantity: d.quantity.toString(),
@@ -323,9 +330,9 @@ const AddRequest = () => {
       vat_included: d.vatIncluded.toString(),
       financial_authority: financialAuthority,
     }));
-    
-    console.log('🚀 Request entities before stringify:', requestEntities);
-    
+
+    console.log("🚀 Request entities before stringify:", requestEntities);
+
     const apiData: CreateRequestPayload = {
       project_id: projectId,
       address_id: selectedAddress,
@@ -337,9 +344,9 @@ const AddRequest = () => {
       request_entity: JSON.stringify(requestEntities),
       ...(requestId && { request_id: requestId }),
     };
-    
-    console.log('🚀 Final API payload:', apiData);
-    console.log('🚀 Stringified request_entity:', apiData.request_entity);
+
+    console.log("🚀 Final API payload:", apiData);
+    console.log("🚀 Stringified request_entity:", apiData.request_entity);
     createRequestMutation.mutate(apiData);
   };
   const fileUploadMutation = async ({

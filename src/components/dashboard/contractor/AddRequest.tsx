@@ -305,6 +305,8 @@ const AddRequest = () => {
       );
     },
     onSuccess: (response) => {
+      console.log(response, "response");
+
       toast.success(t("request_updated_successfully"));
 
       // Extract request ID from response and redirect to request details
@@ -314,7 +316,7 @@ const AddRequest = () => {
         navigate(`/request-details/${requestId}`);
       } else {
         // Fallback to contract project list if no request ID
-        navigate("/contract-project-list");
+        navigate("/requests");
       }
     },
     onError: (error: unknown) => {
