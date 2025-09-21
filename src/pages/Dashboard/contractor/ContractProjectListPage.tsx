@@ -78,16 +78,8 @@ const ContractProjectListPage = () => {
   const datePickerRef = useRef<HTMLDivElement>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm]);
+  // Search is triggered only on Enter or button click via handleSearch
 
   const formateDate = (date: Date | null) => {
     if (!date) return;
@@ -99,14 +91,15 @@ const ContractProjectListPage = () => {
   };
 
   const contractMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (override?: Partial<{ limit: number; offset: number; search: string; start_date?: string; end_date?: string }>) => {
       setLoading(true);
       const data = {
         limit,
         offset,
-        search: debouncedSearchTerm,
+        search: searchTerm,
         start_date: formateDate(range.startDate),
         end_date: formateDate(range.endDate),
+        ...(override || {}),
       };
       const res = await contractService.getProjects(data);
       const projects = res.data.data || [];
@@ -151,7 +144,18 @@ const ContractProjectListPage = () => {
 
   useEffect(() => {
     contractMutation.mutate();
-  }, [limit, offset, navigate, debouncedSearchTerm, range]);
+  }, [limit, offset, navigate, range]);
+
+  // Search trigger function
+  const handleSearch = (next?: string) => {
+    const term = next !== undefined ? next : searchTerm;
+    if (next !== undefined) setSearchTerm(next);
+    if (offset === 0) {
+      contractMutation.mutate({ search: term });
+    } else {
+      setOffset(0);
+    }
+  };
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const currentPage = Math.floor(offset / limit) + 1;
@@ -219,23 +223,42 @@ const ContractProjectListPage = () => {
             transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center sm:gap-4 mb-4 sm:mb-5">
-              <motion.div
-                className="w-full sm:w-1/2"
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-2.5 sm:left-3 flex items-center pointer-events-none">
-                    <SearchIcon className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-50" />
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-2/3">
+                <motion.div
+                  className="w-full sm:w-1/2 shrink-0"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-2.5 sm:left-3 flex items-center pointer-events-none">
+                      <SearchIcon className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-50" />
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder={t("search_placeholder")}
+                      className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10"
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSearch((e.target as HTMLInputElement).value);
+                      }}
+                    />
                   </div>
-                  <Input
-                    type="text"
-                    placeholder={t("search_placeholder")}
-                    className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10"
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+                </motion.div>
+
+                <div className="flex-none">
+                  <Button
+                    variant="primary"
+                    className="flex items-center justify-center gap-2 h-9 sm:h-10 px-3 sm:px-4 min-w-[110px] sm:min-w-[120px]"
+                    onClick={() => handleSearch()}
+                    disabled={contractMutation.isPending}
+                  >
+                    <SearchIcon width={12} height={12} className="sm:w-[13px] sm:h-[13px]" />
+                    <Typography size="sm" className="sm:text-base">
+                      {t("search")}
+                    </Typography>
+                  </Button>
                 </div>
-              </motion.div>
+              </div>
 
               <div className="flex gap-2 sm:gap-3 justify-end relative">
                 <motion.div

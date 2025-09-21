@@ -25,7 +25,7 @@ export interface ContractData {
 const ContractTable = ({ data }: { data: ContractData[] | [] }) => {
   const [tableData, setTableData] = useState<ContractData[]>(data);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     setTableData(data);
@@ -141,7 +141,9 @@ const ContractTable = ({ data }: { data: ContractData[] | [] }) => {
                           {data.currency || "USD"}
                         </span>
                         <span className="block font-medium text-secondary-100 text-sm">
-                          {data.amountByContract.toLocaleString()}
+                          {data.amountByContract.toLocaleString(
+                            i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+                          )}
                         </span>
                       </div>
                     </TableCell>

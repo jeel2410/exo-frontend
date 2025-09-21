@@ -66,7 +66,7 @@ interface CardDateProps {
 }
 
 const ContractDetails = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   // const { user } = useAuth();
 
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -447,7 +447,9 @@ const ContractDetails = () => {
                 >
                   {contractData?.currency}{" "}
                   {contractData?.amount
-                    ? Number(contractData.amount).toLocaleString()
+                    ? Number(contractData.amount).toLocaleString(
+                        i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+                      )
                     : "0"}
                 </Typography>
               </div>

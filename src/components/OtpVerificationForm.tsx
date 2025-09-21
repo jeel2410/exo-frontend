@@ -21,6 +21,7 @@ const OtpVerificationForm = () => {
   const { login } = useAuth();
 
   const [userData, setUserData] = useState<any | undefined>();
+  const [showValidationError, setShowValidationError] = useState(false);
   const path = localStorageService.getPath();
 
   const validationSchema = Yup.object().shape({
@@ -51,8 +52,12 @@ const OtpVerificationForm = () => {
     },
   });
   const sendOtpMutation = useMutation({
-    mutationFn: async (email: string) => {
-      await authService.sendOtp(email);
+    mutationFn: async (data: { email: string; first_name: string }) => {
+      await authService.sendOtp({
+        email: data.email,
+        first_name: data.first_name,
+        is_login: "no",
+      });
     },
     onSuccess: () => {
       toast.success(t("otp_sent_successfully"));
@@ -133,10 +138,13 @@ const OtpVerificationForm = () => {
     // Clear form errors and reset form state when resending OTP
     formik.setErrors({});
     formik.setTouched({}, false);
-    formik.setFieldValue('otp', '');
-    
+    formik.setFieldValue("otp", "");
+    setShowValidationError(false);
     if (path === "sign-up") {
-      sendOtpMutation.mutate(userData?.email || "");
+      sendOtpMutation.mutate({
+        email: userData?.email || "",
+        first_name: userData?.first_name || "",
+      });
     } else if (path == "forgot-password") {
       const emailString = localStorageService.getEmail() as string;
       const email = JSON.parse(emailString);
@@ -188,25 +196,62 @@ const OtpVerificationForm = () => {
             value={formik.values.otp}
             onChange={(value) => {
               formik.setFieldValue("otp", value);
-              formik.setFieldTouched("otp", true);
+
+              // Only show validation errors after user has entered 6 digits and they're invalid,
+              // or if they've tried to submit before
+              if (value.length === 6) {
+                setShowValidationError(!/^[0-9]{6}$/.test(value));
+                formik.setFieldTouched("otp", true);
+              } else {
+                // Hide validation errors while user is still typing (unless they tried to submit)
+                if (!formik.submitCount) {
+                  setShowValidationError(false);
+                }
+                formik.setFieldTouched("otp", false);
+              }
             }}
-            onBlur={formik.handleBlur}
-            error={formik.touched.otp && Boolean(formik.errors.otp)}
-            hint={formik.touched.otp ? formik.errors.otp : undefined}
+            onBlur={(e) => {
+              // Show validation errors on blur only if the field has 6 characters but is invalid
+              if (formik.values.otp.length === 6) {
+                setShowValidationError(!/^[0-9]{6}$/.test(formik.values.otp));
+                formik.setFieldTouched("otp", true);
+              } else if (formik.values.otp.length > 0) {
+                // Show error if user has started typing but left incomplete OTP
+                setShowValidationError(true);
+                formik.setFieldTouched("otp", true);
+              }
+              formik.handleBlur(e);
+            }}
+            error={
+              showValidationError ||
+              (formik.submitCount > 0 && Boolean(formik.errors.otp))
+            }
+            hint={
+              showValidationError ||
+              (formik.submitCount > 0 && formik.errors.otp)
+                ? formik.errors.otp
+                : undefined
+            }
           />
         </motion.div>
 
         <motion.div variants={itemVariants} className="mt-4">
           <div className="flex items-center">
-            <Typography size="sm" weight="semibold" className="text-secondary-60">
+            <Typography
+              size="sm"
+              weight="semibold"
+              className="text-secondary-60"
+            >
               {t("didn_t_receive_a_code")}
             </Typography>
             <button
               onClick={handleResendOtp}
-              disabled={sendOtpMutation.isPending || forgotPasswordMutation.isPending}
+              disabled={
+                sendOtpMutation.isPending || forgotPasswordMutation.isPending
+              }
               className="ml-1 text-primary-150 hover:text-primary-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold flex items-center transition-all duration-200"
             >
-              {(sendOtpMutation.isPending || forgotPasswordMutation.isPending) ? (
+              {sendOtpMutation.isPending || forgotPasswordMutation.isPending ? (
                 <div className="flex items-center">
                   <div className="animate-spin h-4 w-4 border-2 border-primary-150 border-t-transparent rounded-full mr-1" />
                   {t("resending")}
@@ -224,10 +269,9 @@ const OtpVerificationForm = () => {
             className="py-3 mt-4"
             type="submit"
             disable={
-              !formik.values.otp ||
               formik.values.otp.length !== 6 ||
-              !/^[0-9]{6}$/.test(formik.values.otp) ||
-              signUpMutation.isPending
+              signUpMutation.isPending ||
+              otpVerificationMutation.isPending
             }
             loading={
               signUpMutation.isPending || otpVerificationMutation.isPending

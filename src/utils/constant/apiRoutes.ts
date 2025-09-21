@@ -1,4 +1,5 @@
 export const ApiRoutes = {
+  CHECK_MOBILE: "/checkmobile",
   SEND_OTP: "/send-otp",
   VERIFY_OTP: "/verify-otp",
   SIGN_UP: "/signup",

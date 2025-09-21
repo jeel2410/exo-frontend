@@ -83,7 +83,7 @@ const SelectContractTable: React.FC<SelectContractTableProps> = ({
   data,
   onSelectContract,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const tableHeader: TableHeader[] = [
     {
@@ -181,7 +181,9 @@ const SelectContractTable: React.FC<SelectContractTableProps> = ({
                       <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
                         <span className="text-gray-600">{contract.currency}</span>
                         <span className="block font-medium text-secondary-100 text-sm">
-                          {Number(contract.amount).toLocaleString()}
+                          {Number(contract.amount).toLocaleString(
+                            i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+                          )}
                         </span>
                       </div>
                     </TableCell>

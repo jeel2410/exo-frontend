@@ -56,6 +56,8 @@ export interface RequestDetails {
 }
 
 const RequestListPage = () => {
+  console.log("in");
+
   const [isDatePickerOpen, setIsDatePickerOpen] = useState<boolean>(false);
   const [selectedStage, setSelectedStage] = useState<string>("");
   const [total, setTotal] = useState(0);
@@ -64,7 +66,6 @@ const RequestListPage = () => {
   const [data, setData] = useState<RequestData[]>([]);
   const [hasContracts, setHasContracts] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [hasInitialData, setHasInitialData] = useState(false);
   const { t } = useTranslation();
 
@@ -131,15 +132,25 @@ const RequestListPage = () => {
   };
 
   const requestMutaion = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (
+      override?: Partial<{
+        limit: number;
+        offset: number;
+        search: string;
+        start_date?: string;
+        end_date?: string;
+        stage?: string;
+      }>
+    ) => {
       setLoading(true);
       const payload = {
         limit,
         offset,
-        search: debouncedSearchTerm,
+        search: searchTerm,
         start_date: formateDate(range.startDate),
         end_date: formateDate(range.endDate),
         ...(selectedStage && { stage: selectedStage }),
+        ...(override || {}),
       };
       const response = await requestService.getAllRequestList(payload);
       const requests: RequestDetails[] = response.data.data;
@@ -170,7 +181,7 @@ const RequestListPage = () => {
       setData(newRequestData);
       setTotal(response.data.total);
 
-      if (!hasInitialData && (response.data.total > 0 || debouncedSearchTerm)) {
+      if (!hasInitialData && (response.data.total > 0 || searchTerm)) {
         setHasInitialData(true);
       }
 
@@ -202,22 +213,27 @@ const RequestListPage = () => {
     },
   });
 
-  // Debounce search term
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm]);
-
   useEffect(() => {
     requestMutaion.mutate();
-    if (debouncedSearchTerm === "") {
+    if (searchTerm === "") {
       checkContracts.mutate();
     }
-  }, [debouncedSearchTerm, limit, offset, range, selectedStage]);
+  }, [limit, offset, range, selectedStage]);
+
+  const handleSearch = (nextTerm?: string) => {
+    const term = nextTerm !== undefined ? nextTerm : searchTerm;
+    if (nextTerm !== undefined) {
+      setSearchTerm(nextTerm);
+    }
+    if (offset === 0) {
+      requestMutaion.mutate({ search: term });
+    } else {
+      setOffset(0);
+    }
+    if (term === "") {
+      checkContracts.mutate();
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -240,7 +256,12 @@ const RequestListPage = () => {
   };
 
   const handleCreateRequest = () => {
+    console.log("in handle create reqest");
+    console.log(hasContracts, "hasContracts");
+
     if (hasContracts) {
+      console.log("in if has");
+
       navigate("/select-contract");
     } else {
       navigate("/contract-project-list");
@@ -249,7 +270,7 @@ const RequestListPage = () => {
 
   // Check if we have any active filters or search
   const hasActiveFilters =
-    debouncedSearchTerm || range.startDate || range.endDate || selectedStage;
+    searchTerm || range.startDate || range.endDate || selectedStage;
 
   return (
     <AppLayout>
@@ -288,9 +309,9 @@ const RequestListPage = () => {
               <Button
                 variant="outline"
                 onClick={() => {
-                  setSearchTerm("");
                   setRange({ startDate: null, endDate: null });
                   setSelectedStage("");
+                  handleSearch("");
                 }}
                 className="px-4 py-2"
               >
@@ -356,7 +377,7 @@ const RequestListPage = () => {
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center sm:gap-4 mb-4 sm:mb-5">
                 <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-2/3">
                   <motion.div
-                    className="w-full sm:w-1/2"
+                    className="w-full sm:w-1/2 shrink-0"
                     whileHover={{ scale: 1.02 }}
                     transition={{ duration: 0.3 }}
                   >
@@ -370,6 +391,11 @@ const RequestListPage = () => {
                         className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10"
                         onChange={(e) => setSearchTerm(e.target.value)}
                         value={searchTerm}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleSearch();
+                          }
+                        }}
                       />
                       {requestMutaion.isPending && (
                         <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
@@ -379,9 +405,27 @@ const RequestListPage = () => {
                     </div>
                   </motion.div>
 
+                  <div className="flex-none">
+                    <Button
+                      variant="primary"
+                      className="flex items-center justify-center gap-2 h-9 sm:h-10 px-3 sm:px-4 min-w-[110px] sm:min-w-[120px]"
+                      onClick={() => handleSearch()}
+                      disabled={requestMutaion.isPending}
+                    >
+                      <SearchIcon
+                        width={12}
+                        height={12}
+                        className="sm:w-[13px] sm:h-[13px]"
+                      />
+                      <Typography size="sm" className="sm:text-base">
+                        {t("search")}
+                      </Typography>
+                    </Button>
+                  </div>
+
                   {/* Stage Filter Dropdown */}
                   <motion.div
-                    className="w-full sm:w-1/2"
+                    className="w-full sm:flex-1"
                     whileHover={{ scale: 1.02 }}
                     transition={{ duration: 0.3 }}
                   >

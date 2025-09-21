@@ -16,10 +16,12 @@ interface ReviewFormProps {
 }
 
 const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const formatAmount = (amount: string) => {
     if (!amount) return "";
-    return Number(amount).toLocaleString();
+    return Number(amount).toLocaleString(
+      i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+    );
   };
 
   const formatDate = (date: any) => {

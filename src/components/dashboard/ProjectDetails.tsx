@@ -19,7 +19,7 @@ import { useLoading } from "../../context/LoaderProvider";
 const ProjectDetails = () => {
   const navigate = useNavigate();
   const { projectId } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [project, setProject] = useState<any>(null);
   // const [loading, setLoading] = useState(true);
   const { setLoading } = useLoading();
@@ -76,7 +76,9 @@ const ProjectDetails = () => {
     date ? new Date(date).toLocaleDateString("en-US") : "-";
   // Format amount
   const formatAmount = (amount: string | number) =>
-    Number(amount).toLocaleString();
+    Number(amount).toLocaleString(
+      i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+    );
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },

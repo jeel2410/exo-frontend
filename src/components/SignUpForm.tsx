@@ -10,6 +10,7 @@ import PhoneInput from "../lib/components/atoms/PhoneInput";
 import CountryPicker from "../lib/components/atoms/CountryPicker";
 import { useCountryLookup } from "../hooks/useCountryLookup";
 import { useTranslation } from "react-i18next";
+import i18n from "../i18n/config"; // Import i18n to access current language
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router";
@@ -66,7 +67,11 @@ const SignUpForm = () => {
       .max(20, t("name_max_length"))
       .required(t("last_name_required")),
     email: Yup.string().email(t("invalid_email")).required(t("email_required")),
-    mobile: Yup.string().required(t("phone_number_required")),
+    mobile: Yup.string()
+      .required(t("phone_number_required"))
+      .min(7, t("phone_number_min_length"))
+      .max(12, t("phone_number_max_length"))
+      .matches(/^\d{7,12}$/, t("phone_number_format")),
     company_name: Yup.string()
       .min(5, t("organization_name_min_length"))
       .max(40, t("organization_name_max_length"))
@@ -82,10 +87,41 @@ const SignUpForm = () => {
       .oneOf([Yup.ref("password")], t("passwords_must_match"))
       .required(t("confirm_password_required")),
   });
+  // Mobile validation mutation - must be called first
+  const checkMobileMutation = useMutation({
+    mutationFn: async (data: { email: string; password: string; country_code: string; mobile: string; lang: string }) => {
+      return await authService.checkMobile(data);
+    },
+    onSuccess: async (response, variables) => {
+      // If mobile validation is successful (200 status), proceed with OTP
+      const mobileWithCountryCode = variables.country_code + variables.mobile;
+      // Get first_name from formik values
+      await sendOtpMutation.mutateAsync({ 
+        email: variables.email,
+        first_name: formik.values.first_name,
+        mobile: variables.mobile, 
+        country_code: variables.country_code 
+      });
+    },
+    onError: (error: unknown) => {
+      const errorObj = error as { response?: { status?: number; data?: { message?: string } } };
+      if (errorObj.response?.status === 400) {
+        const message = errorObj.response?.data?.message || "Mobile number already exists";
+        return toast.error(message);
+      }
+      return toast.error(t("mobile_validation_error") || "Mobile validation failed");
+    },
+  });
+
   const sendOtpMutation = useMutation({
-    mutationFn: async (data: { email: string; mobile: string; country_code: string }) => {
+    mutationFn: async (data: { email: string; first_name: string; mobile: string; country_code: string }) => {
       const mobileWithCountryCode = data.country_code + data.mobile;
-      await authService.sendOtp(data.email, mobileWithCountryCode);
+      await authService.sendOtp({
+        email: data.email,
+        first_name: data.first_name,
+        is_login: "no",
+        mobile: mobileWithCountryCode
+      });
     },
     onSuccess: () => {
       toast.success(t("otp_sent_successfully"));
@@ -114,17 +150,15 @@ const SignUpForm = () => {
     onSubmit: async (values) => {
       localStorageService.setUser(JSON.stringify(values));
       localStorageService.setPath("sign-up");
-      await sendOtpMutation.mutateAsync({ email: values.email, mobile: values.mobile, country_code: values.country_code });
-      // toast.success(t("account_created_successfully"), {
-      //   autoClose: 800,
-      // });
-      // setTimeout(() => {
-      //   navigate("/otp-verification", {
-      //     state: {
-      //       path: "sign-up",
-      //     },
-      //   });
-      // }, 300);
+      
+      // First validate mobile number, then send OTP if successful
+      await checkMobileMutation.mutateAsync({
+        email: values.email,
+        password: values.password,
+        country_code: values.country_code,
+        mobile: values.mobile,
+        lang: i18n.language || "en" // Use current language from i18n
+      });
     },
   });
 
@@ -387,7 +421,7 @@ const SignUpForm = () => {
             className="py-3 mt-4"
             type="submit"
             disable={!formik.isValid || !remember}
-            loading={sendOtpMutation.isPending}
+            loading={checkMobileMutation.isPending || sendOtpMutation.isPending}
           >
             {t("create_account")}
           </Button>

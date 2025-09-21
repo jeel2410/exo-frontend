@@ -55,20 +55,11 @@ const ListDashBoard = () => {
   });
   const [hasInitialData, setHasInitialData] = useState(false);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
 
   const datePickerRef = useRef<HTMLDivElement>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm]);
 
   const formateDate = useCallback((date: Date | null) => {
     if (!date) return;
@@ -79,15 +70,16 @@ const ListDashBoard = () => {
     return formattedDate;
   }, []);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (overrideSearch?: string) => {
     setLoading(true);
     try {
       const res = await homeService.getHomeData(
         limit,
         offset,
-        debouncedSearchTerm,
+        overrideSearch !== undefined ? overrideSearch : searchTerm,
         formateDate(range.startDate),
-        formateDate(range.endDate)
+        formateDate(range.endDate),
+        showArchived ? "archived" : undefined
       );
       const dataArray = (res.data || []).map(
         (
@@ -132,7 +124,7 @@ const ListDashBoard = () => {
       if (
         !hasInitialData &&
         (res.total_project > 0 ||
-          debouncedSearchTerm ||
+          (overrideSearch !== undefined ? overrideSearch : searchTerm) ||
           range.startDate ||
           range.endDate)
       ) {
@@ -151,7 +143,7 @@ const ListDashBoard = () => {
     } finally {
       setLoading(false);
     }
-  }, [limit, offset, debouncedSearchTerm, range, hasInitialData, navigate, setLoading, formateDate]);
+  }, [limit, offset, range, hasInitialData, navigate, setLoading, formateDate, showArchived]);
   
   useEffect(() => {
     fetchData();
@@ -236,7 +228,7 @@ const ListDashBoard = () => {
 
   // Check if we have any active filters or search
   const hasActiveFilters =
-    debouncedSearchTerm || range.startDate || range.endDate;
+    searchTerm || range.startDate || range.endDate;
 
   return (
     <AppLayout>
@@ -400,25 +392,76 @@ const ListDashBoard = () => {
               transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center sm:gap-4 mb-4 sm:mb-5">
-                <motion.div
-                  className="w-full sm:w-1/2"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-2.5 sm:left-3 flex items-center pointer-events-none">
-                      <SearchIcon className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-50" />
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-2/3">
+                  <motion.div
+                    className="w-full sm:w-1/2 shrink-0"
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-2.5 sm:left-3 flex items-center pointer-events-none">
+                        <SearchIcon className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-50" />
+                      </div>
+                      <Input
+                        type="text"
+                        placeholder={t("search_placeholder")}
+                        className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10"
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            const val = (e.target as HTMLInputElement).value;
+                            setOffset(0);
+                            fetchData(val);
+                            setSearchTerm(val);
+                          }
+                        }}
+                      />
                     </div>
-                    <Input
-                      type="text"
-                      placeholder={t("search_placeholder")}
-                      className="pl-8 sm:pl-10 bg-white pr-3 sm:pr-4 text-sm sm:text-base w-full h-9 sm:h-10"
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                  </motion.div>
+
+                  <div className="flex-none">
+                    <Button
+                      variant="primary"
+                      className="flex items-center justify-center gap-2 h-9 sm:h-10 px-3 sm:px-4 min-w-[110px] sm:min-w-[120px]"
+                      onClick={() => { setOffset(0); fetchData(searchTerm); }}
+                    >
+                      <SearchIcon width={12} height={12} className="sm:w-[13px] sm:h-[13px]" />
+                      <Typography size="sm" className="sm:text-base">
+                        {t("search")}
+                      </Typography>
+                    </Button>
                   </div>
-                </motion.div>
+                </div>
 
                 <div className="flex gap-2 sm:gap-3 justify-end relative">
+                  {selectedProjects.length > 0 && !showArchived && (
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Button
+                        variant="outline"
+                        className="flex justify-center items-center gap-1.5 sm:gap-2 py-2 px-3 sm:py-2.5 sm:px-4 min-w-[90px] sm:min-w-[120px] h-9 sm:h-10 bg-red-50 border-red-200 hover:bg-red-100"
+                        onClick={handleBulkArchive}
+                        disabled={archiveProjectMutation.isPending}
+                      >
+                        <ArchiveIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                        <Typography
+                          className="text-red-600"
+                          element="span"
+                          size="sm"
+                          weight="semibold"
+                        >
+                          {archiveProjectMutation.isPending 
+                            ? t("archiving") 
+                            : t("archive_count", { count: selectedProjects.length })
+                          }
+                        </Typography>
+                      </Button>
+                    </motion.div>
+                  )}
+
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -426,27 +469,25 @@ const ListDashBoard = () => {
                   >
                     <Button
                       variant="outline"
-                      className={`flex justify-center items-center gap-1.5 sm:gap-2 py-2 px-3 sm:py-2.5 sm:px-4 min-w-[90px] sm:min-w-[120px] h-9 sm:h-10 ${
-                        selectedProjects.length > 0 
-                          ? "bg-red-50 border-red-200 hover:bg-red-100" 
-                          : ""
+                      className={`flex justify-center items-center gap-1.5 sm:gap-2 py-2 px-3 sm:py-2.5 sm:px-4 min-w-[90px] sm:min-w-[140px] h-9 sm:h-10 ${
+                        showArchived 
+                          ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' 
+                          : 'hover:bg-gray-50'
                       }`}
-                      onClick={handleBulkArchive}
-                      disabled={archiveProjectMutation.isPending}
+                      onClick={() => {
+                        setShowArchived(!showArchived);
+                        setOffset(0); // Reset to first page when toggling
+                        setSelectedProjects([]); // Clear selections when toggling
+                      }}
                     >
                       <ArchiveIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                       <Typography
-                        className={selectedProjects.length > 0 ? "text-red-600" : "text-secondary-60"}
+                        className={showArchived ? "text-blue-600" : "text-secondary-60"}
                         element="span"
                         size="sm"
                         weight="semibold"
                       >
-                        {archiveProjectMutation.isPending 
-                          ? t("archiving") 
-                          : selectedProjects.length > 0 
-                            ? t("archive_count", { count: selectedProjects.length }) 
-                            : t("archive")
-                        }
+                        {showArchived ? t("show_active_projects") : t("show_archived_projects")}
                       </Typography>
                     </Button>
                   </motion.div>

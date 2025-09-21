@@ -111,7 +111,7 @@ const RequestTable = ({
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const handleClickOutside = (event: Event) => {
@@ -344,7 +344,9 @@ const RequestTable = ({
                               const amount = parseFloat(amountToDisplay);
                               return isNaN(amount)
                                 ? "0"
-                                : amount.toLocaleString();
+                                : amount.toLocaleString(
+                                    i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+                                  );
                             })()}
                           </span>
                         </div>

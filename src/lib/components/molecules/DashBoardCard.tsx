@@ -1,12 +1,16 @@
 import { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { FileVioletIcon } from "../../../icons";
-import Typography from "../atoms/Typography";
+import Typography, { TypographyProps } from "../atoms/Typography";
 
 interface DashBoardCardProps {
   icon?: React.ReactNode;
   count: number;
   title: string;
   onClick?: () => void;
+  countSize?: TypographyProps["size"]; // optional override for count text size
+  titleSize?: TypographyProps["size"]; // optional override for title text size
+  className?: string; // optional container class overrides
 }
 
 const DashBoardCard: FC<DashBoardCardProps> = ({
@@ -14,26 +18,30 @@ const DashBoardCard: FC<DashBoardCardProps> = ({
   count,
   title,
   onClick,
+  countSize = "xl_2",
+  titleSize = "sm",
+  className = "",
 }) => {
+  const { i18n } = useTranslation();
   return (
     <div
       onClick={onClick}
-      className="w-full bg-white rounded-[8px] shadow-light-20 px-4 py-5 flex flex-col gap-5
-      hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out
-      cursor-pointer hover:bg-gray-50 border border-secondary-30 hover:border-secondary-20"
+      className={`w-full bg-white rounded-[8px] shadow-light-20 px-4 py-5 flex flex-col gap-5 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer hover:bg-gray-50 border border-secondary-30 hover:border-secondary-20 min-h-[100px] ${className}`}
     >
       <div className="flex gap-5">
         {icon}
         <div>
           <Typography
-            size="xl_2"
+            size={countSize}
             weight="extrabold"
             className="text-secondary-100"
           >
-            {count?.toLocaleString()}
+            {count?.toLocaleString(
+              i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+            )}
           </Typography>
 
-          <Typography size="sm" weight="normal" className="text-secondary-60">
+          <Typography size={titleSize} weight="normal" className="text-secondary-60 truncate">
             {title}
           </Typography>
         </div>

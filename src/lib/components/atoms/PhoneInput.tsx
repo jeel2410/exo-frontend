@@ -52,7 +52,7 @@ const PhoneInput = ({
     }
 
     const input = e.currentTarget.value;
-    if (input.length >= 15) {
+    if (input.length >= 12) {
       e.preventDefault();
     }
   };
@@ -63,15 +63,15 @@ const PhoneInput = ({
     const currentValue = e.currentTarget.value;
     const newLength = currentValue.length + pastedData.length;
 
-    if (!isNumeric || newLength > 15) {
+    if (!isNumeric || newLength > 12) {
       e.preventDefault();
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    // Extract only numeric characters and limit to 15 digits
-    const numericValue = newValue.replace(/\D/g, '').slice(0, 15);
+    // Extract only numeric characters and limit to 12 digits
+    const numericValue = newValue.replace(/\D/g, '').slice(0, 12);
     
     if (numericValue !== newValue) {
       // If the value had non-numeric characters, create a new event with cleaned value
@@ -118,7 +118,7 @@ const PhoneInput = ({
         <Input
           value={value}
           type="tel"
-          maxLength={15}
+          maxLength={12}
           placeholder={t("phone_number")}
           className="border-none flex-1 min-w-[180px] w-full"
           onKeyDown={handleKeyDown}

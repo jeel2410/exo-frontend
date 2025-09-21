@@ -115,7 +115,7 @@ const CreateRequestTable = ({
   onEditComplete?: () => void;
   currentTaxCategory?: string;
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [tableData, setTableData] = useState<Order[]>(data);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -498,7 +498,9 @@ const CreateRequestTable = ({
       typeof amount === "string" ? parseFloat(amount) : amount;
     const formattedAmount = isNaN(numericAmount)
       ? "0"
-      : numericAmount.toLocaleString();
+      : numericAmount.toLocaleString(
+          i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+        );
 
     return (
       <span className="block font-medium text-secondary-100 text-sm">

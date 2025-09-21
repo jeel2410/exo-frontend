@@ -53,7 +53,7 @@ const ListDashBoardTable = ({
   const menuRef = useRef<HTMLDivElement | null>(null);
   // const selectAllRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const handleClickOutside = (event: Event) => {
@@ -374,7 +374,9 @@ const ListDashBoardTable = ({
                           )} */}
                           <span className="text-gray-500">{data.currency}</span>
                           <span className="block font-medium text-secondary-100 text-sm">
-                            {Number(data.amount).toLocaleString()}
+                            {Number(data.amount).toLocaleString(
+                              i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+                            )}
                           </span>
                         </div>
                       )}

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 const ContractListSkeleton = () => {
   const { t } = useTranslation();
-  
+
   useEffect(() => {
     const body = document.body;
     body.style.overflow = "hidden";
@@ -15,7 +15,8 @@ const ContractListSkeleton = () => {
     };
   }, []);
 
-  const shimmer = "animate-shimmer bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200";
+  const shimmer =
+    "animate-shimmer bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200";
 
   return (
     <div className="fixed inset-0 z-100 bg-white">
@@ -23,7 +24,9 @@ const ContractListSkeleton = () => {
         <div className="p-6">
           {/* Header section - keep static title, skeleton for dynamic button */}
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-4 px-4 sm:px-0">
-            <h1 className="text-xl font-extrabold text-secondary-100">Contracts</h1>
+            <h1 className="text-xl font-extrabold text-secondary-100">
+              Contracts
+            </h1>
             <div className={`h-10 w-40 rounded ${shimmer}`}></div>
           </div>
 
@@ -52,13 +55,15 @@ const ContractListSkeleton = () => {
                     disabled
                   >
                     <FilterIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                    <span className="text-secondary-60 text-sm font-semibold">{t("filter")}</span>
+                    <span className="text-secondary-60 text-sm font-semibold">
+                      {t("filter")}
+                    </span>
                   </button>
                 </div>
               </div>
 
               {/* Table skeleton */}
-              <div className="sm:mx-0 overflow-x-auto">
+              <div className="sm:mx-0">
                 <div className="relative rounded-lg bg-white min-h-[225px]">
                   <table className="w-full border-collapse">
                     {/* Table Header - Keep static headers */}
@@ -93,7 +98,7 @@ const ContractListSkeleton = () => {
                         </th>
                       </tr>
                     </thead>
-                    
+
                     {/* Table Body - Skeleton rows for dynamic data */}
                     <tbody className="divide-y divide-gray-100">
                       {Array.from({ length: 8 }).map((_, index) => (
@@ -102,31 +107,47 @@ const ContractListSkeleton = () => {
                             <div className={`h-4 w-6 rounded ${shimmer}`}></div>
                           </td>
                           <td className="px-5 py-4 sm:px-6">
-                            <div className={`h-4 w-32 rounded ${shimmer}`}></div>
+                            <div
+                              className={`h-4 w-32 rounded ${shimmer}`}
+                            ></div>
                           </td>
                           <td className="px-5 py-4 sm:px-6">
-                            <div className={`h-4 w-24 rounded ${shimmer}`}></div>
+                            <div
+                              className={`h-4 w-24 rounded ${shimmer}`}
+                            ></div>
                           </td>
                           <td className="px-5 py-4 sm:px-6">
-                            <div className={`h-4 w-20 rounded ${shimmer}`}></div>
+                            <div
+                              className={`h-4 w-20 rounded ${shimmer}`}
+                            ></div>
                           </td>
                           <td className="px-5 py-4 sm:px-6">
                             <div className="flex gap-2 items-center">
-                              <div className={`h-4 w-8 rounded ${shimmer}`}></div>
-                              <div className={`h-4 w-16 rounded ${shimmer}`}></div>
+                              <div
+                                className={`h-4 w-8 rounded ${shimmer}`}
+                              ></div>
+                              <div
+                                className={`h-4 w-16 rounded ${shimmer}`}
+                              ></div>
                             </div>
                           </td>
                           <td className="px-5 py-4 sm:px-6">
-                            <div className={`h-4 w-20 rounded ${shimmer}`}></div>
+                            <div
+                              className={`h-4 w-20 rounded ${shimmer}`}
+                            ></div>
                           </td>
                           <td className="px-5 py-4 sm:px-6">
-                            <div className={`h-4 w-20 rounded ${shimmer}`}></div>
+                            <div
+                              className={`h-4 w-20 rounded ${shimmer}`}
+                            ></div>
                           </td>
                           <td className="px-5 py-4 sm:px-6">
                             <div className={`h-4 w-8 rounded ${shimmer}`}></div>
                           </td>
                           <td className="px-4 py-3 text-gray-500 text-sm">
-                            <div className={`h-8 w-8 rounded-md ${shimmer}`}></div>
+                            <div
+                              className={`h-8 w-8 rounded-md ${shimmer}`}
+                            ></div>
                           </td>
                         </tr>
                       ))}
@@ -139,17 +160,26 @@ const ContractListSkeleton = () => {
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-4 sm:px-0">
                 <div className="flex items-center gap-2 text-sm">
                   <span>{t("rows_per_page")}</span>
-                  <select className="border rounded px-2 py-1 text-sm bg-white" disabled>
+                  <select
+                    className="border rounded px-2 py-1 text-sm bg-white"
+                    disabled
+                  >
                     <option>8</option>
                   </select>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
-                  <button className="px-2 py-1 min-w-[32px] border-0 text-gray-400" disabled>
+                  <button
+                    className="px-2 py-1 min-w-[32px] border-0 text-gray-400"
+                    disabled
+                  >
                     ←
                   </button>
                   <div className={`h-4 w-20 rounded ${shimmer}`}></div>
-                  <button className="px-2 py-1 min-w-[32px] border-0 text-gray-400" disabled>
+                  <button
+                    className="px-2 py-1 min-w-[32px] border-0 text-gray-400"
+                    disabled
+                  >
                     →
                   </button>
                 </div>

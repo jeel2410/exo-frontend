@@ -74,7 +74,11 @@ const Security = ({ userData,setUserDate }: UserInformationProps) => {
   };
   const sendOtpMutation = useMutation({
     mutationFn: async (email: string) => {
-      const res = await authService.sendOtp(email);
+      const res = await authService.sendOtp({
+        email: email,
+        first_name: userData.first_name,
+        is_login: "yes"
+      });
       return res;
     },
     onSuccess: () => {
@@ -90,7 +94,11 @@ const Security = ({ userData,setUserDate }: UserInformationProps) => {
 
   const resendOtpMutation = useMutation({
     mutationFn: async (email: string) => {
-      const res = await authService.sendOtp(email);
+      const res = await authService.sendOtp({
+        email: email,
+        first_name: userData.first_name,
+        is_login: "yes"
+      });
       return res;
     },
     onSuccess: () => {

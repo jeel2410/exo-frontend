@@ -257,12 +257,14 @@ const ProjectDetails = () => {
                   <CurrencyBadge
                     currency={projectData?.currency || "CDF"}
                     variant="violet"
-                    width={44}
-                    height={44}
+                    width={36}
+                    height={36}
                   />
                 }
                 count={Number(cardData.contracts_total)}
                 title={t("sum_of_contracts_amount")}
+                countSize="xl"
+                titleSize="xs"
               />
             </motion.div>
             <motion.div variants={cardVariants}>
@@ -271,12 +273,14 @@ const ProjectDetails = () => {
                   <CurrencyBadge
                     currency={projectData?.currency || "CDF"}
                     variant="orange"
-                    width={44}
-                    height={44}
+                    width={36}
+                    height={36}
                   />
                 }
                 count={Number(cardData.requests_total)}
                 title={t("sum_of_requests_amount")}
+                countSize="xl"
+                titleSize="xs"
               />
             </motion.div>
             <motion.div variants={cardVariants}>
@@ -285,12 +289,14 @@ const ProjectDetails = () => {
                   <CurrencyBadge
                     currency={projectData?.currency || "CDF"}
                     variant="green"
-                    width={44}
-                    height={44}
+                    width={36}
+                    height={36}
                   />
                 }
                 count={0}
                 title={t("sum_of_approved_amount")}
+                countSize="xl"
+                titleSize="xs"
               />
             </motion.div>
           </motion.div>

@@ -46,7 +46,9 @@ const validationSchema = Yup.object().shape({
   country_code: Yup.string().required("Country code is required"),
   mobile: Yup.string()
     .required("Phone number is required")
-    .matches(/^\d{10}$/, "Enter a valid 10-digit mobile number"),
+    .min(7, "Phone number must be at least 7 digits")
+    .max(12, "Phone number cannot exceed 12 digits")
+    .matches(/^\d{7,12}$/, "Enter a valid phone number (7-12 digits)"),
 });
 
 const UserInformation = ({

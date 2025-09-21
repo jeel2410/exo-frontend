@@ -3,6 +3,9 @@ import { CreateRequestIcon, WhitePlusIcon } from "../../icons";
 import Button from "../../lib/components/atoms/Button";
 import Typography from "../../lib/components/atoms/Typography";
 import { useNavigate } from "react-router";
+import { useMutation } from "@tanstack/react-query";
+import contractService from "../../services/contract.service";
+import { useEffect, useState } from "react";
 
 type Props = {
   onClick?: () => void;
@@ -10,11 +13,34 @@ type Props = {
 
 const CreateRequestEmpty = ({ onClick }: Props) => {
   const { t } = useTranslation();
+  const [hasContracts, setHasContracts] = useState(false);
+
   const navigate = useNavigate();
-  
+
+  const checkContracts = useMutation({
+    mutationFn: async () => {
+      const response = await contractService.getAllContractList({
+        limit: 1,
+        offset: 0,
+        search: "",
+        start_date: "",
+        end_date: "",
+      });
+      setHasContracts(response.data.total > 0);
+    },
+  });
+  useEffect(() => {
+    checkContracts.mutate();
+  }, []);
+
   const handleCreateRequest = () => {
+    if (hasContracts) {
+      navigate("/select-contract");
+    } else {
+      navigate("/contract-project-list");
+    }
     // Navigate to contract project list to select a project/contract first
-    navigate("/contract-project-list");
+    // navigate("/contract-project-list");
   };
 
   return (
