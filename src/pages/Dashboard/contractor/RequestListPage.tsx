@@ -214,7 +214,7 @@ const RequestListPage = () => {
   });
 
   useEffect(() => {
-    requestMutaion.mutate();
+    requestMutaion.mutate({});
     if (searchTerm === "") {
       checkContracts.mutate();
     }

@@ -1,5 +1,5 @@
 import type React from "react";
-import type { FC } from "react";
+import { forwardRef } from "react";
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -29,7 +29,7 @@ export interface InputProps
   size?: number;
 }
 
-const Input: FC<InputProps> = ({
+const Input = forwardRef<HTMLInputElement, InputProps>(({
   type = "text",
   id,
   name,
@@ -45,7 +45,7 @@ const Input: FC<InputProps> = ({
   error = false,
   hint,
   ...props
-}) => {
+}, ref) => {
   let inputClasses = `h-11 w-full border px-2 py-3 text-base placeholder:text-secondary-50 focus:outline-hidden rounded-lg ${className}`;
 
   if (disabled) {
@@ -61,6 +61,7 @@ const Input: FC<InputProps> = ({
   return (
     <>
       <input
+        ref={ref}
         type={type}
         id={id}
         name={name}
@@ -90,6 +91,8 @@ const Input: FC<InputProps> = ({
       )}
     </>
   );
-};
+});
+
+Input.displayName = "Input";
 
 export default Input;

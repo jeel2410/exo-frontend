@@ -92,9 +92,8 @@ const SignUpForm = () => {
     mutationFn: async (data: { email: string; password: string; country_code: string; mobile: string; lang: string }) => {
       return await authService.checkMobile(data);
     },
-    onSuccess: async (response, variables) => {
+    onSuccess: async (_response, variables) => {
       // If mobile validation is successful (200 status), proceed with OTP
-      const mobileWithCountryCode = variables.country_code + variables.mobile;
       // Get first_name from formik values
       await sendOtpMutation.mutateAsync({ 
         email: variables.email,

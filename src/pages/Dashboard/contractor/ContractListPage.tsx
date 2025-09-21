@@ -159,7 +159,7 @@ const ContractListPage = () => {
   });
 
   useEffect(() => {
-    contractMutaion.mutate();
+    contractMutaion.mutate({});
   }, [limit, offset, range]);
 
   // Trigger search only when user submits

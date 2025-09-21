@@ -143,7 +143,7 @@ const ContractProjectListPage = () => {
   });
 
   useEffect(() => {
-    contractMutation.mutate();
+    contractMutation.mutate({});
   }, [limit, offset, navigate, range]);
 
   // Search trigger function
