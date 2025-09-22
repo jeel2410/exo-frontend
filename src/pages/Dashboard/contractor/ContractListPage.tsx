@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import Button from "../../../lib/components/atoms/Button";
 import {
+  ArchiveIcon,
   ChevronLeftIcon,
   ChevronLeftLightIcon,
   ChevronRightIcon,
@@ -54,6 +55,7 @@ export interface ContractDetails {
   status: string;
   created_at: string;
   requests_data_count: number;
+  is_archived?: boolean;
 }
 
 const ContractListPage = () => {
@@ -64,6 +66,7 @@ const ContractListPage = () => {
   const [data, setData] = useState<ContractData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [hasInitialData, setHasInitialData] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   const [range, setRange] = useState<{
     startDate: Date | null;
@@ -104,7 +107,7 @@ const ContractListPage = () => {
   };
 
   const contractMutaion = useMutation({
-    mutationFn: async (override?: Partial<{ limit: number; offset: number; search: string; start_date?: string; end_date?: string }>) => {
+    mutationFn: async (override?: Partial<{ limit: number; offset: number; search: string; start_date?: string; end_date?: string; status?: string }>) => {
       setLoading(true);
       const payload = {
         limit,
@@ -112,6 +115,7 @@ const ContractListPage = () => {
         search: searchTerm,
         start_date: formateDate(range.startDate),
         end_date: formateDate(range.endDate),
+        ...(showArchived && { status: "archived" }),
         ...(override || {}),
       };
       const response = await contractService.getAllContractList(payload);
@@ -160,7 +164,7 @@ const ContractListPage = () => {
 
   useEffect(() => {
     contractMutaion.mutate({});
-  }, [limit, offset, range]);
+  }, [limit, offset, range, showArchived]);
 
   // Trigger search only when user submits
   const handleSearch = (next?: string) => {
@@ -178,6 +182,11 @@ const ContractListPage = () => {
   const handlePageChange = (newPage: number) => {
     const newOffset = (newPage - 1) * limit;
     setOffset(newOffset);
+  };
+
+  const handleToggleArchived = () => {
+    setShowArchived(!showArchived);
+    setOffset(0); // Reset to first page when toggling
   };
 
   useEffect(() => {
@@ -267,7 +276,7 @@ const ContractListPage = () => {
               weight="extrabold"
               className="text-secondary-100 text-center sm:text-left"
             >
-              {t("contracts")}
+              {showArchived ? t("archived_contracts") : t("contracts")}
             </Typography>
 
             <motion.div
@@ -344,20 +353,20 @@ const ContractListPage = () => {
                     whileTap={{ scale: 0.95 }}
                     transition={{ duration: 0.2 }}
                   >
-                    {/* <Button
-                    variant="outline"
-                    className="flex justify-center items-center gap-1.5 sm:gap-2 py-2 px-3 sm:py-2.5 sm:px-4 min-w-[90px] sm:min-w-[120px] h-9 sm:h-10"
-                  >
-                    <ArchiveIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                    <Typography
-                      className="text-secondary-60"
-                      element="span"
-                      size="sm"
-                      weight="semibold"
+                    <Button
+                      variant={showArchived ? "primary" : "outline"}
+                      className={`flex justify-center items-center gap-2 py-2 px-4 rounded-full text-sm font-medium transition-all duration-200 min-w-[120px] h-9 sm:h-10 ${
+                        showArchived
+                          ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                          : "bg-white hover:bg-blue-50 text-blue-600 border-blue-200 hover:border-blue-300"
+                      }`}
+                      onClick={handleToggleArchived}
                     >
-                      {t("Archive")}
-                    </Typography>
-                  </Button> */}
+                      <ArchiveIcon className="w-4 h-4" />
+                      <span>
+                        {showArchived ? t("active") : t("archive")}
+                      </span>
+                    </Button>
                   </motion.div>
 
                   <motion.div

@@ -436,5 +436,7 @@
   "unit_option_m": "m",
   "unit_option_l": "l",
   "unit": "Unité",
-  "select_unit": "Sélectionner l'unité"
+  "select_unit": "Sélectionner l'unité",
+  "active": "Actif",
+  "archived_contracts": "Contrats Archivés"
 }
