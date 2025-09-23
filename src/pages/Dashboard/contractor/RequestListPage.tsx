@@ -23,6 +23,7 @@ import requestService from "../../../services/request.service";
 import RequestTable from "../../../components/table/RequestTable";
 import contractService from "../../../services/contract.service";
 import CreateRequestEmpty from "../../../components/dashboard/CreateRequestEmpty";
+import NoContractModal from "../../../components/modal/NoContractModal";
 
 export interface RequestData {
   id: number;
@@ -67,6 +68,7 @@ const RequestListPage = () => {
   const [hasContracts, setHasContracts] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [hasInitialData, setHasInitialData] = useState(false);
+  const [showNoContractModal, setShowNoContractModal] = useState(false);
   const { t } = useTranslation();
 
   // Stage options for the filter dropdown
@@ -264,7 +266,7 @@ const RequestListPage = () => {
 
       navigate("/select-contract");
     } else {
-      navigate("/contract-project-list");
+      setShowNoContractModal(true);
     }
   };
 
@@ -536,6 +538,12 @@ const RequestListPage = () => {
           </motion.div>
         </div>
       )}
+      
+      {/* No Contract Modal */}
+      <NoContractModal 
+        isOpen={showNoContractModal}
+        onClose={() => setShowNoContractModal(false)}
+      />
     </AppLayout>
   );
 };

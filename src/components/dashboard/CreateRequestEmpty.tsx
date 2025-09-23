@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
 import contractService from "../../services/contract.service";
 import { useEffect, useState } from "react";
+import NoContractModal from "../modal/NoContractModal";
 
 type Props = {
   onClick?: () => void;
@@ -14,6 +15,7 @@ type Props = {
 const CreateRequestEmpty = ({ onClick }: Props) => {
   const { t } = useTranslation();
   const [hasContracts, setHasContracts] = useState(false);
+  const [showNoContractModal, setShowNoContractModal] = useState(false);
 
   const navigate = useNavigate();
 
@@ -37,10 +39,8 @@ const CreateRequestEmpty = ({ onClick }: Props) => {
     if (hasContracts) {
       navigate("/select-contract");
     } else {
-      navigate("/contract-project-list");
+      setShowNoContractModal(true);
     }
-    // Navigate to contract project list to select a project/contract first
-    // navigate("/contract-project-list");
   };
 
   return (
@@ -69,6 +69,12 @@ const CreateRequestEmpty = ({ onClick }: Props) => {
           <Typography>{t("create_request")}</Typography>
         </Button>
       </div>
+      
+      {/* No Contract Modal */}
+      <NoContractModal 
+        isOpen={showNoContractModal}
+        onClose={() => setShowNoContractModal(false)}
+      />
     </div>
   );
 };

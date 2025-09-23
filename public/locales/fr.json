@@ -438,5 +438,7 @@
   "unit": "Unité",
   "select_unit": "Sélectionner l'unité",
   "active": "Actif",
-  "archived_contracts": "Contrats Archivés"
+  "archived_contracts": "Contrats Archivés",
+  "no_contract_available": "Aucun Contrat Disponible",
+  "no_contract_message": "Vous n'avez aucun contrat créé sur votre profil. Veuillez créer un contrat pour ajouter une demande."
 }
