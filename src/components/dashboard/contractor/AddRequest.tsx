@@ -978,7 +978,7 @@ const AddRequest = () => {
             onClick={handleAddEntity}
           >
             <WhitePlusIcon />
-            <Typography>{t("add_item")}</Typography>
+            <Typography>{t("add_address")}</Typography>
           </Button>
         </div>
 
