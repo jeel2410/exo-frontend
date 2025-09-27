@@ -47,6 +47,7 @@ export interface RequestDetails {
   contract_currency?: string; // Currency from contract
   project_amount?: number; // Project amount from API
   contract_amount?: number; // Contract amount from API
+  tax_category?: string; // Tax category for dynamic column display
 }
 
 interface RequestDetailsProps {
@@ -164,6 +165,7 @@ const RequestDetailModal = ({
           <CreateRequestTable
             data={requestDetails.entities}
             showActions={false}
+            currentTaxCategory={requestDetails.tax_category}
           />
         </div>
       </Modal>

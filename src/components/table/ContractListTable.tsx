@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import moment from "moment";
 import {
   ArchiveIconDark,
   EyeDarkIcon,
@@ -47,7 +46,7 @@ interface TableCellProps {
 
 // Mock Table components
 export const Table: React.FC<TableProps> = ({ children }) => (
-  <table className="w-full border-collapse min-w-[1200px]" role="grid">
+  <table className="w-full border-collapse min-w-[1280px]" role="grid">
     {children}
   </table>
 );
@@ -88,16 +87,25 @@ export interface ContractData {
   id: number;
   projectName: string;
   contractName: string;
-  signedBy: string;
-  position: string;
+  reference: string;
+  contractingAgencyName: string;
+  contractingAgencyPersonName: string;
+  contractingAgencyPersonPosition: string;
+  awardedCompanyName: string;
+  awardedCompanyPersonName: string;
+  awardedCompanyPersonPosition: string;
   amountOfContract: number;
   currency: string;
-  organization: string;
+  place: string;
   dateOfSigning: string;
   numberOfRequests: number;
   contractId: string;
   projectId?: string;
-  created_at: string | Date; // Assuming this is a date string
+  created_at: string | Date;
+  // Legacy fields for backward compatibility
+  signedBy?: string;
+  position?: string;
+  organization?: string;
 }
 
 const ContractListTable = ({
@@ -111,6 +119,7 @@ const ContractListTable = ({
   // const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -193,8 +202,45 @@ const ContractListTable = ({
     navigate("/edit-contract/" + contractId);
   };
 
-  const handleMenuToggle = (orderId: number) => {
-    setOpenMenuId(openMenuId === orderId ? null : orderId);
+  const handleMenuToggle = (orderId: number, event: React.MouseEvent) => {
+    if (openMenuId === orderId) {
+      setOpenMenuId(null);
+      return;
+    }
+    
+    // Calculate dropdown position
+    const buttonRect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const dropdownWidth = 160; // w-40 = 160px
+    const dropdownHeight = 200; // Approximate height
+    const margin = 16; // Some margin from edge
+    
+    // Calculate horizontal position
+    const wouldOverflowRight = buttonRect.right + dropdownWidth > windowWidth - margin;
+    const wouldOverflowLeft = buttonRect.left - dropdownWidth < margin;
+    
+    let left = wouldOverflowRight && !wouldOverflowLeft 
+      ? buttonRect.left - dropdownWidth + buttonRect.width
+      : buttonRect.left;
+    
+    // Calculate vertical position - prefer below, but go above if no space
+    const wouldOverflowBottom = buttonRect.bottom + dropdownHeight > windowHeight - margin;
+    const top = wouldOverflowBottom && buttonRect.top > dropdownHeight
+      ? buttonRect.top - dropdownHeight
+      : buttonRect.bottom;
+    
+    // Ensure dropdown stays within viewport bounds
+    left = Math.max(margin, Math.min(left, windowWidth - dropdownWidth - margin));
+    
+    setDropdownStyle({
+      position: 'fixed',
+      left: `${left}px`,
+      top: `${top}px`,
+      zIndex: 9999
+    });
+    
+    setOpenMenuId(orderId);
   };
 
   const handleAddRequest = (projectId: string, contractId: string) => {
@@ -239,7 +285,7 @@ const ContractListTable = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handleMenuToggle(contract.id);
+              handleMenuToggle(contract.id, e);
             }}
             className="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
           >
@@ -250,7 +296,8 @@ const ContractListTable = ({
           {openMenuId === contract.id && (
             <div
               ref={menuRef}
-              className="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-2"
+              className="w-40 bg-white border border-gray-200 rounded-md shadow-lg p-2"
+              style={dropdownStyle}
             >
               <button
                 onClick={(e) => {
@@ -300,42 +347,43 @@ const ContractListTable = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 text-xs">
+      <div className="space-y-3 text-xs">
         <div>
-          <span className="text-secondary-60 block mb-1">{t("signed_by")}</span>
-          <span className="text-secondary-100 font-medium">
-            {contract.signedBy}
+          <span className="text-secondary-60 block mb-1">{t("place")}</span>
+          <span className="text-secondary-100 font-medium truncate">
+            {contract.place}
           </span>
         </div>
+        
         <div>
-          <span className="text-secondary-60 block mb-1">{t("position")}</span>
-          <span className="text-secondary-100 font-medium">
-            {contract.position}
-          </span>
+          <span className="text-secondary-60 block mb-1">{t("contracting_agency")}</span>
+          <div className="text-secondary-100">
+            <div className="font-medium truncate">{contract.contractingAgencyName}</div>
+            <div className="text-xs text-gray-600 truncate">{contract.contractingAgencyPersonName}</div>
+          </div>
         </div>
+        
         <div>
-          <span className="text-secondary-60 block mb-1">
-            {t("organization")}
-          </span>
-          <span className="text-secondary-100 font-medium line-clamp-1">
-            {contract.organization}
-          </span>
+          <span className="text-secondary-60 block mb-1">{t("awarded_company")}</span>
+          <div className="text-secondary-100">
+            <div className="font-medium truncate">{contract.awardedCompanyName}</div>
+            <div className="text-xs text-gray-600 truncate">{contract.awardedCompanyPersonName}</div>
+          </div>
         </div>
-        <div>
-          <span className="text-secondary-60 block mb-1">
-            {t("created_date")}
-          </span>
-          <span className="text-secondary-100 font-medium">
-            {moment(contract.created_at).format("YYYY/MM/DD")}
-          </span>
-        </div>
-        <div>
-          <span className="text-secondary-60 block mb-1">
-            {t("number_of_equests")}
-          </span>
-          <span className="text-secondary-100 font-medium">
-            {contract.numberOfRequests}
-          </span>
+        
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <span className="text-secondary-60 block mb-1">{t("date_of_signing")}</span>
+            <span className="text-secondary-100 font-medium">
+              {contract.dateOfSigning}
+            </span>
+          </div>
+          <div>
+            <span className="text-secondary-60 block mb-1">{t("number_of_requests")}</span>
+            <span className="text-secondary-100 font-medium">
+              {contract.numberOfRequests}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -348,34 +396,34 @@ const ContractListTable = ({
     },
     {
       content: <div className="text-nowrap">{t("project_name")}</div>,
-      className: "min-w-[180px] max-w-[220px]",
+      className: "min-w-[160px] max-w-[200px]",
     },
     {
       content: <div className="text-nowrap">{t("contract_name")}</div>,
-      className: "min-w-[180px] max-w-[220px]",
+      className: "min-w-[160px] max-w-[200px]",
     },
     {
-      content: <div className="text-nowrap">{t("signed_by")}</div>,
+      content: <div className="text-nowrap">{t("contracting_agency")}</div>,
+      className: "min-w-[180px]",
+    },
+    {
+      content: <div className="text-nowrap">{t("awarded_company")}</div>,
+      className: "min-w-[180px]",
+    },
+    {
+      content: <div className="text-nowrap">{t("contract_amount")}</div>,
       className: "min-w-[140px]",
     },
     {
-      content: <div className="text-nowrap">{t("position")}</div>,
+      content: <div className="text-nowrap">{t("place")}</div>,
       className: "min-w-[120px]",
     },
     {
-      content: <div className="text-nowrap">{t("amount_of_contract")}</div>,
-      className: "min-w-[150px]",
-    },
-    {
-      content: <div className="text-nowrap">{t("organization")}</div>,
-      className: "min-w-[130px]",
-    },
-    {
-      content: <div className="text-nowrap">{t("created_date")}</div>,
+      content: <div className="text-nowrap">{t("date_of_signing")}</div>,
       className: "min-w-[120px]",
     },
     {
-      content: <div className="text-nowrap">{t("number_of_equests")}</div>,
+      content: <div className="text-nowrap">{t("number_of_requests")}</div>,
       className: "min-w-[120px]",
     },
     {
@@ -443,27 +491,37 @@ const ContractListTable = ({
                       <TableCell className="px-5 py-4 text-gray-500 text-sm">
                         {data.id}
                       </TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 min-w-[180px] max-w-[220px]">
-                        <span className="block font-medium text-secondary-100 text-sm truncate">
+                      <TableCell className="px-5 py-4 sm:px-6 min-w-[160px] max-w-[200px]">
+                        <span className="block font-medium text-secondary-100 text-sm truncate" title={data.projectName}>
                           {data.projectName}
                         </span>
                       </TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 min-w-[180px] max-w-[220px]">
-                        <span className="block font-medium text-secondary-100 text-sm truncate">
+                      <TableCell className="px-5 py-4 sm:px-6 min-w-[160px] max-w-[200px]">
+                        <span className="block font-medium text-secondary-100 text-sm truncate" title={data.contractName}>
                           {data.contractName}
                         </span>
                       </TableCell>
+                      <TableCell className="px-5 py-4 sm:px-6 min-w-[180px]">
+                        <div className="text-sm">
+                          <div className="font-medium text-secondary-100 truncate" title={data.contractingAgencyName}>
+                            {data.contractingAgencyName}
+                          </div>
+                          <div className="text-xs text-gray-600 truncate" title={data.contractingAgencyPersonName}>
+                            {data.contractingAgencyPersonName}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-5 py-4 sm:px-6 min-w-[180px]">
+                        <div className="text-sm">
+                          <div className="font-medium text-secondary-100 truncate" title={data.awardedCompanyName}>
+                            {data.awardedCompanyName}
+                          </div>
+                          <div className="text-xs text-gray-600 truncate" title={data.awardedCompanyPersonName}>
+                            {data.awardedCompanyPersonName}
+                          </div>
+                        </div>
+                      </TableCell>
                       <TableCell className="px-5 py-4 sm:px-6 min-w-[140px]">
-                        <span className="block font-medium text-secondary-100 text-sm truncate">
-                          {data.signedBy}
-                        </span>
-                      </TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 min-w-[120px]">
-                        <span className="block font-medium text-secondary-100 text-sm truncate">
-                          {data.position}
-                        </span>
-                      </TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 min-w-[150px]">
                         <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
                           {data.currency === "USD" ? (
                             <USFlag width={20} height={12} />
@@ -480,18 +538,18 @@ const ContractListTable = ({
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6 min-w-[130px]">
-                        <span className="block font-medium text-secondary-100 text-sm truncate">
-                          {data.organization}
+                      <TableCell className="px-5 py-4 sm:px-6 min-w-[120px]">
+                        <span className="block font-medium text-secondary-100 text-sm truncate" title={data.place}>
+                          {data.place}
                         </span>
                       </TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6">
+                      <TableCell className="px-5 py-4 sm:px-6 min-w-[120px]">
                         <span className="block font-medium text-secondary-100 text-sm text-nowrap">
-                          {moment(data.created_at).format("YYYY/MM/DD")}
+                          {data.dateOfSigning}
                         </span>
                       </TableCell>
-                      <TableCell className="px-5 py-4 sm:px-6">
-                        <span className="block font-medium text-secondary-100 text-sm text-nowrap ">
+                      <TableCell className="px-5 py-4 sm:px-6 min-w-[120px]">
+                        <span className="block font-medium text-secondary-100 text-sm text-nowrap">
                           {data.numberOfRequests}
                         </span>
                       </TableCell>
@@ -503,7 +561,7 @@ const ContractListTable = ({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleMenuToggle(data.id);
+                              handleMenuToggle(data.id, e);
                             }}
                             className="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                             aria-label="Open actions menu"
@@ -520,7 +578,8 @@ const ContractListTable = ({
                           </button>
                           {openMenuId === data.id && (
                             <div
-                              className="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-2"
+                              className="w-40 bg-white border border-gray-200 rounded-md shadow-lg p-2"
+                              style={dropdownStyle}
                               role="menu"
                             >
                               <button

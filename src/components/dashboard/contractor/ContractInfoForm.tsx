@@ -14,17 +14,31 @@ import { useMutation } from "@tanstack/react-query";
 import projectService from "../../../services/project.service";
 
 interface ContractFormValues {
-  signedBy: string;
-  position: string;
-  // projectManager: string;
-  organization: string;
+  // Contract basic info
+  name: string;
+  reference: string;
   amount: string;
   currency: string;
+  
+  // Contracting/Executing Agency
+  contractingAgencyName: string;
+  contractingAuthorizedPersonName: string;
+  contractingAuthorizedPersonPosition: string;
+  
+  // Rewarded Company
+  rewardedCompanyName: string;
+  rewardedAuthorizedPersonName: string;
+  rewardedAuthorizedPersonPosition: string;
+  
+  // Signing details
   dateOfSigning: string;
   place: string;
   contractFiles: UploadedFile[];
-  reference: string;
-  name: string;
+  
+  // Legacy fields for backward compatibility (can be removed later)
+  signedBy?: string;
+  position?: string;
+  organization?: string;
 }
 
 interface StepProps {
@@ -43,17 +57,31 @@ const ContractInfoForm = ({
   const { t } = useTranslation();
 
   const defaultValues: ContractFormValues = {
-    signedBy: "",
-    position: "",
-    // projectManager: "",
-    organization: "",
+    // Contract basic info
+    name: "",
+    reference: "",
     amount: "",
     currency: "USD",
+    
+    // Contracting/Executing Agency
+    contractingAgencyName: "",
+    contractingAuthorizedPersonName: "",
+    contractingAuthorizedPersonPosition: "",
+    
+    // Rewarded Company
+    rewardedCompanyName: "",
+    rewardedAuthorizedPersonName: "",
+    rewardedAuthorizedPersonPosition: "",
+    
+    // Signing details
     dateOfSigning: "",
-    contractFiles: [],
     place: "",
-    reference: "",
-    name: "",
+    contractFiles: [],
+    
+    // Legacy fields
+    signedBy: "",
+    position: "",
+    organization: "",
   };
 
   const currencyOptions = [
@@ -70,10 +98,9 @@ const ContractInfoForm = ({
   ];
 
   const validationSchema = Yup.object().shape({
-    signedBy: Yup.string().required(t("signed_by_required")),
-    position: Yup.string().required(t("position_required")),
-    // projectManager: Yup.string().required("Project Manager is required"),
-    organization: Yup.string().required(t("organization_required")),
+    // Contract basic info
+    name: Yup.string().required(t("name_required")),
+    reference: Yup.string().required(t("reference_required")),
     amount: Yup.string()
       .required(t("amount_required"))
       .test("is-positive-number", t("amount_must_be_positive"), (value) => {
@@ -95,10 +122,20 @@ const ContractInfoForm = ({
           );
         }
       ),
-    place: Yup.string().required(t("place_required")),
+    
+    // Contracting/Executing Agency
+    contractingAgencyName: Yup.string().required(t("contracting_agency_name_required")),
+    contractingAuthorizedPersonName: Yup.string().required(t("contracting_authorized_person_name_required")),
+    contractingAuthorizedPersonPosition: Yup.string().required(t("contracting_authorized_person_position_required")),
+    
+    // Rewarded Company
+    rewardedCompanyName: Yup.string().required(t("rewarded_company_name_required")),
+    rewardedAuthorizedPersonName: Yup.string().required(t("rewarded_authorized_person_name_required")),
+    rewardedAuthorizedPersonPosition: Yup.string().required(t("rewarded_authorized_person_position_required")),
+    
+    // Signing details
     dateOfSigning: Yup.string().required(t("date_required")),
-    reference: Yup.string().required(t("reference_required")),
-    name: Yup.string().required(t("name_required")),
+    place: Yup.string().required(t("place_required")),
   });
 
   const fileUploadMutation = async ({
@@ -222,7 +259,7 @@ const ContractInfoForm = ({
       onSubmit={onSubmit}
     >
       {({ values, setFieldValue, touched, errors, validateField }) => (
-        <Form className="space-y-5">
+        <Form className="space-y-6">
           <div className="mb-6">
             <Typography
               size="lg"
@@ -239,226 +276,320 @@ const ContractInfoForm = ({
               {t("contract_info_description")}
             </Typography>
           </div>
-          <div>
-            <Label htmlFor="signedBy">
-              {t("signed_by")}
-              <span className="text-red-500">*</span>
-            </Label>
-            <Field
-              id="signedBy"
-              as={Input}
-              name="signedBy"
-              placeholder="John Doe"
-            />
-            <ErrorMessage
-              name="signedBy"
-              component="div"
-              className="text-red-500 text-sm"
-            />
-          </div>
 
-          <div className="flex gap-5 w-full">
-            <div className="w-full">
-              <Label htmlFor="reference">
-                {t("reference")}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Field
-                id="reference"
-                as={Input}
-                name="reference"
-                placeholder="Contract Reference"
-              />
-              <ErrorMessage
-                name="reference"
-                component="div"
-                className="text-red-500 text-sm"
-              />
+          {/* Contract Basic Information */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <Typography size="lg" weight="semibold" className="text-secondary-100 mb-4">
+              {t("basic_contract_info")}
+            </Typography>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">
+                  {t("contract_name")}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Field
+                  id="name"
+                  as={Input}
+                  name="name"
+                  placeholder={t("contract_name_placeholder")}
+                />
+                <ErrorMessage
+                  name="name"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="reference">
+                  {t("contract_reference")}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Field
+                  id="reference"
+                  as={Input}
+                  name="reference"
+                  placeholder={t("contract_reference_placeholder")}
+                />
+                <ErrorMessage
+                  name="reference"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="amount">
+                  {t("contract_amount")}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <CurrencyInput
+                  id="amount"
+                  options={currencyOptions}
+                  value={values.amount}
+                  currency={values.currency}
+                  currencyDisabled={isProjectSelected}
+                  onChange={(amount: string, currency: string) => {
+                    setFieldValue("amount", amount);
+                    if (!isProjectSelected) {
+                      setFieldValue("currency", currency);
+                    }
+                    validateField("amount");
+                  }}
+                />
+                {isProjectSelected && (
+                  <Typography size="sm" className="text-secondary-60 mt-1">
+                    {t("currency_fixed_based_on_project")}
+                  </Typography>
+                )}
+                <ErrorMessage
+                  name="amount"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
             </div>
           </div>
-          <div className="w-full">
-            <Label htmlFor="name">
-              {t("name")}
-              <span className="text-red-500">*</span>
-            </Label>
-            <Field
-              id="name"
-              as={Input}
-              name="name"
-              placeholder="Contract Name"
-            />
-            <ErrorMessage
-              name="name"
-              component="div"
-              className="text-red-500 text-sm"
-            />
+
+          {/* Contracting/Executing Agency Information */}
+          <div className="bg-blue-50 p-4 rounded-lg border">
+            <Typography size="lg" weight="semibold" className="text-secondary-100 mb-4">
+              {t("contracting_executing_agency")}
+            </Typography>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="contractingAgencyName">
+                  {t("agency_name")}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Field
+                  id="contractingAgencyName"
+                  as={Input}
+                  name="contractingAgencyName"
+                  placeholder={t("agency_name_placeholder")}
+                />
+                <ErrorMessage
+                  name="contractingAgencyName"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="contractingAuthorizedPersonName">
+                    {t("authorized_person_name")}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <Field
+                    id="contractingAuthorizedPersonName"
+                    as={Input}
+                    name="contractingAuthorizedPersonName"
+                    placeholder={t("authorized_person_name_placeholder")}
+                  />
+                  <ErrorMessage
+                    name="contractingAuthorizedPersonName"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="contractingAuthorizedPersonPosition">
+                    {t("authorized_person_title")}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <Field
+                    id="contractingAuthorizedPersonPosition"
+                    as={Input}
+                    name="contractingAuthorizedPersonPosition"
+                    placeholder={t("authorized_person_title_placeholder")}
+                  />
+                  <ErrorMessage
+                    name="contractingAuthorizedPersonPosition"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="flex gap-5 w-full">
-            <div className="w-full">
-              <Label htmlFor="position">
-                {t("position")} :<span className="text-red-500">*</span>
-              </Label>
-              <Field
-                as={Input}
-                id="position"
-                name="position"
-                placeholder="Project Manager"
-              />
-              <ErrorMessage
-                name="position"
-                component="div"
-                className="text-red-500 text-sm"
-              />
+          {/* Rewarded Company Information */}
+          <div className="bg-green-50 p-4 rounded-lg border">
+            <Typography size="lg" weight="semibold" className="text-secondary-100 mb-4">
+              {t("rewarded_company")}
+            </Typography>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="rewardedCompanyName">
+                  {t("company_name")}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Field
+                  id="rewardedCompanyName"
+                  as={Input}
+                  name="rewardedCompanyName"
+                  placeholder={t("company_name_placeholder")}
+                />
+                <ErrorMessage
+                  name="rewardedCompanyName"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="rewardedAuthorizedPersonName">
+                    {t("authorized_person_name")}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <Field
+                    id="rewardedAuthorizedPersonName"
+                    as={Input}
+                    name="rewardedAuthorizedPersonName"
+                    placeholder={t("authorized_person_name_placeholder")}
+                  />
+                  <ErrorMessage
+                    name="rewardedAuthorizedPersonName"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="rewardedAuthorizedPersonPosition">
+                    {t("authorized_person_title")}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <Field
+                    id="rewardedAuthorizedPersonPosition"
+                    as={Input}
+                    name="rewardedAuthorizedPersonPosition"
+                    placeholder={t("authorized_person_title_placeholder")}
+                  />
+                  <ErrorMessage
+                    name="rewardedAuthorizedPersonPosition"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="w-full">
-              <Label htmlFor="amount">
-                {t("amount")} :<span className="text-red-500">*</span>
-              </Label>
-              <CurrencyInput
-                id="amount"
-                options={currencyOptions}
-                value={values.amount}
-                currency={values.currency}
-                currencyDisabled={isProjectSelected}
-                onChange={(amount: string, currency: string) => {
-                  setFieldValue("amount", amount);
-                  if (!isProjectSelected) {
-                    setFieldValue("currency", currency);
+          </div>
+
+          {/* Signing Details */}
+          <div className="bg-yellow-50 p-4 rounded-lg border">
+            <Typography size="lg" weight="semibold" className="text-secondary-100 mb-4">
+              {t("signing_details")}
+            </Typography>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="dateOfSigning">
+                  {t("date_of_signing")}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <DatePicker
+                  id="dateOfSigning"
+                  defaultDate={
+                    values.dateOfSigning
+                      ? moment(
+                          values.dateOfSigning,
+                          ["DD-MM-YYYY", "YYYY-MM-DD"],
+                          true
+                        ).toDate()
+                      : undefined
                   }
-                  validateField("amount");
-                }}
-              />
-              {isProjectSelected && (
-                <Typography size="sm" className="text-secondary-60 mt-1">
-                  {t("currency_fixed_based_on_project")}
-                </Typography>
-              )}
-              <ErrorMessage
-                name="amount"
-                component="div"
-                className="text-red-500 text-sm"
-              />
+                  onChange={(selectedDates: Date[]) => {
+                    if (selectedDates[0]) {
+                      const year = selectedDates[0].getFullYear();
+                      const month = (selectedDates[0].getMonth() + 1)
+                        .toString()
+                        .padStart(2, "0");
+                      const day = selectedDates[0]
+                        .getDate()
+                        .toString()
+                        .padStart(2, "0");
+                      const formattedDate = `${year}-${month}-${day}`;
+                      setFieldValue("dateOfSigning", formattedDate);
+                    }
+                  }}
+                  placeholder="2025-07-13"
+                  error={
+                    touched.dateOfSigning && errors.dateOfSigning
+                      ? errors.dateOfSigning
+                      : false
+                  }
+                />
+                <ErrorMessage
+                  name="dateOfSigning"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="place">
+                  {t("place_of_signing")}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Field
+                  as={Input}
+                  name="place"
+                  id="place"
+                  placeholder={t("place_of_signing_placeholder")}
+                />
+                <ErrorMessage
+                  name="place"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
             </div>
           </div>
 
-          {/* <div>
-            <Label htmlFor="projectManager">
-              Project Manager <span className="text-red-500">*</span>
-            </Label>
-            <Field
-              as={Input}
-              id="projectManager"
-              name="projectManager"
-              placeholder="Robert Fox"
-            />
-            <ErrorMessage
-              name="projectManager"
-              component="div"
-              className="text-red-500 text-sm"
-            />
-          </div> */}
-
-          <div>
-            <Label htmlFor="organization">
-              {t("organization")} <span className="text-red-500">*</span>
-            </Label>
-            <Field
-              as={Input}
-              name="organization"
-              id="organization"
-              placeholder="ABC Corporation Ltd."
-            />
-            <ErrorMessage
-              name="organization"
-              component="div"
-              className="text-red-500 text-sm"
-            />
-          </div>
-          <div>
-            <Label htmlFor="place">
-              {t("place")} :<span className="text-red-500">*</span>
-            </Label>
-            <Field
-              as={Input}
-              name="place"
-              id="place"
-              placeholder={t("place")}
-            />
-            <ErrorMessage
-              name="place"
-              component="div"
-              className="text-red-500 text-sm"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="dateOfSigning">
-              {t("date_of_signing")} :<span className="text-red-500">*</span>
-            </Label>
-            <DatePicker
-              id="dateOfSigning"
-              defaultDate={
-                values.dateOfSigning
-                  ? moment(
-                      values.dateOfSigning,
-                      ["DD-MM-YYYY", "YYYY-MM-DD"],
-                      true
-                    ).toDate()
-                  : undefined
-              }
-              onChange={(selectedDates: Date[]) => {
-                if (selectedDates[0]) {
-                  const year = selectedDates[0].getFullYear();
-                  const month = (selectedDates[0].getMonth() + 1)
-                    .toString()
-                    .padStart(2, "0");
-                  const day = selectedDates[0]
-                    .getDate()
-                    .toString()
-                    .padStart(2, "0");
-                  const formattedDate = `${year}-${month}-${day}`;
-                  setFieldValue("dateOfSigning", formattedDate);
-                }
-              }}
-              placeholder="2025-07-13"
-              error={
-                touched.dateOfSigning && errors.dateOfSigning
-                  ? errors.dateOfSigning
-                  : false
-              }
-            />
-          </div>
-
-          <div>
-            <Label>{t("upload_files")} :</Label>
-            <UploadFile
-              files={values.contractFiles}
-              onFilesSelect={(files) => setFieldValue("contractFiles", files)}
-              onUploadFile={handleUploadFile}
-              context="create-contract"
-              onRenameFile={async (fileId: string, newName: string) => {
-                console.log("Renaming file:", fileId, newName);
-                // if (!newName) {
-                // return { status: false, newName: "" };
-                // }
-                return await handleRenameFile(
-                  fileId,
-                  newName,
-                  setFieldValue,
-                  values.contractFiles
-                );
-              }}
-              onDeleteFile={async (fileId: string) => {
-                return handleDeleteFile(
-                  fileId,
-                  setFieldValue,
-                  values.contractFiles
-                );
-              }}
-              maxSize={5}
-              acceptedFormats={[".pdf", ".doc"]}
-            />
+          {/* Document Upload Section */}
+          <div className="bg-gray-50 p-4 rounded-lg border">
+            <Typography size="lg" weight="semibold" className="text-secondary-100 mb-4">
+              {t("contract_documents")}
+            </Typography>
+            
+            <div>
+              <Label>{t("upload_contract_files")}</Label>
+              <Typography size="sm" className="text-secondary-60 mb-2">
+                {t("contract_document_description")}
+              </Typography>
+              <UploadFile
+                files={values.contractFiles}
+                onFilesSelect={(files) => setFieldValue("contractFiles", files)}
+                onUploadFile={handleUploadFile}
+                context="create-contract"
+                onRenameFile={async (fileId: string, newName: string) => {
+                  console.log("Renaming file:", fileId, newName);
+                  return await handleRenameFile(
+                    fileId,
+                    newName,
+                    setFieldValue,
+                    values.contractFiles
+                  );
+                }}
+                onDeleteFile={async (fileId: string) => {
+                  return handleDeleteFile(
+                    fileId,
+                    setFieldValue,
+                    values.contractFiles
+                  );
+                }}
+                maxSize={5}
+                acceptedFormats={[".pdf", ".doc", ".docx"]}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end pt-4">

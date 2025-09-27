@@ -1,6 +1,7 @@
 import { useLocation } from "react-router";
 import RequestListSkeleton from "./skeletons/RequestListSkeleton";
 import ContractListSkeleton from "./skeletons/ContractListSkeleton";
+import ContractDetailsSkeleton from "./skeletons/ContractDetailsSkeleton";
 import ProjectDetailsSkeleton from "./skeletons/ProjectDetailsSkeleton";
 import HelpSkeleton from "./skeletons/HelpSkeleton";
 import SkeletonLoader from "./SkeletonLoader";
@@ -34,7 +35,7 @@ const SmartSkeletonLoader = ({ variant = "auto" }: SmartSkeletonLoaderProps) => 
   }
   
   if (path.startsWith("/contract-details/")) {
-    return <ProjectDetailsSkeleton />; // Reuse project details skeleton for similar structure
+    return <ContractDetailsSkeleton />; // Use dedicated contract details skeleton
   }
   
   if (path.startsWith("/request-details/")) {

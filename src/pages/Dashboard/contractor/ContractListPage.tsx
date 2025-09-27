@@ -29,25 +29,32 @@ export interface ContractData {
   id: number;
   projectName: string;
   contractName: string;
-  signedBy: string;
-  position: string;
+  reference: string;
+  contractingAgencyName: string;
+  contractingAgencyPersonName: string;
+  contractingAgencyPersonPosition: string;
+  awardedCompanyName: string;
+  awardedCompanyPersonName: string;
+  awardedCompanyPersonPosition: string;
   amountOfContract: number;
   currency: string;
-  organization: string;
+  place: string;
   dateOfSigning: string;
   numberOfRequests: number;
   contractId: string;
-  created_at: string | Date; // Assuming this is a date string
+  projectId?: string;
+  created_at: string | Date;
+  // Legacy fields for backward compatibility
+  signedBy?: string;
+  position?: string;
+  organization?: string;
 }
 export interface ContractDetails {
   id: string;
   project_id: string;
   user_id: string;
-  signed_by: string;
-  position: string;
   currency: string;
   amount: string;
-  organization: string;
   project_name: string;
   name: string;
   place: string;
@@ -56,6 +63,18 @@ export interface ContractDetails {
   created_at: string;
   requests_data_count: number;
   is_archived?: boolean;
+  reference?: string;
+  // New API fields
+  contracting_agency_name?: string;
+  contracting_agency_person_name?: string;
+  contracting_agency_person_position?: string;
+  awarded_company_name?: string;
+  awarded_company_person_name?: string;
+  awarded_company_person_position?: string;
+  // Legacy fields for backward compatibility
+  signed_by?: string;
+  position?: string;
+  organization?: string;
 }
 
 const ContractListPage = () => {
@@ -128,16 +147,27 @@ const ContractListPage = () => {
           id: Number(index + 1),
           projectName: contract.project_name,
           contractName: contract.name,
-          projectId: contract.project_id,
-          signedBy: contract.signed_by,
-          position: contract.position,
+          reference: contract.reference || "-",
+          contractingAgencyName: contract.contracting_agency_name || "-",
+          contractingAgencyPersonName: contract.contracting_agency_person_name || "-",
+          contractingAgencyPersonPosition: contract.contracting_agency_person_position || "-",
+          awardedCompanyName: contract.awarded_company_name || "-",
+          awardedCompanyPersonName: contract.awarded_company_person_name || "-",
+          awardedCompanyPersonPosition: contract.awarded_company_person_position || "-",
           amountOfContract: Number(contract.amount),
           currency: contract.currency,
-          organization: contract.organization,
-          dateOfSigning: moment(contract.date_of_signing).format("YYYY/MM/DD"),
+          place: contract.place || "-",
+          dateOfSigning: contract.date_of_signing
+            ? moment(contract.date_of_signing).format("YYYY/MM/DD")
+            : "-",
           numberOfRequests: contract.requests_data_count,
           contractId: contract.id,
+          projectId: contract.project_id,
           created_at: contract.created_at,
+          // Legacy fields for backward compatibility
+          signedBy: contract.signed_by,
+          position: contract.position,
+          organization: contract.organization,
         })
       );
       setData(newContractData);

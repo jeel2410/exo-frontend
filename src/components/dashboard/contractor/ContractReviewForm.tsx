@@ -232,92 +232,191 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
           <Typography
             size="base"
             weight="semibold"
-            className="text-secondary-100 mb-4"
+            className="text-secondary-100 mb-6"
           >
             {t("contract_info")}
           </Typography>
 
-          <div className="space-y-3">
-            <div className="flex">
-              <div className="w-1/3 text-secondary-60">
-                <Label>{t("reference")}</Label>
-              </div>
-              <div className="w-2/3 text-secondary-100">
-                {projectData.contractReference || "-"}
+          {/* Basic Contract Information */}
+          <div className="mb-6">
+            <div className="bg-gray-50 p-4 rounded-lg border mb-4">
+              <Typography
+                size="base"
+                weight="semibold"
+                className="text-secondary-100 mb-3"
+              >
+                {t("basic_contract_info")}
+              </Typography>
+              
+              <div className="space-y-4">
+                <div className="flex">
+                  <div className="w-1/3 text-secondary-60">
+                    <Label>{t("contract_name")}</Label>
+                  </div>
+                  <div className="w-2/3 text-secondary-100">
+                    {projectData.contractName || "-"}
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/3 text-secondary-60">
+                    <Label>{t("contract_reference")}</Label>
+                  </div>
+                  <div className="w-2/3 text-secondary-100">
+                    {projectData.contractReference || "-"}
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/3 text-secondary-60">
+                    <Label>{t("contract_amount")}</Label>
+                  </div>
+                  <div className="w-2/3 text-secondary-100">
+                    <span className="text-gray-400">
+                      {projectData.currency || "USD"}{" "}
+                    </span>
+                    {formatAmount(projectData.amount) || "-"}
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="flex">
-              <div className="w-1/3 text-secondary-60">
-                <Label>{t("name")}</Label>
-              </div>
-              <div className="w-2/3 text-secondary-100">
-                {projectData.contractName || "-"}
+          {/* Contracting/Executing Agency */}
+          <div className="mb-6">
+            <div className="bg-blue-50 p-4 rounded-lg border mb-4">
+              <Typography
+                size="base"
+                weight="semibold"
+                className="text-secondary-100 mb-3"
+              >
+                {t("contracting_executing_agency")}
+              </Typography>
+              
+              <div className="space-y-3">
+                <div className="flex">
+                  <div className="w-1/3 text-secondary-60">
+                    <Label>{t("agency_name")}</Label>
+                  </div>
+                  <div className="w-2/3 text-secondary-100">
+                    {projectData.contractingAgencyName || "-"}
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/3 text-secondary-60">
+                    <Label>{t("authorized_person_name")}</Label>
+                  </div>
+                  <div className="w-2/3 text-secondary-100">
+                    {projectData.contractingAuthorizedPersonName || "-"}
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/3 text-secondary-60">
+                    <Label>{t("authorized_person_title")}</Label>
+                  </div>
+                  <div className="w-2/3 text-secondary-100">
+                    {projectData.contractingAuthorizedPersonPosition || "-"}
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="flex">
-              <div className="w-1/3 text-secondary-60">
-                <Label>{t("signed_by")}</Label>
-              </div>
-              <div className="w-2/3 text-secondary-100">
-                {projectData.signedBy || "-"}
+          {/* Rewarded Company */}
+          <div className="mb-6">
+            <div className="bg-green-50 p-4 rounded-lg border mb-4">
+              <Typography
+                size="base"
+                weight="semibold"
+                className="text-secondary-100 mb-3"
+              >
+                {t("rewarded_company")}
+              </Typography>
+              
+              <div className="space-y-3">
+                <div className="flex">
+                  <div className="w-1/3 text-secondary-60">
+                    <Label>{t("company_name")}</Label>
+                  </div>
+                  <div className="w-2/3 text-secondary-100">
+                    {projectData.rewardedCompanyName || "-"}
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/3 text-secondary-60">
+                    <Label>{t("authorized_person_name")}</Label>
+                  </div>
+                  <div className="w-2/3 text-secondary-100">
+                    {projectData.rewardedAuthorizedPersonName || "-"}
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/3 text-secondary-60">
+                    <Label>{t("authorized_person_title")}</Label>
+                  </div>
+                  <div className="w-2/3 text-secondary-100">
+                    {projectData.rewardedAuthorizedPersonPosition || "-"}
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="flex">
-              <div className="w-1/3 text-secondary-60">
-                <Label>{t("position")}</Label>
-              </div>
-              <div className="w-2/3 text-secondary-100">
-                {projectData.position || "-"}
+          {/* Signing Details */}
+          <div className="mb-6">
+            <div className="bg-yellow-50 p-4 rounded-lg border mb-4">
+              <Typography
+                size="base"
+                weight="semibold"
+                className="text-secondary-100 mb-3"
+              >
+                {t("signing_details")}
+              </Typography>
+              
+              <div className="space-y-3">
+                <div className="flex">
+                  <div className="w-1/3 text-secondary-60">
+                    <Label>{t("date_of_signing")}</Label>
+                  </div>
+                  <div className="w-2/3 text-secondary-100">
+                    {formatDate(projectData.dateOfSigning)}
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/3 text-secondary-60">
+                    <Label>{t("place_of_signing")}</Label>
+                  </div>
+                  <div className="w-2/3 text-secondary-100">
+                    {projectData.place || "-"}
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="flex">
-              <div className="w-1/3 text-secondary-60">
-                <Label>{t("amount")}</Label>
-              </div>
-              <div className="w-2/3 text-secondary-100">
-                <span className="text-gray-400">
-                  {projectData.currency || "USD"}{" "}
-                </span>
-                {formatAmount(projectData.amount) || "-"}
-              </div>
-            </div>
-
-            <div className="flex">
-              <div className="w-1/3 text-secondary-60">
-                <Label>{t("organization")}</Label>
-              </div>
-              <div className="w-2/3 text-secondary-100">
-                {projectData.organization || "-"}
-              </div>
-            </div>
-
-            <div className="flex">
-              <div className="w-1/3 text-secondary-60">
-                <Label>{t("place")}</Label>
-              </div>
-              <div className="w-2/3 text-secondary-100">
-                {projectData.place || "-"}
-              </div>
-            </div>
-
-            <div className="flex">
-              <div className="w-1/3 text-secondary-60">
-                <Label>{t("date_of_signing")}</Label>
-              </div>
-              <div className="w-2/3 text-secondary-100">
-                {formatDate(projectData.dateOfSigning)}
-              </div>
-            </div>
-            <div className="flex">
-              <div className="w-1/3 text-secondary-60">
-                <Label>{t("upload_files")}</Label>
-              </div>
-              <div className="w-2/3 text-secondary-100">
-                {renderFileList(projectData.contractFiles)}
+          {/* Contract Documents */}
+          <div className="mb-4">
+            <div className="bg-gray-50 p-4 rounded-lg border">
+              <Typography
+                size="base"
+                weight="semibold"
+                className="text-secondary-100 mb-3"
+              >
+                {t("contract_documents")}
+              </Typography>
+              
+              <div className="flex">
+                <div className="w-1/3 text-secondary-60">
+                  <Label>{t("upload_contract_files")}</Label>
+                </div>
+                <div className="w-2/3 text-secondary-100">
+                  {renderFileList(projectData.contractFiles)}
+                </div>
               </div>
             </div>
           </div>

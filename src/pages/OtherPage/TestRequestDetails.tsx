@@ -96,6 +96,7 @@ export interface RequestDetails {
   contract_amount?: number; // Contract amount from API
   sub_status?: string; // Current sub-status (e.g., request_info)
   last_completed_stage?: string; // New: last completed stage (English)
+  tax_category?: string; // Tax category for dynamic column display
 }
 export interface ProgressStep {
   id: number;
@@ -935,6 +936,7 @@ const TestRequestDetails = () => {
                           }) || []
                         }
                         showActions={false}
+                        currentTaxCategory={requestData.tax_category}
                       />
                     </div>
                   </div>

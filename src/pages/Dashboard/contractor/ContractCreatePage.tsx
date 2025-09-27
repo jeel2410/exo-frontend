@@ -28,77 +28,187 @@ interface Address {
 }
 
 export interface ContractReviewData {
+  // Project info
   projectName: string;
   reference: string;
   projectAmount: string;
   projectCurrency: string;
-  signedBy: string;
-  position: string;
   beginDate: string;
   endDate: string;
   description: string;
   projectFiles: UploadedFile[];
   address: Address[];
-  // projectManager: string;
-  organization: string;
+  
+  // Contract basic info
+  contractName: string;
+  contractReference: string;
   amount: string;
   currency: string;
+  
+  // Contracting/Executing Agency
+  contractingAgencyName: string;
+  contractingAuthorizedPersonName: string;
+  contractingAuthorizedPersonPosition: string;
+  
+  // Rewarded Company
+  rewardedCompanyName: string;
+  rewardedAuthorizedPersonName: string;
+  rewardedAuthorizedPersonPosition: string;
+  
+  // Signing details
   dateOfSigning: string;
-  contractFiles: UploadedFile[];
   place: string;
-  contractReference: string;
-  contractName: string;
+  contractFiles: UploadedFile[];
+  
+  // Legacy fields for backward compatibility
+  signedBy?: string;
+  position?: string;
+  organization?: string;
 }
 
 const ContractReviewInitialValue = {
+  // Project info
   projectName: "",
   reference: "",
   projectAmount: "",
   projectCurrency: "",
-  signedBy: "",
-  position: "",
   beginDate: "",
   endDate: "",
   description: "",
   projectFiles: [],
   address: [],
-  // projectManager: "",
-  organization: "",
+  
+  // Contract basic info
+  contractName: "",
+  contractReference: "",
   amount: "",
   currency: "",
+  
+  // Contracting/Executing Agency
+  contractingAgencyName: "",
+  contractingAuthorizedPersonName: "",
+  contractingAuthorizedPersonPosition: "",
+  
+  // Rewarded Company
+  rewardedCompanyName: "",
+  rewardedAuthorizedPersonName: "",
+  rewardedAuthorizedPersonPosition: "",
+  
+  // Signing details
   dateOfSigning: "",
-  contractFiles: [],
   place: "",
-  contractReference: "",
-  contractName: "",
+  contractFiles: [],
+  
+  // Legacy fields
+  signedBy: "",
+  position: "",
+  organization: "",
 };
 
 interface FormDataProps {
-  signedBy: string;
-  position: string;
-  // projectManager: string,
-  organization: string;
+  // Contract basic info
+  name: string;
+  reference: string;
   amount: string;
   currency: string;
+  
+  // Contracting/Executing Agency
+  contractingAgencyName: string;
+  contractingAuthorizedPersonName: string;
+  contractingAuthorizedPersonPosition: string;
+  
+  // Rewarded Company
+  rewardedCompanyName: string;
+  rewardedAuthorizedPersonName: string;
+  rewardedAuthorizedPersonPosition: string;
+  
+  // Signing details
   dateOfSigning: string;
-  contractFiles: UploadedFile[];
   place: string;
-  reference: string;
-  name: string;
+  contractFiles: UploadedFile[];
+  
+  // Legacy fields for backward compatibility
+  signedBy?: string;
+  position?: string;
+  organization?: string;
 }
 
 const initialValue = {
-  signedBy: "",
-  position: "",
-  // projectManager: "",
-  organization: "",
+  // Contract basic info
+  name: "",
+  reference: "",
   amount: "",
   currency: "USD",
+  
+  // Contracting/Executing Agency
+  contractingAgencyName: "",
+  contractingAuthorizedPersonName: "",
+  contractingAuthorizedPersonPosition: "",
+  
+  // Rewarded Company
+  rewardedCompanyName: "",
+  rewardedAuthorizedPersonName: "",
+  rewardedAuthorizedPersonPosition: "",
+  
+  // Signing details
   dateOfSigning: "",
-  contractFiles: [],
   place: "",
-  reference: "",
-  name: "",
+  contractFiles: [],
+  
+  // Legacy fields
+  signedBy: "",
+  position: "",
+  organization: "",
+};
+
+// Helper function to create contract API payload
+const createContractPayload = (data: FormDataProps, projectId?: string, contractId?: string, editProjectId?: string): FormData => {
+  const files = data.contractFiles;
+  const filesData = Array.isArray(files) ? files : files ? [files] : [];
+
+  const payload = new FormData();
+  
+  // Map new form fields to API fields
+  payload.append("currency", data.currency);
+  payload.append("amount", data.amount);
+  payload.append("place", data.place);
+  payload.append(
+    "date_of_signing",
+    moment(data.dateOfSigning, ["DD-MM-YYYY", "YYYY-MM-DD"], true).format(
+      "YYYY-MM-DD"
+    )
+  );
+  
+  // Contracting/Executing Agency fields
+  payload.append("contracting_agency_name", data.contractingAgencyName || "");
+  payload.append("contracting_agency_person_name", data.contractingAuthorizedPersonName || "");
+  payload.append("contracting_agency_person_position", data.contractingAuthorizedPersonPosition || "");
+  
+  // Awarded Company fields
+  payload.append("awarded_company_name", data.rewardedCompanyName || "");
+  payload.append("awarded_company_person_name", data.rewardedAuthorizedPersonName || "");
+  payload.append("awarded_company_person_position", data.rewardedAuthorizedPersonPosition || "");
+  
+  // Document files
+  payload.append(
+    "document_ids",
+    filesData.map((file: any) => file.id).join(",")
+  );
+  
+  // Contract basic info (keeping for backward compatibility)
+  payload.append("reference", data.reference);
+  payload.append("name", data.name);
+  
+  // Project ID
+  if (projectId) {
+    payload.append("project_id", projectId);
+  }
+  if (contractId && editProjectId) {
+    payload.append("project_id", editProjectId);
+    payload.append("contract_id", contractId);
+  }
+  
+  return payload;
 };
 
 // Function to map backend error messages to translation keys
@@ -197,7 +307,7 @@ const ContractCreatePage = () => {
   const [editProjectId, setEditProjectId] = useState("");
 
   const { projectId, contractId } = useParams();
-  const [newContractId, setNewContractId] = useState();
+  const [newContractId, setNewContractId] = useState<string>();
   const { loading, setLoading } = useLoading();
 
   const steps = [
@@ -214,46 +324,39 @@ const ContractCreatePage = () => {
   const handleFormSubmit = (values: any) => {
     setContractReview((preve) => ({
       ...preve,
-      ...values,
-      contractReference: values.reference,
+      // Contract basic info
       contractName: values.name,
+      contractReference: values.reference,
+      amount: values.amount,
+      currency: values.currency,
+      
+      // Contracting/Executing Agency
+      contractingAgencyName: values.contractingAgencyName,
+      contractingAuthorizedPersonName: values.contractingAuthorizedPersonName,
+      contractingAuthorizedPersonPosition: values.contractingAuthorizedPersonPosition,
+      
+      // Rewarded Company
+      rewardedCompanyName: values.rewardedCompanyName,
+      rewardedAuthorizedPersonName: values.rewardedAuthorizedPersonName,
+      rewardedAuthorizedPersonPosition: values.rewardedAuthorizedPersonPosition,
+      
+      // Signing details
+      dateOfSigning: values.dateOfSigning,
+      place: values.place,
+      contractFiles: values.contractFiles,
+      
+      // Legacy fields for backward compatibility
+      signedBy: values.signedBy,
+      position: values.position,
+      organization: values.organization,
     }));
     setFormData(values);
     setCurrentStep(1);
   };
 
   const contractCreateMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const files = data.contractFiles;
-      const filesData = Array.isArray(files) ? files : files ? [files] : [];
-
-      const payload = new FormData();
-      payload.append("signed_by", data.signedBy);
-      payload.append("position", data.position);
-      payload.append("currency", data.currency);
-      payload.append("amount", data.amount);
-      payload.append("organization", data.organization);
-      payload.append("place", data.place);
-      payload.append(
-        "date_of_signing",
-        moment(data.dateOfSigning, ["DD-MM-YYYY", "YYYY-MM-DD"], true).format(
-          "YYYY-MM-DD"
-        )
-      );
-      payload.append(
-        "document_ids",
-        filesData.map((file: any) => file.id).join(",")
-      );
-      // Add required fields
-      payload.append("reference", data.reference);
-      payload.append("name", data.name);
-      if (projectId) {
-        payload.append("project_id", projectId);
-      }
-      if (contractId && editProjectId) {
-        payload.append("project_id", editProjectId);
-        payload.append("contract_id", contractId);
-      }
+    mutationFn: async (data: FormDataProps) => {
+      const payload = createContractPayload(data, projectId, contractId, editProjectId);
       const response = await contractService.creteContract(payload);
       setNewContractId(response.data.data.id);
       return response.data;
@@ -352,19 +455,7 @@ const ContractCreatePage = () => {
         contract_id: contractId,
       });
       if (response.data.status === 200) {
-        const contractData: {
-          project_id: string;
-          signed_by: string;
-          position: string;
-          currency: string;
-          amount: string;
-          organization: string;
-          place: string;
-          date_of_signing: string;
-          documents: UploadedFile[] | [];
-          reference?: string;
-          name?: string;
-        } = response.data.data;
+        const contractData = response.data.data;
         setEditProjectId(contractData.project_id);
         fetchProject(contractData.project_id);
 
@@ -372,16 +463,31 @@ const ContractCreatePage = () => {
 
         setFormData((prev: FormDataProps) => ({
           ...prev,
-          amount: parseFloat(contractData.amount).toString(),
-          contractFiles: contractData.documents || [],
-          currency: contractData.currency,
-          dateOfSigning: contractData.date_of_signing,
-          organization: contractData.organization,
-          place: contractData.place,
-          signedBy: contractData.signed_by,
-          position: contractData.position,
-          reference: contractData.reference || "",
+          // Contract basic info
           name: contractData.name || "",
+          reference: contractData.reference || "",
+          amount: parseFloat(contractData.amount).toString(),
+          currency: contractData.currency,
+          
+          // Contracting/Executing Agency
+          contractingAgencyName: contractData.contracting_agency_name || "",
+          contractingAuthorizedPersonName: contractData.contracting_agency_person_name || "",
+          contractingAuthorizedPersonPosition: contractData.contracting_agency_person_position || "",
+          
+          // Rewarded Company
+          rewardedCompanyName: contractData.awarded_company_name || "",
+          rewardedAuthorizedPersonName: contractData.awarded_company_person_name || "",
+          rewardedAuthorizedPersonPosition: contractData.awarded_company_person_position || "",
+          
+          // Signing details
+          dateOfSigning: contractData.date_of_signing,
+          place: contractData.place,
+          contractFiles: (contractData.documents as UploadedFile[]) || [],
+          
+          // Legacy fields for backward compatibility
+          signedBy: contractData.signed_by || "",
+          position: contractData.position || "",
+          organization: contractData.organization || "",
         }));
       }
     },

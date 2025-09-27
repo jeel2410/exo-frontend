@@ -277,6 +277,16 @@ ProjectInfoFormProps) => {
     },
   ];
 
+  const financeByOptions = [
+    { value: "Government", label: t("government") },
+    { value: "Bank", label: t("bank") },
+    { value: "Private Investor", label: t("private_investor") },
+    { value: "International Organization", label: t("international_organization") },
+    { value: "NGO", label: t("ngo") },
+    { value: "Self Funded", label: t("self_funded") },
+    { value: "Other", label: t("other") },
+  ];
+
   const defaultInitialValues: ProjectFormValues = {
     projectName: "",
     fundedBy: "",
@@ -298,7 +308,18 @@ ProjectInfoFormProps) => {
       .min(3, t("project_name_must_be_at_least_3_characters")),
     fundedBy: Yup.string()
       .required(t("finance_by_is_required"))
-      .min(2, t("finance_by_must_be_at_least_2_characters")),
+      .oneOf(
+        [
+          "Government",
+          "Bank",
+          "Private Investor",
+          "International Organization",
+          "NGO",
+          "Self Funded",
+          "Other",
+        ],
+        t("invalid_finance_by_selection")
+      ),
     projectReference: Yup.string().required(t("project_reference_is_required")),
     amount: Yup.string()
       .required(t("amount_is_required"))
@@ -628,11 +649,14 @@ ProjectInfoFormProps) => {
                   <Label htmlFor="fundedBy">
                     {t("finance_by")} <span className="text-red-500">*</span>
                   </Label>
-                  <Field
-                    as={Input}
+                  <CustomDropdown
                     id="fundedBy"
                     name="fundedBy"
-                    placeholder={t("finance_by")}
+                    options={financeByOptions}
+                    value={values.fundedBy}
+                    onChange={(value) => setFieldValue("fundedBy", value)}
+                    onBlur={() => handleBlur("fundedBy")}
+                    placeholder={t("select_finance_by")}
                     error={touched.fundedBy && !!errors.fundedBy}
                   />
                   <ErrorMessage

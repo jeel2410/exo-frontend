@@ -1,4 +1,5 @@
 export { default as ContractListSkeleton } from './ContractListSkeleton';
+export { default as ContractDetailsSkeleton } from './ContractDetailsSkeleton';
 export { default as HelpSkeleton } from './HelpSkeleton';
 export { default as ProjectDetailsSkeleton } from './ProjectDetailsSkeleton';
 export { default as RequestListSkeleton } from './RequestListSkeleton';

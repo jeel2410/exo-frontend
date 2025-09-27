@@ -26,19 +26,29 @@ import Breadcrumbs from "../../common/Breadcrumbs";
 import CurrencyBadge from "../../common/CurrencyBadge";
 
 interface ContractProps {
-  id: string;
+  id?: string;
   project_id: string;
-  signed_by: string;
-  organization: string;
-  created_at: string;
-  requests_data_count: 0;
-  position: string;
-  documents: [];
-  requests_data: [];
-  currency: "USD" | "CDF";
+  signed_by?: string;
+  organization?: string;
+  created_at?: string;
+  requests_data_count?: number;
+  position?: string;
+  documents: any[];
+  requests_data?: any[];
+  currency: string; // Changed from "USD" | "CDF" to string for flexibility
   amount?: string | number;
   reference?: string;
   name?: string;
+  summary?: any; // For backward compatibility
+  // New API fields
+  place?: string;
+  date_of_signing?: string;
+  contracting_agency_name?: string;
+  contracting_agency_person_name?: string;
+  contracting_agency_person_position?: string;
+  awarded_company_name?: string;
+  awarded_company_person_name?: string;
+  awarded_company_person_position?: string;
 }
 
 // Define the type for request data from API
@@ -112,9 +122,9 @@ const ContractDetails = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    if (contractData) {
+    if (contractData && contractData.id) {
       requestMutation.mutate({
-        contractId: contractData?.id,
+        contractId: contractData.id,
         projectId: contractData.project_id,
       });
     }
@@ -130,7 +140,14 @@ const ContractDetails = () => {
       const response = await contractService.getContractDetails(formData);
       const contract: ContractProps = response.data.data;
 
-      const card = response.data.summary;
+      // Handle case where summary might not exist in the response
+      const card = response.data.data.summary || {
+        approved_requests: 0,
+        pending_requests: 0,
+        rejected_requests: 0,
+        requests_total: 0,
+        total_requests: 0
+      };
 
       setCardData(card);
 
@@ -139,10 +156,12 @@ const ContractDetails = () => {
         setRequestsData(contract.requests_data);
       }
 
-      requestMutation.mutate({
-        contractId: contract.id,
-        projectId: contract.project_id,
-      });
+      if (contract.id) {
+        requestMutation.mutate({
+          contractId: contract.id,
+          projectId: contract.project_id,
+        });
+      }
       setContractData(contract);
       setLoading(false);
       return contract;
@@ -157,7 +176,10 @@ const ContractDetails = () => {
   });
 
   const requestMutation = useMutation({
-    mutationFn: async (data: { projectId: string; contractId: string }) => {
+    mutationFn: async (data: { projectId: string; contractId: string | undefined }) => {
+      if (!data.contractId) {
+        throw new Error('Contract ID is required');
+      }
       const payload = {
         contract_id: data.contractId,
         project_id: data.projectId,
@@ -308,7 +330,7 @@ const ContractDetails = () => {
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={contractData?.currency || "CDF"}
+                  currency={(contractData?.currency as "USD" | "CDF") || "CDF"}
                   variant="violet"
                   width={32}
                   height={32}
@@ -359,183 +381,272 @@ const ContractDetails = () => {
             </Typography>
           </motion.div>
           <motion.div
-            className="p-4 sm:p-6 space-y-4 sm:space-y-0 sm:space-x-0 lg:space-x-6 lg:flex"
+            className="p-4 sm:p-6"
             variants={staggerContainer}
           >
-            {/* Left Column */}
-            <div className="border border-gray-200 rounded-lg p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 w-full lg:w-1/2">
-              <div className="flex flex-col sm:flex-row sm:gap-4">
-                <Typography
-                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
-                  weight="semibold"
-                >
-                  {t("signed_by")}:
-                </Typography>
-                <Typography
-                  className="text-gray-900 break-words text-sm sm:text-base"
-                  weight="normal"
-                >
-                  {contractData?.signed_by}
-                </Typography>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:gap-4">
-                <Typography
-                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
-                  weight="semibold"
-                >
-                  {t("name")}:
-                </Typography>
-                <Typography
-                  className="text-gray-900 break-words text-sm sm:text-base"
-                  weight="normal"
-                >
-                  {contractData?.name || "-"}
-                </Typography>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:gap-4">
-                <Typography
-                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
-                  weight="semibold"
-                >
-                  {t("organization")}:
-                </Typography>
-                <Typography
-                  className="text-gray-900 break-words text-sm sm:text-base"
-                  weight="normal"
-                >
-                  {contractData?.organization}
-                </Typography>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:gap-4">
-                <Typography
-                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
-                  weight="semibold"
-                >
-                  {t("date_created")}:
-                </Typography>
-                <Typography
-                  className="text-gray-900 break-words text-sm sm:text-base"
-                  weight="normal"
-                >
-                  {moment(contractData?.created_at).format("YYYY/MM/DD")}
-                </Typography>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:gap-4">
-                <Typography
-                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
-                  weight="semibold"
-                >
-                  {t("no_of_request")}:
-                </Typography>
-                <Typography
-                  className="text-gray-900 break-words text-sm sm:text-base"
-                  weight="normal"
-                >
-                  {contractData?.requests_data_count}
-                </Typography>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:gap-4">
-                <Typography
-                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
-                  weight="semibold"
-                >
-                  {t("contract_amount")}:
-                </Typography>
-                <Typography
-                  className="text-gray-900 break-words text-sm sm:text-base"
-                  weight="normal"
-                >
-                  {contractData?.currency}{" "}
-                  {contractData?.amount
-                    ? Number(contractData.amount).toLocaleString(
-                        i18n.language === 'fr' ? 'fr-FR' : 'en-US'
-                      )
-                    : "0"}
-                </Typography>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:gap-4">
-                <Typography
-                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
-                  weight="semibold"
-                >
-                  {t("reference")}:
-                </Typography>
-                <Typography
-                  className="text-gray-900 break-words text-sm sm:text-base"
-                  weight="normal"
-                >
-                  {contractData?.reference || "-"}
-                </Typography>
-              </div>
-            </div>
+            {/* Contract Information Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              
+              {/* Basic Details - Full width on mobile, 2 columns on xl */}
+              <div className="xl:col-span-2 space-y-6">
+                
+                {/* Basic Information Card */}
+                <div className="border border-gray-200 rounded-lg p-4 sm:p-6 bg-white">
+                  <Typography
+                    className="text-gray-800 text-lg font-semibold mb-4 border-b border-gray-100 pb-2"
+                    weight="semibold"
+                  >
+                    {t("basic_details")}
+                  </Typography>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("name")}:
+                        </Typography>
+                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                          {contractData?.name || "-"}
+                        </Typography>
+                      </div>
+                      <div className="space-y-1">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("reference")}:
+                        </Typography>
+                        <div className="bg-gray-50 rounded-md p-2 border" title={contractData?.reference || "-"}>
+                          <Typography className="text-gray-900 text-sm break-all font-mono" weight="normal">
+                            {contractData?.reference || "-"}
+                          </Typography>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-start">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("contract_amount")}:
+                        </Typography>
+                        <Typography className="text-gray-900 text-sm font-medium text-right ml-2" weight="semibold">
+                          {contractData?.currency}{" "}
+                          {contractData?.amount
+                            ? Number(contractData.amount).toLocaleString(
+                                i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+                              )
+                            : "0"}
+                        </Typography>
+                      </div>
+                      <div className="space-y-1">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("place")}:
+                        </Typography>
+                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                          {contractData?.place || "-"}
+                        </Typography>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("date_of_signing")}:
+                        </Typography>
+                        <Typography className="text-gray-900 text-sm text-right ml-2" weight="normal">
+                          {contractData?.date_of_signing
+                            ? moment(contractData.date_of_signing).format("YYYY/MM/DD")
+                            : "-"}
+                        </Typography>
+                      </div>
+                      <div className="flex justify-between items-start">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("date_created")}:
+                        </Typography>
+                        <Typography className="text-gray-900 text-sm text-right ml-2" weight="normal">
+                          {contractData?.created_at
+                            ? moment(contractData?.created_at).format("YYYY/MM/DD")
+                            : "-"}
+                        </Typography>
+                      </div>
+                      <div className="flex justify-between items-start">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("no_of_request")}:
+                        </Typography>
+                        <Typography className="text-gray-900 text-sm text-right ml-2" weight="normal">
+                          {contractData?.requests_data_count || 0}
+                        </Typography>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-            {/* Right Column */}
-            <div className="border border-gray-200 rounded-lg p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 w-full lg:w-1/2">
-              {/* <div className="flex flex-col sm:flex-row sm:gap-4">
-                <Typography
-                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
-                  weight="semibold"
-                >
-                  Description :
-                </Typography>
-                <Typography
-                  className="text-gray-900 break-words text-sm sm:text-base"
-                  weight="normal"
-                >
-                  -
-                </Typography>
-              </div> */}
-              <div className="flex flex-col sm:flex-row sm:gap-4">
-                <Typography
-                  className="text-gray-600 min-w-[120px] sm:min-w-[140px] text-sm"
-                  weight="semibold"
-                >
-                  {t("position")}:
-                </Typography>
-                <Typography
-                  className="text-gray-900 break-words text-sm sm:text-base"
-                  weight="normal"
-                >
-                  {contractData?.position}
-                </Typography>
+                {/* Contracting Parties - Side by side */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Contracting Agency */}
+                  <div className="border border-gray-200 rounded-lg p-4 sm:p-5 bg-white">
+                    <Typography
+                      className="text-gray-800 text-base font-semibold mb-3 border-b border-gray-100 pb-2 text-blue-700"
+                      weight="semibold"
+                    >
+                      {t("contracting_agency")}
+                    </Typography>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("agency_name")}:
+                        </Typography>
+                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                          {contractData?.contracting_agency_name || "-"}
+                        </Typography>
+                      </div>
+                      <div className="space-y-1">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("person_name")}:
+                        </Typography>
+                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                          {contractData?.contracting_agency_person_name || "-"}
+                        </Typography>
+                      </div>
+                      <div className="space-y-1">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("person_position")}:
+                        </Typography>
+                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                          {contractData?.contracting_agency_person_position || "-"}
+                        </Typography>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Awarded Company */}
+                  <div className="border border-gray-200 rounded-lg p-4 sm:p-5 bg-white">
+                    <Typography
+                      className="text-gray-800 text-base font-semibold mb-3 border-b border-gray-100 pb-2 text-green-700"
+                      weight="semibold"
+                    >
+                      {t("awarded_company")}
+                    </Typography>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("company_name")}:
+                        </Typography>
+                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                          {contractData?.awarded_company_name || "-"}
+                        </Typography>
+                      </div>
+                      <div className="space-y-1">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("person_name")}:
+                        </Typography>
+                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                          {contractData?.awarded_company_person_name || "-"}
+                        </Typography>
+                      </div>
+                      <div className="space-y-1">
+                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                          {t("person_position")}:
+                        </Typography>
+                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                          {contractData?.awarded_company_person_position || "-"}
+                        </Typography>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Legacy Information (if available) */}
+                {(contractData?.signed_by || contractData?.organization || contractData?.position) && (
+                  <div className="border border-orange-200 bg-orange-50 rounded-lg p-4 sm:p-5">
+                    <Typography
+                      className="text-orange-800 text-base font-semibold mb-3 border-b border-orange-200 pb-2"
+                      weight="semibold"
+                    >
+                      {t("legacy_info")}
+                    </Typography>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {contractData?.signed_by && (
+                        <div className="space-y-1">
+                          <Typography className="text-orange-700 text-sm" weight="semibold">
+                            {t("signed_by")}:
+                          </Typography>
+                          <Typography className="text-orange-900 text-sm break-words" weight="normal">
+                            {contractData.signed_by}
+                          </Typography>
+                        </div>
+                      )}
+                      {contractData?.organization && (
+                        <div className="space-y-1">
+                          <Typography className="text-orange-700 text-sm" weight="semibold">
+                            {t("organization")}:
+                          </Typography>
+                          <Typography className="text-orange-900 text-sm break-words" weight="normal">
+                            {contractData.organization}
+                          </Typography>
+                        </div>
+                      )}
+                      {contractData?.position && (
+                        <div className="space-y-1">
+                          <Typography className="text-orange-700 text-sm" weight="semibold">
+                            {t("position")}:
+                          </Typography>
+                          <Typography className="text-orange-900 text-sm break-words" weight="normal">
+                            {contractData.position}
+                          </Typography>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="flex flex-col gap-2">
-                <Typography className="text-gray-600 text-sm" weight="semibold">
-                  {t("uploaded_files")}
-                </Typography>
-                <div className="flex-1">
-                  {contractData?.documents.length ? (
-                    <div className="flex flex-wrap gap-2">
-                      {contractData?.documents.map(
-                        (doc: any, index: number) => (
+
+              {/* Documents Sidebar */}
+              <div className="xl:col-span-1">
+                <div className="border border-gray-200 rounded-lg p-4 sm:p-5 bg-white h-fit sticky top-6">
+                  <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-2">
+                    <Typography
+                      className="text-gray-800 text-base font-semibold"
+                      weight="semibold"
+                    >
+                      {t("uploaded_files")}
+                    </Typography>
+                    {contractData?.documents?.length ? (
+                      <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                        {contractData.documents.length}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="space-y-3">
+                    {contractData?.documents?.length ? (
+                      contractData.documents.map((doc: any, index: number) => (
+                        <div key={index} className="group">
                           <a
-                            key={index}
                             href={doc.file}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-blue-600 hover:underline hover:bg-blue-50 px-2 py-1 rounded-md border border-gray-200 text-sm max-w-full"
+                            className="flex items-center gap-2 p-3 text-blue-600 hover:bg-blue-50 rounded-md border border-gray-200 text-sm transition-colors group-hover:border-blue-300 group-hover:shadow-sm"
                             title={doc?.original_name}
                           >
                             <PdfIcon
-                              width={14}
-                              height={14}
-                              className="flex-shrink-0"
+                              width={16}
+                              height={16}
+                              className="flex-shrink-0 text-red-500"
                             />
-                            <span className="truncate max-w-[200px]">
+                            <span className="break-words text-xs leading-relaxed">
                               {doc?.original_name}
                             </span>
                           </a>
-                        )
-                      )}
-                    </div>
-                  ) : (
-                    <Typography
-                      className="text-gray-500 text-sm"
-                      weight="normal"
-                    >
-                      -
-                    </Typography>
-                  )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6">
+                        <div className="text-gray-400 mb-2">
+                          <svg className="mx-auto h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </div>
+                        <Typography
+                          className="text-gray-500 text-sm"
+                          weight="normal"
+                        >
+                          {t("no_documents_available")}
+                        </Typography>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

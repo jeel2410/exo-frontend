@@ -49,6 +49,7 @@ const ListDashBoardTable = ({
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<Data>>({});
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   const menuRef = useRef<HTMLDivElement | null>(null);
   // const selectAllRef = useRef<HTMLInputElement | null>(null);
@@ -74,8 +75,46 @@ const ListDashBoardTable = ({
     setSelectedRows([]);
   }, [data]);
 
-  const handleMenuToggle = (orderId: number) => {
-    setOpenMenuId(openMenuId === orderId ? null : orderId);
+  const handleMenuToggle = (orderId: number, event?: React.MouseEvent) => {
+    if (openMenuId === orderId) {
+      setOpenMenuId(null);
+      return;
+    }
+    
+    if (event) {
+      // Calculate dropdown position
+      const buttonRect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const dropdownWidth = 160; // w-40 = 160px
+      const dropdownHeight = 200; // Approximate height
+      const margin = 16;
+      
+      // Calculate horizontal position
+      const wouldOverflowRight = buttonRect.right + dropdownWidth > windowWidth - margin;
+      const wouldOverflowLeft = buttonRect.left - dropdownWidth < margin;
+      
+      let left = wouldOverflowRight && !wouldOverflowLeft 
+        ? buttonRect.left - dropdownWidth + buttonRect.width
+        : buttonRect.left;
+      
+      // Calculate vertical position
+      const wouldOverflowBottom = buttonRect.bottom + dropdownHeight > windowHeight - margin;
+      const top = wouldOverflowBottom && buttonRect.top > dropdownHeight
+        ? buttonRect.top - dropdownHeight
+        : buttonRect.bottom;
+      
+      left = Math.max(margin, Math.min(left, windowWidth - dropdownWidth - margin));
+      
+      setDropdownStyle({
+        position: 'fixed',
+        left: `${left}px`,
+        top: `${top}px`,
+        zIndex: 9999
+      });
+    }
+    
+    setOpenMenuId(orderId);
   };
 
   const handleEdit = (order: Data) => {
@@ -483,7 +522,7 @@ const ListDashBoardTable = ({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleMenuToggle(data.id);
+                              handleMenuToggle(data.id, e);
                             }}
                             className="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                             aria-label="Open actions menu"
@@ -500,7 +539,8 @@ const ListDashBoardTable = ({
                           </button>
                           {openMenuId === data.id && (
                             <div
-                              className="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-2"
+                              className="w-40 bg-white border border-gray-200 rounded-md shadow-lg p-2"
+                              style={dropdownStyle}
                               role="menu"
                             >
                               <button
