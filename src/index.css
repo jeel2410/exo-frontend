@@ -316,6 +316,49 @@ layer(base);
 @utility menu-dropdown-badge-inactive {
   @apply bg-brand-50 group-hover:bg-brand-100 dark:bg-brand-500/15 dark:group-hover:bg-brand-500/20;
 }
+
+/* Header Navigation Button Styles - Modern Minimalist */
+.nav-button-active {
+  @apply relative rounded-lg;
+}
+
+.nav-button-active::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 16px);
+  height: 2px;
+  @apply bg-brand-700 transition-all duration-300 ease-out;
+  box-shadow: 0 1px 2px rgba(70, 95, 255, 0.15);
+}
+
+.nav-button-inactive {
+  @apply relative rounded-lg hover:bg-gray-50/50;
+}
+
+.nav-button-inactive::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  @apply bg-brand-700 transition-all duration-300 ease-out;
+}
+
+.nav-button-inactive:hover::after {
+  width: calc(100% - 16px);
+  box-shadow: 0 1px 2px rgba(70, 95, 255, 0.15);
+}
+
+/* Focus states for accessibility */
+.nav-button-active:focus-visible,
+.nav-button-inactive:focus-visible {
+  @apply outline-2 outline-offset-2 outline-brand-500 ring-0;
+}
 @utility no-scrollbar {
   /* Chrome, Safari and Opera */
   &::-webkit-scrollbar {

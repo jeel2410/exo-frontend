@@ -5,18 +5,20 @@ import Typography from "../../lib/components/atoms/Typography";
 import Button from "../../lib/components/atoms/Button";
 import { CongratulationIcon } from "../../icons";
 
-interface ChangeEmailModalProps {
+interface CreateRequestConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  projectId: string;
+  requestId?: string;
 }
-const CreateContractConfirmationModal = ({
+
+const CreateRequestConfirmationModal = ({
   isOpen,
   onClose,
-  projectId,
-}: ChangeEmailModalProps) => {
+  requestId,
+}: CreateRequestConfirmationModalProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
   return (
     <div className="flex w-full">
       <Modal
@@ -24,7 +26,7 @@ const CreateContractConfirmationModal = ({
         isOpen={isOpen}
         onClose={() => {
           onClose();
-          navigate("/contract");
+          navigate("/requests");
         }}
         isFullscreen={false}
         showCloseButton={false}
@@ -46,33 +48,38 @@ const CreateContractConfirmationModal = ({
             size="xl"
             className="text-secondary-100 text-center md:text-xl_2"
           >
-            {t("contract_submitted")}
+            {t("request_submitted")}
           </Typography>
           <Typography
             weight="normal"
             size="sm"
             className="text-secondary-60 text-center md:text-base px-2 md:px-4"
           >
-            {t("contract_update_message")}
+            {t("request_update_message")}
           </Typography>
           <div className="flex flex-col md:flex-row gap-3 md:gap-4 w-full md:w-auto">
             <Button
               variant="outline"
               className="w-full md:w-fit py-2.5 md:py-3 px-4 md:px-[35px]"
               onClick={() => {
-                navigate("/contract");
+                navigate("/requests");
                 onClose();
               }}
             >
               {t("go_to_dashboard")}
             </Button>
-            <Button
-              variant="primary"
-              className="w-full md:w-fit py-2.5 md:py-3 px-4 md:px-[35px]"
-              onClick={() => navigate("/add-request/" + projectId)}
-            >
-              {t("create_request")}
-            </Button>
+            {requestId && (
+              <Button
+                variant="primary"
+                className="w-full md:w-fit py-2.5 md:py-3 px-4 md:px-[35px]"
+                onClick={() => {
+                  navigate(`/request-details/${requestId}`);
+                  onClose();
+                }}
+              >
+                {t("view_request")}
+              </Button>
+            )}
           </div>
         </div>
       </Modal>
@@ -80,4 +87,4 @@ const CreateContractConfirmationModal = ({
   );
 };
 
-export default CreateContractConfirmationModal;
+export default CreateRequestConfirmationModal;

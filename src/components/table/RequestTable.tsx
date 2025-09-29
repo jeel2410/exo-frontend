@@ -15,6 +15,7 @@ import projectService from "../../services/project.service.ts";
 import { useAuth } from "../../context/AuthContext.tsx";
 import { useTranslation } from "react-i18next";
 import StatusBadge, { StatusCode } from "../common/StatusBadge.tsx";
+import { formatCurrencyFrench } from "../../utils/numberFormat";
 
 // Map API status values to StatusBadge codes
 const mapStatusToCode = (status: string): StatusCode => {
@@ -112,7 +113,7 @@ const RequestTable = ({
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleClickOutside = (event: Event) => {
@@ -383,9 +384,7 @@ const RequestTable = ({
                               const amount = parseFloat(amountToDisplay);
                               return isNaN(amount)
                                 ? "0"
-                                : amount.toLocaleString(
-                                    i18n.language === 'fr' ? 'fr-FR' : 'en-US'
-                                  );
+                                : formatCurrencyFrench(amount);
                             })()}
                           </span>
                         </div>

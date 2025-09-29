@@ -15,11 +15,12 @@ import AddressTable from "../table/AddressTable";
 import RequestTable from "../table/RequestTable";
 import projectService from "../../services/project.service";
 import { useLoading } from "../../context/LoaderProvider";
+import { formatCurrencyFrench } from "../../utils/numberFormat";
 
 const ProjectDetails = () => {
   const navigate = useNavigate();
   const { projectId } = useParams();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [project, setProject] = useState<any>(null);
   // const [loading, setLoading] = useState(true);
   const { setLoading } = useLoading();
@@ -76,9 +77,7 @@ const ProjectDetails = () => {
     date ? new Date(date).toLocaleDateString("en-US") : "-";
   // Format amount
   const formatAmount = (amount: string | number) =>
-    Number(amount).toLocaleString(
-      i18n.language === 'fr' ? 'fr-FR' : 'en-US'
-    );
+    formatCurrencyFrench(amount);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },

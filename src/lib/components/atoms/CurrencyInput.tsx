@@ -2,6 +2,7 @@ import Input, { InputProps } from "./Input";
 import { useState, useEffect } from "react";
 import Typography from "./Typography";
 import CustomDropdown from "./CustomDropdown";
+import { formatCurrencyFrench } from "../../../utils/numberFormat";
 
 type CurrencyOption = {
   value: string;
@@ -45,7 +46,7 @@ const CurrencyInput = ({
     const numStr = num.replace(/[^0-9]/g, "");
     if (!numStr) return "";
     const number = parseInt(numStr, 10);
-    return new Intl.NumberFormat("en-US").format(number);
+    return formatCurrencyFrench(number);
   };
 
   const handleCurrencyChange = (currency: string) => {
@@ -54,7 +55,8 @@ const CurrencyInput = ({
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value.replace(/,/g, "");
+    // Remove spaces (French thousand separators) and other non-digit characters except digits
+    const newValue = e.target.value.replace(/\s/g, "").replace(/[^\d]/g, "");
     if (/^\d*$/.test(newValue)) {
       onChange?.(newValue, selectedCurrency);
     }

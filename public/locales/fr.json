@@ -492,5 +492,6 @@
   "total_cif": "Total CIF",
   "tarrif_position": "Position Tarifaire",
   "droit": "Droit",
-  "ttc": "TTC"
+  "ttc": "TTC",
+  "select_all": "Tout sélectionner"
 }

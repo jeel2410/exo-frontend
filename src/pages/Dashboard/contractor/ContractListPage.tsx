@@ -44,6 +44,7 @@ export interface ContractData {
   contractId: string;
   projectId?: string;
   created_at: string | Date;
+  status: string;
   // Legacy fields for backward compatibility
   signedBy?: string;
   position?: string;
@@ -164,6 +165,7 @@ const ContractListPage = () => {
           contractId: contract.id,
           projectId: contract.project_id,
           created_at: contract.created_at,
+          status: contract.is_archived ? 'archived' : (contract.status || 'active'),
           // Legacy fields for backward compatibility
           signedBy: contract.signed_by,
           position: contract.position,

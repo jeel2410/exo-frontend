@@ -491,5 +491,6 @@
   "total_cif": "Total CIF",
   "tarrif_position": "Tariff Position",
   "droit": "Duty",
-  "ttc": "TTC"
+  "ttc": "TTC",
+  "select_all": "Select All"
 }

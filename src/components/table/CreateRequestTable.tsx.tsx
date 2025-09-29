@@ -452,7 +452,8 @@ const CreateRequestTable = ({
           value: "Taxes DGRAD à l'importation",
           label: "Taxes DGRAD à l'importation",
         },
-        { value: "Droits de douane", label: "Droits de douane" },
+        { value: "Droits d'entrée", label: "Droits d'entrée" },
+        { value: "Droit de consommation", label: "Droit de consommation" },
       ];
     }
     // Default fallback for DGI, DGDA, DGRAD (legacy values)
@@ -515,7 +516,7 @@ const CreateRequestTable = ({
     const formattedAmount = isNaN(numericAmount)
       ? "0"
       : numericAmount.toLocaleString(
-          i18n.language === 'fr' ? 'fr-FR' : 'en-US'
+          i18n.language === "fr" ? "fr-FR" : "en-US"
         );
 
     return (
@@ -525,18 +526,17 @@ const CreateRequestTable = ({
     );
   };
 
-
   // Helper function to render dynamic columns based on tax category
   const renderDynamicColumns = (order: Order, index: number) => {
     const columns = [];
-    
+
     // Always include SR No, Reference, and Custom Duties first
     columns.push(
       <TableCell key="sr_no" className="px-5 py-4 text-gray-500 text-sm">
         {index + 1}
       </TableCell>
     );
-    
+
     columns.push(
       <TableCell key="reference" className="px-5 py-4 sm:px-6">
         {editingId === order.id ? (
@@ -559,7 +559,7 @@ const CreateRequestTable = ({
         )}
       </TableCell>
     );
-    
+
     columns.push(
       <TableCell key="custom_duty" className="px-5 py-4 sm:px-6">
         {editingId === order.id ? (
@@ -571,15 +571,13 @@ const CreateRequestTable = ({
                 handleInputChange("customDuty", newCustomDuty);
 
                 // Auto-set tax rate if TVA is selected
-                const constraints =
-                  getTaxRateConstraints(newCustomDuty);
+                const constraints = getTaxRateConstraints(newCustomDuty);
                 if (constraints.fixed !== null) {
                   handleInputChange("taxRate", constraints.fixed);
                 }
               }}
               className={`px-2 py-1 text-sm border rounded-md bg-white ${
-                editFormData.customDuty &&
-                editFormData.customDuty.trim() !== ""
+                editFormData.customDuty && editFormData.customDuty.trim() !== ""
                   ? "border-gray-300"
                   : "border-red-500"
               }`}
@@ -614,7 +612,7 @@ const CreateRequestTable = ({
 
     if (currentTaxCategory === "location_acquisition") {
       // Local acquisition columns: Nature Marchandise, Quantity, Unit, Unit Price, Total, Tax Rate, Tax Amount, TTC
-      
+
       // Nature Marchandise
       columns.push(
         <TableCell key="nature_marchandise" className="px-5 py-4 sm:px-6">
@@ -630,8 +628,7 @@ const CreateRequestTable = ({
                 className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
-                    : editFormData.label &&
-                      editFormData.label.trim() !== ""
+                    : editFormData.label && editFormData.label.trim() !== ""
                     ? "bg-secondary-10 border-secondary-30"
                     : "bg-secondary-10 border-red-500"
                 }`}
@@ -650,7 +647,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // Quantity
       columns.push(
         <TableCell key="quantity" className="px-4 py-3 text-gray-500 text-sm">
@@ -703,7 +700,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // Unit
       columns.push(
         <TableCell key="unit" className="px-5 py-4 sm:px-6">
@@ -753,7 +750,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // Unit Price
       columns.push(
         <TableCell key="unit_price" className="px-5 py-4 sm:px-6">
@@ -787,7 +784,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // Total
       columns.push(
         <TableCell key="total" className="px-5 py-4 sm:px-6">
@@ -806,7 +803,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // Tax Rate
       columns.push(
         <TableCell key="tax_rate" className="px-5 py-4 sm:px-6">
@@ -834,14 +831,13 @@ const CreateRequestTable = ({
                 }}
                 disabled={
                   !editFormData.customDuty ||
-                  getTaxRateConstraints(editFormData.customDuty)
-                    .fixed !== null
+                  getTaxRateConstraints(editFormData.customDuty).fixed !== null
                 }
                 className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
-                    : getTaxRateConstraints(editFormData.customDuty)
-                        .fixed !== null
+                    : getTaxRateConstraints(editFormData.customDuty).fixed !==
+                      null
                     ? "bg-gray-100 cursor-not-allowed border-gray-300 text-gray-600"
                     : editFormData.taxRate !== undefined &&
                       isValidTaxRate(
@@ -884,7 +880,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // Tax Amount
       columns.push(
         <TableCell key="tax_amount" className="px-5 py-4 sm:px-6">
@@ -903,7 +899,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // TTC (VAT Included)
       columns.push(
         <TableCell key="ttc" className="px-5 py-4 sm:px-6">
@@ -918,16 +914,13 @@ const CreateRequestTable = ({
               </Typography>
             </div>
           ) : (
-            renderAmountOnly(
-              order.vatIncluded || order.vat_included || 0
-            )
+            renderAmountOnly(order.vatIncluded || order.vat_included || 0)
           )}
         </TableCell>
       );
-      
     } else if (currentTaxCategory === "importation") {
       // Importation columns: Nature Marchandise, Quantity, Unit, CIF, Total CIF, Tarrif Position, Droit, TTC
-      
+
       // Nature Marchandise
       columns.push(
         <TableCell key="nature_marchandise" className="px-5 py-4 sm:px-6">
@@ -943,8 +936,7 @@ const CreateRequestTable = ({
                 className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
-                    : editFormData.label &&
-                      editFormData.label.trim() !== ""
+                    : editFormData.label && editFormData.label.trim() !== ""
                     ? "bg-secondary-10 border-secondary-30"
                     : "bg-secondary-10 border-red-500"
                 }`}
@@ -963,7 +955,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // Quantity (same as local acquisition)
       columns.push(
         <TableCell key="quantity" className="px-4 py-3 text-gray-500 text-sm">
@@ -1016,7 +1008,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // Unit (same as local acquisition)
       columns.push(
         <TableCell key="unit" className="px-5 py-4 sm:px-6">
@@ -1066,7 +1058,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // CIF (using unitPrice field for backend compatibility)
       columns.push(
         <TableCell key="cif" className="px-5 py-4 sm:px-6">
@@ -1100,7 +1092,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // Total CIF (using total field)
       columns.push(
         <TableCell key="total_cif" className="px-5 py-4 sm:px-6">
@@ -1119,7 +1111,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // Tarrif Position (using taxRate field for backend compatibility)
       columns.push(
         <TableCell key="tarrif_position" className="px-5 py-4 sm:px-6">
@@ -1147,14 +1139,13 @@ const CreateRequestTable = ({
                 }}
                 disabled={
                   !editFormData.customDuty ||
-                  getTaxRateConstraints(editFormData.customDuty)
-                    .fixed !== null
+                  getTaxRateConstraints(editFormData.customDuty).fixed !== null
                 }
                 className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
-                    : getTaxRateConstraints(editFormData.customDuty)
-                        .fixed !== null
+                    : getTaxRateConstraints(editFormData.customDuty).fixed !==
+                      null
                     ? "bg-gray-100 cursor-not-allowed border-gray-300 text-gray-600"
                     : editFormData.taxRate !== undefined &&
                       isValidTaxRate(
@@ -1197,7 +1188,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // Droit (using taxAmount field)
       columns.push(
         <TableCell key="droit" className="px-5 py-4 sm:px-6">
@@ -1216,7 +1207,7 @@ const CreateRequestTable = ({
           )}
         </TableCell>
       );
-      
+
       // TTC (VAT Included)
       columns.push(
         <TableCell key="ttc" className="px-5 py-4 sm:px-6">
@@ -1231,9 +1222,7 @@ const CreateRequestTable = ({
               </Typography>
             </div>
           ) : (
-            renderAmountOnly(
-              order.vatIncluded || order.vat_included || 0
-            )
+            renderAmountOnly(order.vatIncluded || order.vat_included || 0)
           )}
         </TableCell>
       );
@@ -1253,8 +1242,7 @@ const CreateRequestTable = ({
                 className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
-                    : editFormData.label &&
-                      editFormData.label.trim() !== ""
+                    : editFormData.label && editFormData.label.trim() !== ""
                     ? "bg-secondary-10 border-secondary-30"
                     : "bg-secondary-10 border-red-500"
                 }`}
@@ -1272,7 +1260,7 @@ const CreateRequestTable = ({
             </span>
           )}
         </TableCell>,
-        
+
         // Add all other default columns (quantity, unit, currency, unitPrice, total, taxRate, taxAmount, vatIncluded)
         <TableCell key="quantity" className="px-4 py-3 text-gray-500 text-sm">
           {editingId === order.id ? (
@@ -1323,7 +1311,7 @@ const CreateRequestTable = ({
             </span>
           )}
         </TableCell>,
-        
+
         <TableCell key="unit" className="px-5 py-4 sm:px-6">
           {editingId === order.id ? (
             <div className="flex flex-col gap-1 relative">
@@ -1370,11 +1358,11 @@ const CreateRequestTable = ({
             </span>
           )}
         </TableCell>,
-        
+
         <TableCell key="currency" className="px-5 py-4 sm:px-6">
           {renderCurrencyDisplay(order.currency)}
         </TableCell>,
-        
+
         <TableCell key="unitPrice" className="px-5 py-4 sm:px-6">
           {editingId === order.id ? (
             <div className="flex flex-col gap-1">
@@ -1405,7 +1393,7 @@ const CreateRequestTable = ({
             renderAmountOnly(order.unitPrice || order.unit_price || 0)
           )}
         </TableCell>,
-        
+
         <TableCell key="total" className="px-5 py-4 sm:px-6">
           {editingId === order.id ? (
             <div className="bg-secondary-10 border border-dotted border-secondary-30 w-full cursor-not-allowed">
@@ -1421,7 +1409,7 @@ const CreateRequestTable = ({
             renderAmountOnly(order.total || 0)
           )}
         </TableCell>,
-        
+
         <TableCell key="taxRate" className="px-5 py-4 sm:px-6">
           {editingId === order.id ? (
             <div className="flex flex-col gap-1">
@@ -1447,14 +1435,13 @@ const CreateRequestTable = ({
                 }}
                 disabled={
                   !editFormData.customDuty ||
-                  getTaxRateConstraints(editFormData.customDuty)
-                    .fixed !== null
+                  getTaxRateConstraints(editFormData.customDuty).fixed !== null
                 }
                 className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
-                    : getTaxRateConstraints(editFormData.customDuty)
-                        .fixed !== null
+                    : getTaxRateConstraints(editFormData.customDuty).fixed !==
+                      null
                     ? "bg-gray-100 cursor-not-allowed border-gray-300 text-gray-600"
                     : editFormData.taxRate !== undefined &&
                       isValidTaxRate(
@@ -1496,7 +1483,7 @@ const CreateRequestTable = ({
             </span>
           )}
         </TableCell>,
-        
+
         <TableCell key="taxAmount" className="px-5 py-4 sm:px-6">
           {editingId === order.id ? (
             <div className="bg-secondary-10 border border-dotted border-secondary-30 w-full cursor-not-allowed">
@@ -1512,7 +1499,7 @@ const CreateRequestTable = ({
             renderAmountOnly(order.taxAmount || order.tax_amount || 0)
           )}
         </TableCell>,
-        
+
         <TableCell key="vatIncluded" className="px-5 py-4 sm:px-6">
           {editingId === order.id ? (
             <div className="bg-secondary-10 border border-dotted border-secondary-30 w-full cursor-not-allowed">
@@ -1525,14 +1512,12 @@ const CreateRequestTable = ({
               </Typography>
             </div>
           ) : (
-            renderAmountOnly(
-              order.vatIncluded || order.vat_included || 0
-            )
+            renderAmountOnly(order.vatIncluded || order.vat_included || 0)
           )}
         </TableCell>
       );
     }
-    
+
     return columns;
   };
 
@@ -1656,7 +1641,7 @@ const CreateRequestTable = ({
           : []),
       ];
     }
-    
+
     // Default fallback (same as original structure but with reference)
     return [
       ...baseHeaders,

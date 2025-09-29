@@ -12,6 +12,21 @@ import { useTranslation } from "react-i18next";
 import contractService from "../../services/contract.service";
 import { useLoading } from "../../context/LoaderProvider";
 import { toast } from "react-toastify";
+import { formatCurrencyFrench } from "../../utils/numberFormat";
+
+// Utility function to get status color classes
+const getStatusColorClasses = (status: string): string => {
+  switch (status?.toLowerCase()) {
+    case 'active':
+      return 'bg-green-100 text-green-800';
+    case 'archived':
+      return 'bg-red-100 text-red-800';
+    case 'draft':
+      return 'bg-blue-100 text-blue-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
 
 export interface TableHeader {
   content: React.ReactNode;
@@ -102,6 +117,7 @@ export interface ContractData {
   contractId: string;
   projectId?: string;
   created_at: string | Date;
+  status: string;
   // Legacy fields for backward compatibility
   signedBy?: string;
   position?: string;
@@ -126,7 +142,7 @@ const ContractListTable = ({
   const navigate = useNavigate();
   const { setLoading } = useLoading();
 
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   // Check if device is mobile
   useEffect(() => {
@@ -275,9 +291,7 @@ const ContractListTable = ({
             ) : null}
             <span className="text-xs text-gray-600">{contract.currency}</span>
             <span className="font-medium text-secondary-100 text-sm">
-              {Number(contract.amountOfContract).toLocaleString(
-                i18n.language === "fr" ? "fr-FR" : "en-US"
-              )}
+              {formatCurrencyFrench(contract.amountOfContract)}
             </span>
           </div>
         </div>
@@ -385,6 +399,13 @@ const ContractListTable = ({
             </span>
           </div>
         </div>
+        
+        <div className="mt-3">
+          <span className="text-secondary-60 block mb-1">{t("status")}</span>
+          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColorClasses(contract.status)}`}>
+            {contract.status ? contract.status.charAt(0).toUpperCase() + contract.status.slice(1) : 'Active'}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -425,6 +446,10 @@ const ContractListTable = ({
     {
       content: <div className="text-nowrap">{t("number_of_requests")}</div>,
       className: "min-w-[120px]",
+    },
+    {
+      content: <div className="text-nowrap">{t("status")}</div>,
+      className: "min-w-[100px]",
     },
     {
       content: <div>{t("actions")}</div>,
@@ -532,9 +557,7 @@ const ContractListTable = ({
                             {data.currency}
                           </span>
                           <span className="block font-medium text-secondary-100 text-sm truncate">
-                            {Number(data.amountOfContract).toLocaleString(
-                              i18n.language === "fr" ? "fr-FR" : "en-US"
-                            )}
+                            {formatCurrencyFrench(data.amountOfContract)}
                           </span>
                         </div>
                       </TableCell>
@@ -551,6 +574,11 @@ const ContractListTable = ({
                       <TableCell className="px-5 py-4 sm:px-6 min-w-[120px]">
                         <span className="block font-medium text-secondary-100 text-sm text-nowrap">
                           {data.numberOfRequests}
+                        </span>
+                      </TableCell>
+                      <TableCell className="px-5 py-4 sm:px-6 min-w-[100px]">
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColorClasses(data.status)}`}>
+                          {data.status ? data.status.charAt(0).toUpperCase() + data.status.slice(1) : 'Active'}
                         </span>
                       </TableCell>
                       <TableCell className="px-4 py-3 text-gray-500 text-sm">

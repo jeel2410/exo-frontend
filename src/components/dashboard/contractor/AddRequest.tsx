@@ -19,6 +19,8 @@ import { useRoleRoute } from "../../../hooks/useRoleRoute.ts";
 import { toast } from "react-toastify";
 import Loader from "../../common/Loader.tsx";
 import Breadcrumbs from "../../common/Breadcrumbs.tsx";
+import CreateRequestConfirmationModal from "../../modal/CreateRequestConfirmationModal.tsx";
+import { useModal } from "../../../hooks/useModal.ts";
 
 interface AddressData {
   id: string;
@@ -40,6 +42,7 @@ interface Entity {
   unit_price: number;
   vat_included: number;
   custom_duties?: string;
+  reference?: string; // Add reference field for API compatibility
 }
 
 interface CreateRequestPayload {
@@ -115,6 +118,8 @@ const AddRequest = () => {
     reference?: string;
   }>({});
   const [requestSubStatus, setRequestSubStatus] = useState<string>("");
+  const [createdRequestId, setCreatedRequestId] = useState<string>("");
+  const { isOpen, openModal, closeModal } = useModal();
 
   const pathName: string = pathname.split("/")[1];
 
@@ -198,6 +203,7 @@ const AddRequest = () => {
       taxAmount: 0,
       vatIncluded: 0,
       customDuty: "",
+      reference: "", // Initialize reference field for new entities
     };
     setData(recalculateTableData([...data, newOrder]));
     setAutoEditId(newId); // Set the newly added entity to auto-edit mode
@@ -219,6 +225,7 @@ const AddRequest = () => {
         taxRate: entity.tax_rate,
         taxAmount: entity.tax_amount,
         vatIncluded: entity.vat_included,
+        reference: entity.reference || "", // Map reference field from API response
         customDuty: entity.custom_duties || "",
         custom_duties: entity.custom_duties || "", // Add this for backward compatibility
       };
@@ -309,13 +316,14 @@ const AddRequest = () => {
 
       toast.success(t("request_updated_successfully"));
 
-      // Extract request ID from response and redirect to request details
+      // Extract request ID from response and show confirmation modal
       const requestId =
         response?.data?.data?.id || response?.data?.data?.request_id;
       if (requestId) {
-        navigate(`/request-details/${requestId}`);
+        setCreatedRequestId(requestId);
+        openModal();
       } else {
-        // Fallback to contract project list if no request ID
+        // Fallback to requests listing if no request ID
         navigate("/requests");
       }
     },
@@ -423,6 +431,13 @@ const AddRequest = () => {
 
     const documentIds = getDocumentIdsForSubmission();
 
+    // Debug: Log the current data state before API call
+    console.log("🚀 Form data before API call:", data);
+    console.log(
+      "🚀 Reference fields in data:",
+      data.map((d) => ({ id: d.id, reference: d.reference, label: d.label }))
+    );
+
     const apiData: CreateRequestPayload = {
       project_id: projectId,
       address_id: selectedAddresses.join(","), // Convert array to comma-separated string
@@ -438,6 +453,7 @@ const AddRequest = () => {
           tax_rate: d.taxRate.toString(),
           tax_amount: d.taxAmount.toString(),
           vat_included: d.vatIncluded.toString(),
+          reference: d.reference || "", // Add reference field for API compatibility
           custom_duties: d.customDuty || d.custom_duty || "",
         }))
       ),
@@ -445,6 +461,8 @@ const AddRequest = () => {
       ...(requestId && { request_id: requestId }),
       contract_id: contractId || "",
     };
+    console.log("🚀 Final API payload:", apiData);
+    console.log("🚀 Stringified request_entity:", apiData.request_entity);
     createRequestMutation.mutate(apiData);
   };
   const fileUploadMutation = async ({
@@ -883,7 +901,7 @@ const AddRequest = () => {
                       weight="normal"
                       className="text-primary-70"
                     >
-                      Select All ({addressData.data.length})
+                      {t("select_all")} ({addressData.data.length})
                     </Typography>
                   </label>
                 </div>
@@ -978,7 +996,7 @@ const AddRequest = () => {
             onClick={handleAddEntity}
           >
             <WhitePlusIcon />
-            <Typography>{t("add_address")}</Typography>
+            <Typography>{t("add_entity")}</Typography>
           </Button>
         </div>
 
@@ -1094,6 +1112,13 @@ const AddRequest = () => {
           </Button>
         </div>
       </div>
+
+      {/* Request Success Confirmation Modal */}
+      <CreateRequestConfirmationModal
+        isOpen={isOpen}
+        onClose={closeModal}
+        requestId={createdRequestId}
+      />
     </div>
   );
 };

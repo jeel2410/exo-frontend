@@ -1,7 +1,7 @@
 import { FC } from "react";
-import { useTranslation } from "react-i18next";
 import { FileVioletIcon } from "../../../icons";
 import Typography, { TypographyProps } from "../atoms/Typography";
+import { formatCurrencyFrench } from "../../../utils/numberFormat";
 
 interface DashBoardCardProps {
   icon?: React.ReactNode;
@@ -22,7 +22,6 @@ const DashBoardCard: FC<DashBoardCardProps> = ({
   titleSize = "sm",
   className = "",
 }) => {
-  const { i18n } = useTranslation();
   return (
     <div
       onClick={onClick}
@@ -36,9 +35,7 @@ const DashBoardCard: FC<DashBoardCardProps> = ({
             weight="extrabold"
             className="text-secondary-100"
           >
-            {count?.toLocaleString(
-              i18n.language === 'fr' ? 'fr-FR' : 'en-US'
-            )}
+            {formatCurrencyFrench(count)}
           </Typography>
 
           <Typography size={titleSize} weight="normal" className="text-secondary-60 truncate">

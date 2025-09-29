@@ -94,6 +94,9 @@ const ContractListSkeleton = () => {
                           {t("number_of_equests")}
                         </th>
                         <th className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm w-20">
+                          {t("status")}
+                        </th>
+                        <th className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm w-20">
                           {t("actions")}
                         </th>
                       </tr>
@@ -143,6 +146,9 @@ const ContractListSkeleton = () => {
                           </td>
                           <td className="px-5 py-4 sm:px-6">
                             <div className={`h-4 w-8 rounded ${shimmer}`}></div>
+                          </td>
+                          <td className="px-5 py-4 sm:px-6">
+                            <div className={`h-5 w-16 rounded-full ${shimmer}`}></div>
                           </td>
                           <td className="px-4 py-3 text-gray-500 text-sm">
                             <div

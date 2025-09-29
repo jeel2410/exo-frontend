@@ -9,6 +9,7 @@ import {
 import { USFlag, CDFFlag } from "../../icons";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
+import { formatCurrencyFrench } from "../../utils/numberFormat";
 
 export interface ContractData {
   id: number;
@@ -25,7 +26,7 @@ export interface ContractData {
 const ContractTable = ({ data }: { data: ContractData[] | [] }) => {
   const [tableData, setTableData] = useState<ContractData[]>(data);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     setTableData(data);
@@ -141,9 +142,7 @@ const ContractTable = ({ data }: { data: ContractData[] | [] }) => {
                           {data.currency || "USD"}
                         </span>
                         <span className="block font-medium text-secondary-100 text-sm">
-                          {data.amountByContract.toLocaleString(
-                            i18n.language === 'fr' ? 'fr-FR' : 'en-US'
-                          )}
+                          {formatCurrencyFrench(data.amountByContract)}
                         </span>
                       </div>
                     </TableCell>

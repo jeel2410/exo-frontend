@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { CrossIcon } from "../../../icons";
 
 interface ModalProps {
@@ -54,23 +55,26 @@ const Modal: React.FC<ModalProps> = ({
     ? "w-full h-full"
     : "relative w-full rounded-[8px] bg-white";
 
-  return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-y-auto modal z-99999">
+  const modalContent = (
+    <div className="fixed inset-0 flex items-center justify-center overflow-y-auto modal" style={{ zIndex: 2147483647 }}>
       {!isFullscreen && (
         <div
           className="fixed inset-0 h-full w-full bg-[#0000004D]"
           onClick={onClose}
+          style={{ zIndex: 2147483646 }}
         ></div>
       )}
       <div
         ref={modalRef}
         className={`${contentClasses}  ${className}`}
         onClick={(e) => e.stopPropagation()}
+        style={{ zIndex: 2147483647 }}
       >
         {showCloseButton && (
           <button
             onClick={onClose}
-            className="absolute right-3 top-3 z-999 flex h-9.5 w-9.5 items-center justify-center rounded-full  sm:right-6 sm:top-6 sm:h-11 sm:w-11"
+            className="absolute right-3 top-3 flex h-9.5 w-9.5 items-center justify-center rounded-full  sm:right-6 sm:top-6 sm:h-11 sm:w-11"
+            style={{ zIndex: 2147483647 }}
           >
             <CrossIcon />
           </button>
@@ -79,6 +83,8 @@ const Modal: React.FC<ModalProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default Modal;

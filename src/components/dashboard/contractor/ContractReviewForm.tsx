@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import Typography from "../../../lib/components/atoms/Typography";
 import Label from "../../../lib/components/atoms/Label";
 import { ContractReviewData } from "../../../pages/Dashboard/contractor/ContractCreatePage";
+import { formatCurrencyFrench } from "../../../utils/numberFormat";
 
 interface Address {
   id: string;
@@ -16,12 +17,10 @@ interface ReviewFormProps {
 }
 
 const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const formatAmount = (amount: string) => {
     if (!amount) return "";
-    return Number(amount).toLocaleString(
-      i18n.language === 'fr' ? 'fr-FR' : 'en-US'
-    );
+    return formatCurrencyFrench(amount);
   };
 
   const formatDate = (date: any) => {

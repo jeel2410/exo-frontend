@@ -24,6 +24,8 @@ import { useNavigate, useParams } from "react-router";
 import Loader from "../common/Loader.tsx";
 import { toast } from "react-toastify";
 import { useRoleRoute } from "../../hooks/useRoleRoute.ts";
+import CreateRequestConfirmationModal from "../modal/CreateRequestConfirmationModal.tsx";
+import { useModal } from "../../hooks/useModal.ts";
 
 // Type for address data structure
 interface AddressData {
@@ -47,6 +49,7 @@ interface Entity {
   unit_price: number;
   vat_included: number;
   unit?: string;
+  reference?: string; // Add reference field for API compatibility
 }
 
 // Type for create request payload
@@ -89,6 +92,8 @@ const AddRequest = () => {
     requestLetter?: string;
     fileUpload?: string;
   }>({});
+  const [createdRequestId, setCreatedRequestId] = useState<string>("");
+  const { isOpen, openModal, closeModal } = useModal();
   useEffect(() => {
     const user = localStorageService.getUser() || "";
     setUserData(JSON.parse(user));
@@ -166,6 +171,7 @@ const AddRequest = () => {
       taxAmount: 0,
       vatIncluded: 0,
       customDuty: "",
+      reference: "", // Initialize reference field for new entities
     };
     setData(recalculateTableData([...data, newOrder]));
     setAutoEditId(newId); // Set the newly added entity to auto-edit mode
@@ -182,6 +188,7 @@ const AddRequest = () => {
       taxRate: entity.tax_rate,
       taxAmount: entity.tax_amount,
       vatIncluded: entity.vat_included,
+      reference: entity.reference || "", // Map reference field from API response
       financialAuthority: entity.financial_authority,
     }));
     setFinancialAuthority(
@@ -235,14 +242,15 @@ const AddRequest = () => {
       console.log(response, "response in req");
       toast.success(t("request_updated_successfully"));
 
-      // Extract request ID from response and redirect to request details
+      // Extract request ID from response and show confirmation modal
       const requestId =
         response?.data?.data?.id || response?.data?.data?.request_id;
       if (requestId) {
-        navigate(`/request-details/${requestId}`);
+        setCreatedRequestId(requestId);
+        openModal();
       } else {
-        // Fallback to contract project list if no request ID
-        navigate("/contract-project-list");
+        // Fallback to requests listing if no request ID
+        navigate("/requests");
       }
     },
     onError: (error: unknown) => {
@@ -318,6 +326,7 @@ const AddRequest = () => {
 
     // Debug: Log the current data state before API call
     console.log("🚀 Form data before API call:", data);
+    console.log("🚀 Reference fields in data:", data.map(d => ({ id: d.id, reference: d.reference, label: d.label })));
 
     const requestEntities = data.map((d) => ({
       label: d.label,
@@ -328,6 +337,7 @@ const AddRequest = () => {
       tax_rate: d.taxRate.toString(),
       tax_amount: d.taxAmount.toString(),
       vat_included: d.vatIncluded.toString(),
+      reference: d.reference || "", // Add reference field for API compatibility
       financial_authority: financialAuthority,
     }));
 
@@ -693,6 +703,13 @@ const AddRequest = () => {
           </Button>
         </div>
       </div>
+      
+      {/* Request Success Confirmation Modal */}
+      <CreateRequestConfirmationModal
+        isOpen={isOpen}
+        onClose={closeModal}
+        requestId={createdRequestId}
+      />
     </AppLayout>
   );
 };

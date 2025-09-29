@@ -470,7 +470,7 @@ const RequestListPage = () => {
                   {isDatePickerOpen && (
                     <div
                       ref={datePickerRef}
-                      className="absolute top-[100%] right-0 w-max z-50 mt-2 bg-white border border-secondary-30 rounded-lg shadow-lg p-4"
+                      className="absolute top-[100%] right-0 w-max  mt-2 bg-white border border-secondary-30 rounded-lg shadow-lg p-4"
                     >
                       <Filter
                         startDate={range.startDate}
@@ -538,9 +538,9 @@ const RequestListPage = () => {
           </motion.div>
         </div>
       )}
-      
+
       {/* No Contract Modal */}
-      <NoContractModal 
+      <NoContractModal
         isOpen={showNoContractModal}
         onClose={() => setShowNoContractModal(false)}
       />

@@ -281,7 +281,10 @@ ProjectInfoFormProps) => {
     { value: "Government", label: t("government") },
     { value: "Bank", label: t("bank") },
     { value: "Private Investor", label: t("private_investor") },
-    { value: "International Organization", label: t("international_organization") },
+    {
+      value: "International Organization",
+      label: t("international_organization"),
+    },
     { value: "NGO", label: t("ngo") },
     { value: "Self Funded", label: t("self_funded") },
     { value: "Other", label: t("other") },

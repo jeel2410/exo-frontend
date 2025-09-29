@@ -24,6 +24,7 @@ import requestService from "../../../services/request.service";
 import { useRoleRoute } from "../../../hooks/useRoleRoute";
 import Breadcrumbs from "../../common/Breadcrumbs";
 import CurrencyBadge from "../../common/CurrencyBadge";
+import { formatCurrencyFrench } from "../../../utils/numberFormat";
 
 interface ContractProps {
   id?: string;
@@ -76,7 +77,7 @@ interface CardDateProps {
 }
 
 const ContractDetails = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   // const { user } = useAuth();
 
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -425,9 +426,7 @@ const ContractDetails = () => {
                         <Typography className="text-gray-900 text-sm font-medium text-right ml-2" weight="semibold">
                           {contractData?.currency}{" "}
                           {contractData?.amount
-                            ? Number(contractData.amount).toLocaleString(
-                                i18n.language === 'fr' ? 'fr-FR' : 'en-US'
-                              )
+                            ? formatCurrencyFrench(contractData.amount)
                             : "0"}
                         </Typography>
                       </div>

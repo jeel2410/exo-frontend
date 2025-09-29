@@ -33,7 +33,7 @@ const AppSidebar: React.FC = () => {
 ];
 
   const isActive = useCallback(
-    (path: string) => location.pathname === path,
+    (path: string) => location.pathname === path || location.pathname.startsWith(path + '/'),
     [location.pathname]
   );
 

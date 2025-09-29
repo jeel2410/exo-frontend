@@ -3,6 +3,8 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 import Button from "../../lib/components/atoms/Button";
 import { ContractDetails } from "../../pages/Dashboard/contractor/ContractListPage";
+import { USFlag, CDFFlag } from "../../icons";
+import { formatCurrencyFrench } from "../../utils/numberFormat";
 
 export interface TableHeader {
   content: React.ReactNode;
@@ -37,7 +39,7 @@ interface TableCellProps {
 
 // Table components
 export const Table: React.FC<TableProps> = ({ children }) => (
-  <table className="w-full border-collapse" role="grid">
+  <table className="w-full border-collapse min-w-[1280px]" role="grid">
     {children}
   </table>
 );
@@ -83,7 +85,7 @@ const SelectContractTable: React.FC<SelectContractTableProps> = ({
   data,
   onSelectContract,
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const tableHeader: TableHeader[] = [
     {
@@ -92,27 +94,27 @@ const SelectContractTable: React.FC<SelectContractTableProps> = ({
     },
     {
       content: <div className="text-nowrap">{t("project_name")}</div>,
-      className: "min-w-[150px]",
+      className: "min-w-[160px] max-w-[200px]",
     },
     {
-      content: <div className="text-nowrap">{t("signed_by")}</div>,
+      content: <div className="text-nowrap">{t("contract_name")}</div>,
+      className: "min-w-[160px] max-w-[200px]",
+    },
+    {
+      content: <div className="text-nowrap">{t("contracting_agency")}</div>,
+      className: "min-w-[180px]",
+    },
+    {
+      content: <div className="text-nowrap">{t("contract_amount")}</div>,
+      className: "min-w-[140px]",
+    },
+    {
+      content: <div className="text-nowrap">{t("place")}</div>,
       className: "min-w-[120px]",
     },
     {
-      content: <div className="text-nowrap">{t("position")}</div>,
-      className: "min-w-[100px]",
-    },
-    {
-      content: <div className="text-nowrap">{t("amount")}</div>,
+      content: <div className="text-nowrap">{t("date_of_signing")}</div>,
       className: "min-w-[120px]",
-    },
-    {
-      content: <div className="text-nowrap">{t("organization")}</div>,
-      className: "min-w-[120px]",
-    },
-    {
-      content: <div className="text-nowrap">{t("created_date")}</div>,
-      className: "min-w-[100px]",
     },
     {
       content: <div>{t("action")}</div>,
@@ -134,18 +136,18 @@ const SelectContractTable: React.FC<SelectContractTableProps> = ({
   }
 
   return (
-    <div className="relative rounded-lg bg-white border border-secondary-30 overflow-hidden">
-      <div className="overflow-x-auto">
-        <div className="min-w-[1200px]">
+    <div className="relative rounded-lg bg-white overflow-hidden">
+      <div className="relative min-h-[225px]">
+        <div className="overflow-x-auto custom-scrollbar">
           <Table>
-            <TableHeader className="border-b border-gray-100 bg-secondary-10 rounded-t-lg">
+            <TableHeader className="border-b border-gray-100 bg-secondary-10 rounded-lg">
               <TableRow>
                 {tableHeader.map((header, index) => {
                   return (
                     <TableCell
                       key={index}
                       isHeader
-                      className={`px-5 py-4 font-semibold text-secondary-50 text-left text-sm ${header.className || ''}`}
+                      className="px-5 py-4 font-semibold text-secondary-50 text-left text-sm cursor-pointer"
                       onClick={header.onClick}
                     >
                       {header.content}
@@ -159,42 +161,52 @@ const SelectContractTable: React.FC<SelectContractTableProps> = ({
               {data.map((contract, index) => {
                 return (
                   <TableRow key={contract.id}>
-                    <TableCell className="px-5 py-4 text-gray-500 text-sm w-16">
+                    <TableCell className="px-5 py-4 text-gray-500 text-sm">
                       {index + 1}
                     </TableCell>
-                    <TableCell className="px-5 py-4 min-w-[150px]">
-                      <span className="block font-medium text-secondary-100 text-sm">
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[160px] max-w-[200px]">
+                      <span className="block font-medium text-secondary-100 text-sm truncate" title={contract.project_name}>
                         {contract.project_name}
                       </span>
                     </TableCell>
-                    <TableCell className="px-5 py-4 min-w-[120px]">
-                      <span className="block font-medium text-secondary-100 text-sm">
-                        {contract.signed_by}
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[160px] max-w-[200px]">
+                      <span className="block font-medium text-secondary-100 text-sm truncate" title={contract.name}>
+                        {contract.name || '-'}
                       </span>
                     </TableCell>
-                    <TableCell className="px-5 py-4 min-w-[100px]">
-                      <span className="block font-medium text-secondary-100 text-sm">
-                        {contract.position}
-                      </span>
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[180px]">
+                      <div className="text-sm">
+                        <div className="font-medium text-secondary-100 truncate" title={contract.contracting_agency_name || contract.organization}>
+                          {contract.contracting_agency_name || contract.organization || '-'}
+                        </div>
+                        <div className="text-xs text-gray-600 truncate" title={contract.contracting_agency_person_name || contract.signed_by}>
+                          {contract.contracting_agency_person_name || contract.signed_by || '-'}
+                        </div>
+                      </div>
                     </TableCell>
-                    <TableCell className="px-5 py-4 min-w-[120px]">
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[140px]">
                       <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
-                        <span className="text-gray-600">{contract.currency}</span>
-                        <span className="block font-medium text-secondary-100 text-sm">
-                          {Number(contract.amount).toLocaleString(
-                            i18n.language === 'fr' ? 'fr-FR' : 'en-US'
-                          )}
+                        {contract.currency === "USD" ? (
+                          <USFlag width={20} height={12} />
+                        ) : contract.currency === "CDF" ? (
+                          <CDFFlag width={20} height={12} />
+                        ) : null}
+                        <span className="text-gray-600 text-xs">
+                          {contract.currency}
+                        </span>
+                        <span className="block font-medium text-secondary-100 text-sm truncate">
+                          {formatCurrencyFrench(contract.amount)}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="px-5 py-4 min-w-[120px]">
-                      <span className="block font-medium text-secondary-100 text-sm">
-                        {contract.organization}
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[120px]">
+                      <span className="block font-medium text-secondary-100 text-sm truncate" title={contract.place}>
+                        {contract.place || '-'}
                       </span>
                     </TableCell>
-                    <TableCell className="px-5 py-4 min-w-[100px]">
-                      <span className="block font-medium text-secondary-100 text-sm whitespace-nowrap">
-                        {moment(contract.created_at).format("YYYY/MM/DD")}
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[120px]">
+                      <span className="block font-medium text-secondary-100 text-sm text-nowrap">
+                        {contract.date_of_signing ? moment(contract.date_of_signing).format("YYYY/MM/DD") : moment(contract.created_at).format("YYYY/MM/DD")}
                       </span>
                     </TableCell>
                     <TableCell className="px-3 py-3 text-center w-20">

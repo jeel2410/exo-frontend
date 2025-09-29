@@ -4,12 +4,12 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import { Logo } from "../icons";
-import Button from "../lib/components/atoms/Button";
 import UserDropdown from "../components/header/UserDropdown";
 import LanguageSwitchLayout from "../pages/Auth/LanguageSwitchLayout";
 import { useTranslation } from "react-i18next";
 import { useRoleRoute } from "../hooks/useRoleRoute";
 import { useAuth } from "../context/AuthContext";
+import NavTab from "../components/header/NavTab";
 
 const AppHeader: React.FC = () => {
   const { t } = useTranslation();
@@ -17,6 +17,11 @@ const AppHeader: React.FC = () => {
   const { pathname } = useLocation();
   const { getRoute } = useRoleRoute();
   const { user } = useAuth();
+
+  // Helper function to check if a menu item is active
+  const isActiveRoute = (route: string) => {
+    return pathname === route || pathname.startsWith(route + "/");
+  };
 
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
@@ -48,70 +53,53 @@ const AppHeader: React.FC = () => {
   }, []);
 
   return (
-    <header className="sticky top-0 flex w-full bg-white border-gray-200 z-50 lg:border-b">
+    <header className="sticky top-0 flex w-full bg-white/80 backdrop-blur-md border-b border-gray-100 z-50">
       <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-10">
-        <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200  sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
+        <div className="flex items-center justify-between w-full gap-2 px-3 py-4 border-b border-gray-100 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-5">
           <Logo width={179} height={40} className="hidden lg:block" />
-          <div className="lg:flex gap-4 hidden">
+          <nav className="lg:flex gap-1 hidden">
             {user?.type === "project_manager" ? (
               // Navigation for Project Managers
               <>
-                <Button
-                  variant="outline"
-                  className={`border-none text-nowrap text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 ${
-                    pathname === "/projects" || pathname === "/"
-                      ? "hover:bg-primary-10"
-                      : "hover:text-primary-150"
-                  } hover:bg-primary-10 rounded-lg`}
+                <NavTab
+                  isActive={isActiveRoute("/project-dashboard")}
                   onClick={() => navigate("/project-dashboard")}
                 >
                   {t("projects")}
-                </Button>
-                <Button
-                  variant="outline"
-                  className={`border-none text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 hover:text-primary-150 hover:bg-primary-10 rounded-lg`}
+                </NavTab>
+                <NavTab
+                  isActive={isActiveRoute(getRoute("help"))}
                   onClick={() => navigate(getRoute("help"))}
                 >
                   {t("help")}
-                </Button>
+                </NavTab>
               </>
             ) : (
               // Navigation for Regular Users
               <>
-                <Button
-                  variant="outline"
-                  className={`border-none text-nowrap text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 ${
-                    pathname === "/requests"
-                      ? "hover:bg-primary-10"
-                      : "hover:text-primary-150"
-                  } hover:bg-primary-10 rounded-lg`}
+                <NavTab
+                  isActive={isActiveRoute("/requests")}
                   onClick={() => navigate("/requests")}
                 >
                   {t("requests")}
-                </Button>
-                <Button
-                  variant="outline"
-                  className={`border-none text-nowrap text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 ${
-                    pathname === "/contract"
-                      ? "hover:bg-primary-10"
-                      : "hover:text-primary-150"
-                  } hover:bg-primary-10 rounded-lg`}
+                </NavTab>
+                <NavTab
+                  isActive={isActiveRoute("/contract")}
                   onClick={() => navigate("/contract")}
                 >
                   {t("contracts")}
-                </Button>
-                <Button
-                  variant="outline"
-                  className={`border-none text-secondary-60 px-3 py-3 hover:border-none hover:shadow-none mt-2 hover:text-primary-150 hover:bg-primary-10 rounded-lg`}
+                </NavTab>
+                <NavTab
+                  isActive={isActiveRoute(getRoute("help"))}
                   onClick={() => navigate(getRoute("help"))}
                 >
                   {t("help")}
-                </Button>
+                </NavTab>
               </>
             )}
-          </div>
+          </nav>
           <button
-            className="items-center justify-center w-10 h-10 text-gray-500 border-gray-200 rounded-lg z-99999 lg:hidden"
+            className="flex items-center justify-center w-10 h-10 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200 z-99999 lg:hidden"
             onClick={handleToggle}
             aria-label="Toggle Sidebar"
           >
@@ -152,7 +140,7 @@ const AppHeader: React.FC = () => {
           </Link>
           <button
             onClick={toggleApplicationMenu}
-            className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg z-99999 hover:bg-gray-100 lg:hidden"
+            className="flex items-center justify-center w-10 h-10 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200 z-99999 lg:hidden"
           >
             <svg
               width="24"

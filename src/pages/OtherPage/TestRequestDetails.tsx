@@ -34,6 +34,7 @@ import Breadcrumbs from "../../components/common/Breadcrumbs";
 import CreateRequestTable from "../../components/table/CreateRequestTable.tsx";
 import { RequestDetailsSkeleton } from "../../components/common/skeletons";
 import CurrencyBadge from "../../components/common/CurrencyBadge";
+import { formatCurrencyFrench } from "../../utils/numberFormat";
 interface UserData {
   id: number;
   first_name: string;
@@ -454,9 +455,7 @@ const TestRequestDetails = () => {
                                     className="text-gray-900"
                                   >
                                     {requestData?.project_amount
-                                      ? Number(
-                                          requestData.project_amount
-                                        ).toLocaleString()
+                                      ? formatCurrencyFrench(requestData.project_amount)
                                       : "0"}
                                   </Typography>
                                 </div>
@@ -585,9 +584,7 @@ const TestRequestDetails = () => {
                                     className="text-gray-900"
                                   >
                                     {requestData?.contract_amount
-                                      ? Number(
-                                          requestData.contract_amount
-                                        ).toLocaleString()
+                                      ? formatCurrencyFrench(requestData.contract_amount)
                                       : "0"}
                                   </Typography>
                                 </div>
@@ -923,6 +920,7 @@ const TestRequestDetails = () => {
                               tax_amount: entity.tax_amount,
                               vatIncluded: entity.vat_included,
                               vat_included: entity.vat_included,
+                              reference: (entity as any).reference || "", // Add reference field mapping
                               customDuty: (entity as any).custom_duties,
                               custom_duty: (entity as any).custom_duties,
                               currency:

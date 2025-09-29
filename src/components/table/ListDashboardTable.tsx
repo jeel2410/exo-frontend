@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import StatusBadge, { StatusCode } from "../common/StatusBadge.tsx";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
+import { formatCurrencyFrench } from "../../utils/numberFormat";
 export interface Data {
   id: number;
   projectId: string;
@@ -54,7 +55,7 @@ const ListDashBoardTable = ({
   const menuRef = useRef<HTMLDivElement | null>(null);
   // const selectAllRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleClickOutside = (event: Event) => {
@@ -413,9 +414,7 @@ const ListDashBoardTable = ({
                           )} */}
                           <span className="text-gray-500">{data.currency}</span>
                           <span className="block font-medium text-secondary-100 text-sm">
-                            {Number(data.amount).toLocaleString(
-                              i18n.language === 'fr' ? 'fr-FR' : 'en-US'
-                            )}
+                            {formatCurrencyFrench(data.amount)}
                           </span>
                         </div>
                       )}
@@ -437,7 +436,7 @@ const ListDashBoardTable = ({
                         </div>
                       ) : (
                         <span className="block font-medium text-secondary-100 text-sm">
-                          {Number(data.amount).toLocaleString()}
+                          {formatCurrencyFrench(data.amount)}
                         </span>
                       )}
                     </TableCell> */}
