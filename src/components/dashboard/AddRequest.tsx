@@ -50,6 +50,7 @@ interface Entity {
   vat_included: number;
   unit?: string;
   reference?: string; // Add reference field for API compatibility
+  tarrif_position?: string; // Add tarrif position field for API compatibility
 }
 
 // Type for create request payload
@@ -338,7 +339,11 @@ const AddRequest = () => {
     );
     console.log(
       "🚀 TarrifPosition fields in data:",
-      data.map((d) => ({ id: d.id, tarrifPosition: d.tarrifPosition, label: d.label }))
+      data.map((d) => ({
+        id: d.id,
+        tarrifPosition: d.tarrifPosition,
+        label: d.label,
+      }))
     );
 
     const requestEntities = data.map((d) => ({
