@@ -66,6 +66,8 @@ export interface RequestEntity {
   vat_included: number;
   financial_authority: string;
   status: string;
+  reference?: string; // Reference field
+  tarrif_position?: string; // Tarrif Position field
 }
 
 export interface AmountSummary {
@@ -197,7 +199,7 @@ const TestRequestDetails = () => {
         "Title Generation",
       ];
       const normalize = (s: string) => s.toLowerCase().trim();
-      
+
       // Find the index of the current stage
       const currentStageIndex = (() => {
         if (!currentStage || normalize(String(currentStage)) === "null") {
@@ -270,7 +272,7 @@ const TestRequestDetails = () => {
       ];
       const normalize = (s: string) => s.toLowerCase().trim();
       const currentStage = requestData.current_stage;
-      
+
       // Find the index of the current stage
       const currentStageIndex = (() => {
         if (!currentStage || normalize(String(currentStage)) === "null") {
@@ -481,9 +483,7 @@ const TestRequestDetails = () => {
                                     className="text-gray-900"
                                   >
                                     {requestData?.project_amount
-                                      ? formatAmount(
-                                          requestData.project_amount
-                                        )
+                                      ? formatAmount(requestData.project_amount)
                                       : "0"}
                                   </Typography>
                                 </div>
@@ -708,7 +708,7 @@ const TestRequestDetails = () => {
                   count={
                     requestData ? requestData?.amount_summary?.total_tax : 0
                   }
-                  title={t("total_tax_amount")}
+                  title={t("total_coverage_amount")}
                 />
                 <DashBoardCard
                   icon={
@@ -951,6 +951,8 @@ const TestRequestDetails = () => {
                               vatIncluded: entity.vat_included,
                               vat_included: entity.vat_included,
                               reference: (entity as any).reference || "", // Add reference field mapping
+                              tarrifPosition:
+                                (entity as any).tarrif_position || "", // Add tarrif position field mapping
                               customDuty: (entity as any).custom_duties,
                               custom_duty: (entity as any).custom_duties,
                               currency:

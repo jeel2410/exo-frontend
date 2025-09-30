@@ -493,5 +493,6 @@
   "tarrif_position": "Position Tarifaire",
   "droit": "Droit",
   "ttc": "TTC",
-  "select_all": "Tout sélectionner"
+  "select_all": "Tout sélectionner",
+  "total_coverage_amount": "Montant total de la couverture"
 }

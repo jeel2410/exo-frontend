@@ -172,6 +172,7 @@ const AddRequest = () => {
       vatIncluded: 0,
       customDuty: "",
       reference: "", // Initialize reference field for new entities
+      tarrifPosition: "", // Initialize tarrif position field for new entities
     };
     setData(recalculateTableData([...data, newOrder]));
     setAutoEditId(newId); // Set the newly added entity to auto-edit mode
@@ -189,6 +190,7 @@ const AddRequest = () => {
       taxAmount: entity.tax_amount,
       vatIncluded: entity.vat_included,
       reference: entity.reference || "", // Map reference field from API response
+      tarrifPosition: entity.tarrif_position || "", // Map tarrif position field from API response
       financialAuthority: entity.financial_authority,
     }));
     setFinancialAuthority(
@@ -206,6 +208,10 @@ const AddRequest = () => {
     console.log(
       "🚀 Unit values in received data:",
       newData.map((d) => ({ id: d.id, unit: d.unit }))
+    );
+    console.log(
+      "🚀 TarrifPosition values in received data:",
+      newData.map((d) => ({ id: d.id, tarrifPosition: d.tarrifPosition }))
     );
     setData(recalculateTableData(newData));
   };
@@ -330,6 +336,10 @@ const AddRequest = () => {
       "🚀 Reference fields in data:",
       data.map((d) => ({ id: d.id, reference: d.reference, label: d.label }))
     );
+    console.log(
+      "🚀 TarrifPosition fields in data:",
+      data.map((d) => ({ id: d.id, tarrifPosition: d.tarrifPosition, label: d.label }))
+    );
 
     const requestEntities = data.map((d) => ({
       label: d.label,
@@ -341,6 +351,7 @@ const AddRequest = () => {
       tax_amount: d.taxAmount.toString(),
       vat_included: d.vatIncluded.toString(),
       reference: d.reference || "", // Add reference field for API compatibility
+      tarrif_position: d.tarrifPosition || "", // Add tarrif position field for API compatibility
       financial_authority: financialAuthority,
     }));
 

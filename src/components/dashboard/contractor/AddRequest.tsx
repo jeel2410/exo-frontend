@@ -43,6 +43,7 @@ interface Entity {
   vat_included: number;
   custom_duties?: string;
   reference?: string; // Add reference field for API compatibility
+  tarrif_position?: string; // Add tarrif_position field for API compatibility
 }
 
 interface CreateRequestPayload {
@@ -64,7 +65,7 @@ const financialAuthorityList: {
   textColor: string;
 }[] = [
   {
-    name: "Location Acquisition",
+    name: "Acquisition Location",
     value: "location_acquisition",
     shortName: "D",
     bgColor: "bg-green-500",
@@ -204,6 +205,7 @@ const AddRequest = () => {
       vatIncluded: 0,
       customDuty: "",
       reference: "", // Initialize reference field for new entities
+      tarrifPosition: "", // Initialize tarrif_position field for new entities
     };
     setData(recalculateTableData([...data, newOrder]));
     setAutoEditId(newId); // Set the newly added entity to auto-edit mode
@@ -226,6 +228,7 @@ const AddRequest = () => {
         taxAmount: entity.tax_amount,
         vatIncluded: entity.vat_included,
         reference: entity.reference || "", // Map reference field from API response
+        tarrifPosition: entity.tarrif_position || "", // Map tarrif_position field from API response
         customDuty: entity.custom_duties || "",
         custom_duties: entity.custom_duties || "", // Add this for backward compatibility
       };
@@ -434,8 +437,29 @@ const AddRequest = () => {
     // Debug: Log the current data state before API call
     console.log("🚀 Form data before API call:", data);
     console.log(
-      "🚀 Reference fields in data:",
-      data.map((d) => ({ id: d.id, reference: d.reference, label: d.label }))
+      "🚀 Reference and TarrifPosition fields in data:",
+      data.map((d) => ({
+        id: d.id,
+        reference: d.reference,
+        tarrifPosition: d.tarrifPosition,
+        label: d.label,
+      }))
+    );
+    console.log(
+      "🚀 Individual entities for request_entity:",
+      data.map((d) => ({
+        label: d.label,
+        quantity: d.quantity.toString(),
+        unit_price: d.unitPrice.toString(),
+        unit: d?.unit?.toString(),
+        total: d.total.toString(),
+        tax_rate: d.taxRate.toString(),
+        tax_amount: d.taxAmount.toString(),
+        vat_included: d.vatIncluded.toString(),
+        reference: d.reference || "",
+        tarrif_position: d.tarrifPosition || "",
+        custom_duties: d.customDuty || d.custom_duty || "",
+      }))
     );
 
     const apiData: CreateRequestPayload = {
@@ -454,6 +478,7 @@ const AddRequest = () => {
           tax_amount: d.taxAmount.toString(),
           vat_included: d.vatIncluded.toString(),
           reference: d.reference || "", // Add reference field for API compatibility
+          tarrif_position: d.tarrifPosition || "", // Add tarrif_position field for API compatibility
           custom_duties: d.customDuty || d.custom_duty || "",
         }))
       ),

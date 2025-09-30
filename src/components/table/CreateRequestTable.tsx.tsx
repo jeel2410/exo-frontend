@@ -79,7 +79,8 @@ export const TableCell: React.FC<TableCellProps> = ({
 
 export interface Order {
   id: number;
-  reference?: string; // Add reference field for new Reference column
+  reference?: string; // Reference field
+  tarrifPosition?: string; // Tarrif Position field
   label: string;
   quantity: number;
   unitPrice: number;
@@ -99,7 +100,6 @@ export interface Order {
   // Fields for importation tax category
   cif?: number;
   totalCif?: number;
-  tarrifPosition?: string;
   droit?: number;
 }
 
@@ -313,6 +313,7 @@ const CreateRequestTable = ({
           const updatedOrder = {
             ...order,
             reference: editFormData.reference || order.reference,
+            tarrifPosition: editFormData.tarrifPosition || order.tarrifPosition,
             label: editFormData.label || order.label,
             quantity: editFormData.quantity || order.quantity,
             unitPrice: editFormData.unitPrice ?? order.unitPrice,
@@ -322,6 +323,9 @@ const CreateRequestTable = ({
             taxAmount,
             vatIncluded,
             customDuty: editFormData.customDuty || order.customDuty,
+            cif: editFormData.cif ?? order.cif,
+            totalCif: editFormData.totalCif ?? order.totalCif,
+            droit: editFormData.droit ?? order.droit,
           };
           console.log("🚀 Updated order after save:", updatedOrder);
           return updatedOrder;
@@ -554,6 +558,30 @@ const CreateRequestTable = ({
         ) : (
           <span className="block font-medium text-secondary-100 text-sm">
             {order.reference || "-"}
+          </span>
+        )}
+      </TableCell>
+    );
+
+    // Tarrif Position
+    columns.push(
+      <TableCell key="tarrif_position" className="px-5 py-4 sm:px-6">
+        {editingId === order.id ? (
+          <div className="flex flex-col gap-1">
+            <input
+              type="text"
+              value={editFormData.tarrifPosition ?? ""}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                handleInputChange("tarrifPosition", e.target.value)
+              }
+              className="block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none bg-secondary-10 border-secondary-30"
+              placeholder="Add Tarrif Position"
+              aria-label="Tarrif Position"
+            />
+          </div>
+        ) : (
+          <span className="block font-medium text-secondary-100 text-sm">
+            {order.tarrifPosition || "-"}
           </span>
         )}
       </TableCell>
@@ -1111,9 +1139,9 @@ const CreateRequestTable = ({
         </TableCell>
       );
 
-      // Tarrif Position (using taxRate field for backend compatibility)
+      // Rate (using taxRate field)
       columns.push(
-        <TableCell key="tarrif_position" className="px-5 py-4 sm:px-6">
+        <TableCell key="rate" className="px-5 py-4 sm:px-6">
           {editingId === order.id ? (
             <div className="flex flex-col gap-1">
               <input
@@ -1159,7 +1187,7 @@ const CreateRequestTable = ({
                     ? "Select Custom Duty first"
                     : getTaxRatePlaceholder(editFormData.customDuty)
                 }
-                aria-label="Tariff Position"
+                aria-label="Tax Rate"
                 title={
                   !editFormData.customDuty
                     ? "Select Custom Duty first"
@@ -1532,13 +1560,17 @@ const CreateRequestTable = ({
         className: "w-32",
       },
       {
+        content: <div>{t("tarrif_position")}</div>,
+        className: "w-32",
+      },
+      {
         content: <div>{t("custom_duties")}</div>,
         className: "w-32",
       },
     ];
 
     if (currentTaxCategory === "location_acquisition") {
-      // Local acquisition columns
+      // Local acquisition columns: Ref, Tarrif Position, Custom Duties, Nature Marchandise, Quantity, Unit, Unit Price, Total, Rate, Tax Amount, TTC
       return [
         ...baseHeaders,
         {
@@ -1568,7 +1600,7 @@ const CreateRequestTable = ({
           className: "w-24",
         },
         {
-          content: <div>{t("tax_rate")}</div>,
+          content: <div>{t("rate")}</div>,
           className: "w-24",
         },
         {
@@ -1589,7 +1621,7 @@ const CreateRequestTable = ({
           : []),
       ];
     } else if (currentTaxCategory === "importation") {
-      // Importation columns
+      // Importation columns: Ref, Tarrif Position, Custom Duties, Nature Marchandise, Quantity, Unit, CIF, Total CIF, Rate, Droit, TTC
       return [
         ...baseHeaders,
         {
@@ -1619,8 +1651,8 @@ const CreateRequestTable = ({
           className: "w-28",
         },
         {
-          content: <div>{t("tarrif_position")}</div>,
-          className: "w-32",
+          content: <div>{t("rate")}</div>,
+          className: "w-24",
         },
         {
           content: <div>{t("droit")}</div>,

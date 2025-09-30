@@ -592,7 +592,7 @@ const RequestTable = ({
                                   role="menuitem"
                                   aria-label="Delete row"
                                 >
-                                  {t("delete")}
+                                  {t("archive")}
                                 </button>
                               )}
                             </div>

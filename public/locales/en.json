@@ -492,5 +492,6 @@
   "tarrif_position": "Tariff Position",
   "droit": "Duty",
   "ttc": "TTC",
-  "select_all": "Select All"
+  "select_all": "Select All",
+  "total_coverage_amount": "Total Coverage Amount"
 }

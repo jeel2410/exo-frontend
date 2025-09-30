@@ -163,7 +163,28 @@ const RequestDetailModal = ({
         </div>
         <div className="mt-3 md:mt-5 mb-2">
           <CreateRequestTable
-            data={requestDetails.entities}
+            data={
+              requestDetails.entities?.map((entity: any, index: number) => ({
+                id: index + 1,
+                label: entity.label,
+                quantity: entity.quantity,
+                unitPrice: entity.unit_price,
+                unit: entity.unit,
+                unit_price: entity.unit_price,
+                total: entity.total,
+                taxRate: entity.tax_rate,
+                tax_rate: entity.tax_rate,
+                taxAmount: entity.tax_amount,
+                tax_amount: entity.tax_amount,
+                vatIncluded: entity.vat_included,
+                vat_included: entity.vat_included,
+                reference: entity.reference || "",
+                tarrifPosition: entity.tarrif_position || "",
+                customDuty: entity.custom_duties,
+                custom_duty: entity.custom_duties,
+                currency: requestDetails.contract_currency,
+              })) || []
+            }
             showActions={false}
             currentTaxCategory={requestDetails.tax_category}
           />
