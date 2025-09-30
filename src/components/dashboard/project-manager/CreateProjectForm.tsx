@@ -49,7 +49,7 @@ const initialValues: ProjectFormValues = {
 
 const CreateProjectForm = () => {
   const navigate = useNavigate();
-  const { t,i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isOpen, openModal, closeModal } = useModal();
   const [formValue, setFormValue] = useState<ProjectFormValues>(initialValues);
   const { projectId } = useParams();
@@ -77,31 +77,39 @@ const CreateProjectForm = () => {
         en: "The reference has already been taken.",
         fr: "La référence a déjà été utilisée.",
       };
-      
+
       console.error("Error during project creation:", errorMessage);
 
-      if(errorMessage==="The reference has already been taken."){
-        const translatedError = i18n.language==="en"?Errors.en:Errors.fr;
+      if (errorMessage === "The reference has already been taken.") {
+        const translatedError = i18n.language === "en" ? Errors.en : Errors.fr;
         setReferenceError(translatedError);
         return toast.error(translatedError);
       }
       setReferenceError(null); // Clear reference error for other errors
-      return toast.error(t(errorMessage||"failed_to_create_project"));
+      return toast.error(t(errorMessage || "failed_to_create_project"));
     },
-  });    
+  });
 
   const createProject = (values: ProjectFormValues, resetForm?: () => void) => {
     // Clear any existing reference error when submitting
     setReferenceError(null);
-    
+
     const payload = {
       name: values.projectName,
       funded_by: values.fundedBy,
       reference: values.projectReference,
       currency: values.currency,
       amount: values.amount,
-      begin_date: moment(values.beginDate, ["DD-MM-YYYY", "YYYY-MM-DD"], true).format("YYYY-MM-DD"),
-      end_date: moment(values.endDate, ["DD-MM-YYYY", "YYYY-MM-DD"], true).format("YYYY-MM-DD"),
+      begin_date: moment(
+        values.beginDate,
+        ["DD-MM-YYYY", "YYYY-MM-DD"],
+        true
+      ).format("YYYY-MM-DD"),
+      end_date: moment(
+        values.endDate,
+        ["DD-MM-YYYY", "YYYY-MM-DD"],
+        true
+      ).format("YYYY-MM-DD"),
       description: values.description,
       address: JSON.stringify(
         values.addresses.map((address) => ({
@@ -144,7 +152,7 @@ const CreateProjectForm = () => {
         projectName: projectData.name,
         fundedBy: projectData.funded_by,
         projectReference: projectData.reference,
-        amount: Number(projectData.amount).toFixed(0).toString(),
+        amount: projectData.amount.toString(),
         currency: projectData.currency,
         beginDate: moment(projectData.begin_date, "YYYY-MM-DD").toDate(),
         endDate: moment(projectData.end_date, "YYYY-MM-DD").toDate(),

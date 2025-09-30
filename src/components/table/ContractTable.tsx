@@ -9,7 +9,7 @@ import {
 import { USFlag, CDFFlag } from "../../icons";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { formatCurrencyFrench } from "../../utils/numberFormat";
+import { formatAmount } from "../../utils/numberFormat";
 
 export interface ContractData {
   id: number;
@@ -142,7 +142,7 @@ const ContractTable = ({ data }: { data: ContractData[] | [] }) => {
                           {data.currency || "USD"}
                         </span>
                         <span className="block font-medium text-secondary-100 text-sm">
-                          {formatCurrencyFrench(data.amountByContract)}
+                          {formatAmount(data.amountByContract)}
                         </span>
                       </div>
                     </TableCell>

@@ -1,7 +1,7 @@
 import Typography from "../../lib/components/atoms/Typography";
 import Label from "../../lib/components/atoms/Label";
 import { useTranslation } from "react-i18next";
-import { formatCurrencyFrench } from "../../utils/numberFormat";
+import { formatAmount as formatAmountUtil } from "../../utils/numberFormat";
 
 interface Address {
   id: string;
@@ -19,7 +19,7 @@ const ReviewForm = ({ projectData }: ReviewFormProps) => {
   const { t } = useTranslation();
   const formatAmount = (amount: string) => {
     if (!amount) return "";
-    return formatCurrencyFrench(amount);
+    return formatAmountUtil(amount);
   };
 
   const formatDate = (date: any) => {

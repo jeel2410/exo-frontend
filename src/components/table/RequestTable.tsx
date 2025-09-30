@@ -15,7 +15,7 @@ import projectService from "../../services/project.service.ts";
 import { useAuth } from "../../context/AuthContext.tsx";
 import { useTranslation } from "react-i18next";
 import StatusBadge, { StatusCode } from "../common/StatusBadge.tsx";
-import { formatCurrencyFrench } from "../../utils/numberFormat";
+import { formatAmount } from "../../utils/numberFormat";
 
 // Map API status values to StatusBadge codes
 const mapStatusToCode = (status: string): StatusCode => {
@@ -95,6 +95,7 @@ export interface Data {
   sub_status?: string;
   request_id: string;
   contract_id: string;
+  total_tax_amount?: string;
 }
 
 const RequestTable = ({
@@ -137,40 +138,49 @@ const RequestTable = ({
       setOpenMenuId(null);
       return;
     }
-    
+
     if (event) {
       // Calculate dropdown position
-      const buttonRect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const buttonRect = (
+        event.currentTarget as HTMLElement
+      ).getBoundingClientRect();
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
       const dropdownWidth = 128; // w-32 = 128px
       const dropdownHeight = 150; // Approximate height
       const margin = 16;
-      
+
       // Calculate horizontal position
-      const wouldOverflowRight = buttonRect.right + dropdownWidth > windowWidth - margin;
+      const wouldOverflowRight =
+        buttonRect.right + dropdownWidth > windowWidth - margin;
       const wouldOverflowLeft = buttonRect.left - dropdownWidth < margin;
-      
-      let left = wouldOverflowRight && !wouldOverflowLeft 
-        ? buttonRect.left - dropdownWidth + buttonRect.width
-        : buttonRect.left;
-      
+
+      let left =
+        wouldOverflowRight && !wouldOverflowLeft
+          ? buttonRect.left - dropdownWidth + buttonRect.width
+          : buttonRect.left;
+
       // Calculate vertical position
-      const wouldOverflowBottom = buttonRect.bottom + dropdownHeight > windowHeight - margin;
-      const top = wouldOverflowBottom && buttonRect.top > dropdownHeight
-        ? buttonRect.top - dropdownHeight
-        : buttonRect.bottom;
-      
-      left = Math.max(margin, Math.min(left, windowWidth - dropdownWidth - margin));
-      
+      const wouldOverflowBottom =
+        buttonRect.bottom + dropdownHeight > windowHeight - margin;
+      const top =
+        wouldOverflowBottom && buttonRect.top > dropdownHeight
+          ? buttonRect.top - dropdownHeight
+          : buttonRect.bottom;
+
+      left = Math.max(
+        margin,
+        Math.min(left, windowWidth - dropdownWidth - margin)
+      );
+
       setDropdownStyle({
-        position: 'fixed',
+        position: "fixed",
         left: `${left}px`,
         top: `${top}px`,
-        zIndex: 9999
+        zIndex: 9999,
       });
     }
-    
+
     setOpenMenuId(orderId);
   };
 
@@ -189,6 +199,8 @@ const RequestTable = ({
             requestNo: editFormData.requestNo || order.requestNo,
             amount: editFormData.amount ?? order.amount,
             total_amount: editFormData.total_amount ?? order.total_amount,
+            total_tax_amount:
+              editFormData.total_tax_amount ?? order.total_tax_amount,
             createdDate: editFormData.createdDate ?? order.createdDate,
             status: editFormData.status ?? order.status,
           };
@@ -232,7 +244,13 @@ const RequestTable = ({
 
   const handleInputChange = (field: keyof Data, value: string | number) => {
     // Handle numeric fields
-    if (field === "amount" || field === "total_amount" || field === "requestNo" || field === "id") {
+    if (
+      field === "amount" ||
+      field === "total_amount" ||
+      field === "total_tax_amount" ||
+      field === "requestNo" ||
+      field === "id"
+    ) {
       const parsedValue = value === "" ? 0 : parseFloat(value as string);
       setEditFormData((prev) => ({
         ...prev,
@@ -358,9 +376,19 @@ const RequestTable = ({
                         <div className="flex flex-col gap-1">
                           <input
                             type="text"
-                            value={editFormData.total_amount ?? editFormData.amount ?? (data.total_amount || data.amount) ?? ""}
+                            value={
+                              editFormData.total_tax_amount ??
+                              editFormData.amount ??
+                              (data.total_tax_amount || data.amount) ??
+                              ""
+                            }
                             onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                              handleInputChange(data.total_amount ? "total_amount" : "amount", e.target.value)
+                              handleInputChange(
+                                data.total_tax_amount
+                                  ? "total_tax_amount"
+                                  : "amount",
+                                e.target.value
+                              )
                             }
                             className="block w-full px-2 py-1 text-sm rounded-md bg-secondary-10 focus:border focus:outline-none border-secondary-30"
                             placeholder="Add Tax Rate"
@@ -380,11 +408,12 @@ const RequestTable = ({
                           <span className="block font-medium text-secondary-100 text-sm">
                             {(() => {
                               // Use total_amount if available, otherwise fallback to amount
-                              const amountToDisplay = data.total_amount || data.amount || "0";
+                              const amountToDisplay =
+                                data.total_tax_amount || data.amount || "0";
                               const amount = parseFloat(amountToDisplay);
                               return isNaN(amount)
-                                ? "0"
-                                : formatCurrencyFrench(amount);
+                                ? "0.00"
+                                : formatAmount(amount);
                             })()}
                           </span>
                         </div>

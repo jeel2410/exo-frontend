@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import Typography from "../../lib/components/atoms/Typography";
 import { CrossRedIcon, RightGreenIcon, USFlag, CDFFlag } from "../../icons";
+import { formatAmount } from "../../utils/numberFormat";
 
 // Debug: Verify file is loading
 console.log("🚀 CreateRequestTable.tsx loaded at:", new Date().toISOString());
@@ -121,7 +122,7 @@ const CreateRequestTable = ({
   onEditComplete?: () => void;
   currentTaxCategory?: string;
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [tableData, setTableData] = useState<Order[]>(data);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -514,10 +515,8 @@ const CreateRequestTable = ({
     const numericAmount =
       typeof amount === "string" ? parseFloat(amount) : amount;
     const formattedAmount = isNaN(numericAmount)
-      ? "0"
-      : numericAmount.toLocaleString(
-          i18n.language === "fr" ? "fr-FR" : "en-US"
-        );
+      ? "0.00"
+      : formatAmount(numericAmount);
 
     return (
       <span className="block font-medium text-secondary-100 text-sm">

@@ -34,7 +34,7 @@ import Breadcrumbs from "../../components/common/Breadcrumbs";
 import CreateRequestTable from "../../components/table/CreateRequestTable.tsx";
 import { RequestDetailsSkeleton } from "../../components/common/skeletons";
 import CurrencyBadge from "../../components/common/CurrencyBadge";
-import { formatCurrencyFrench } from "../../utils/numberFormat";
+import { formatAmount } from "../../utils/numberFormat";
 interface UserData {
   id: number;
   first_name: string;
@@ -97,6 +97,7 @@ export interface RequestDetails {
   contract_amount?: number; // Contract amount from API
   sub_status?: string; // Current sub-status (e.g., request_info)
   last_completed_stage?: string; // New: last completed stage (English)
+  current_stage?: string; // New: current stage (English)
   tax_category?: string; // Tax category for dynamic column display
 }
 export interface ProgressStep {
@@ -181,8 +182,8 @@ const TestRequestDetails = () => {
       });
       setLoading(false);
 
-      // Compute progress solely from last_completed_stage (tracks are only for history)
-      const lastCompleted: string | undefined = res?.data?.data?.last_completed_stage;
+      // Compute progress using current_stage (new logic)
+      const currentStage: string | undefined = res?.data?.data?.current_stage;
       const stageOrder = [
         "Application Submission",
         "Secretariat Review",
@@ -196,18 +197,29 @@ const TestRequestDetails = () => {
         "Title Generation",
       ];
       const normalize = (s: string) => s.toLowerCase().trim();
-      // If last_completed_stage is null/undefined/empty, treat Application Submission as completed
-      const computedLastIndex = (() => {
-        if (!lastCompleted || normalize(String(lastCompleted)) === "null") return 0;
-        const idx = stageOrder.findIndex((s) => normalize(s) === normalize(String(lastCompleted)));
+      
+      // Find the index of the current stage
+      const currentStageIndex = (() => {
+        if (!currentStage || normalize(String(currentStage)) === "null") {
+          return 0; // Default to first stage if no current stage
+        }
+        const idx = stageOrder.findIndex(
+          (s) => normalize(s) === normalize(String(currentStage))
+        );
         return idx < 0 ? 0 : idx;
       })();
 
-      const newSteps: ProgressStep[] = getProgressSteps(t).map((step, index) => {
-        if (computedLastIndex >= 0 && index <= computedLastIndex) return { ...step, status: "completed" };
-        if (index === computedLastIndex + 1) return { ...step, status: "current" };
-        return { ...step, status: "pending" };
-      });
+      const newSteps: ProgressStep[] = getProgressSteps(t).map(
+        (step, index) => {
+          if (index < currentStageIndex) {
+            return { ...step, status: "completed" }; // Previous stages are completed (green)
+          } else if (index === currentStageIndex) {
+            return { ...step, status: "current" }; // Current stage is orange
+          } else {
+            return { ...step, status: "pending" }; // Future stages are pending
+          }
+        }
+      );
 
       setSteps(newSteps);
       setRequestData(res.data.data);
@@ -242,7 +254,7 @@ const TestRequestDetails = () => {
     // Update moment locale for date/time formatting in history
     moment.locale(i18n.language === "fr" ? "fr" : "en");
 
-    // Rebuild steps with translated titles based on last_completed_stage only
+    // Rebuild steps with translated titles based on current_stage
     if (requestData) {
       const stageOrder = [
         "Application Submission",
@@ -257,18 +269,30 @@ const TestRequestDetails = () => {
         "Title Generation",
       ];
       const normalize = (s: string) => s.toLowerCase().trim();
-      const computedLastIndex = (() => {
-        const lc = requestData.last_completed_stage as any;
-        if (!lc || normalize(String(lc)) === "null") return 0; // default: first step completed
-        const idx = stageOrder.findIndex((s) => normalize(s) === normalize(String(lc)));
+      const currentStage = requestData.current_stage;
+      
+      // Find the index of the current stage
+      const currentStageIndex = (() => {
+        if (!currentStage || normalize(String(currentStage)) === "null") {
+          return 0; // Default to first stage if no current stage
+        }
+        const idx = stageOrder.findIndex(
+          (s) => normalize(s) === normalize(String(currentStage))
+        );
         return idx < 0 ? 0 : idx;
       })();
 
-      const newSteps: ProgressStep[] = getProgressSteps(t).map((step, index) => {
-        if (computedLastIndex >= 0 && index <= computedLastIndex) return { ...step, status: "completed" };
-        if (index === computedLastIndex + 1) return { ...step, status: "current" };
-        return { ...step, status: "pending" };
-      });
+      const newSteps: ProgressStep[] = getProgressSteps(t).map(
+        (step, index) => {
+          if (index < currentStageIndex) {
+            return { ...step, status: "completed" }; // Previous stages are completed (green)
+          } else if (index === currentStageIndex) {
+            return { ...step, status: "current" }; // Current stage is orange
+          } else {
+            return { ...step, status: "pending" }; // Future stages are pending
+          }
+        }
+      );
       setSteps(newSteps);
 
       // Recompute history to apply new locale formatting (tracks still used for history)
@@ -292,7 +316,7 @@ const TestRequestDetails = () => {
         setHistory(historyItems);
       }
     }
-  }, [i18n.language, requestData?.last_completed_stage, requestData?.tracks]);
+  }, [i18n.language, requestData?.current_stage, requestData?.tracks]);
 
   useEffect(() => {
     const user = localStorageService.getUser() || "";
@@ -340,7 +364,9 @@ const TestRequestDetails = () => {
       pending: "status_progress",
       processing: "status_progress",
     };
-    return map[norm] ? t(map[norm]) : sub.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    return map[norm]
+      ? t(map[norm])
+      : sub.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
   const crumbs = [
@@ -455,7 +481,9 @@ const TestRequestDetails = () => {
                                     className="text-gray-900"
                                   >
                                     {requestData?.project_amount
-                                      ? formatCurrencyFrench(requestData.project_amount)
+                                      ? formatAmount(
+                                          requestData.project_amount
+                                        )
                                       : "0"}
                                   </Typography>
                                 </div>
@@ -584,7 +612,9 @@ const TestRequestDetails = () => {
                                     className="text-gray-900"
                                   >
                                     {requestData?.contract_amount
-                                      ? formatCurrencyFrench(requestData.contract_amount)
+                                      ? formatAmount(
+                                          requestData.contract_amount
+                                        )
                                       : "0"}
                                   </Typography>
                                 </div>
@@ -753,7 +783,7 @@ const TestRequestDetails = () => {
                           className="text-secondary-60 min-w-[100px] flex-shrink-0"
                           size="sm"
                         >
-                          {t("address")}
+                          {t("location")}
                           {requestData?.addresses &&
                           requestData.addresses.length > 1
                             ? "es"

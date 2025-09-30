@@ -1,4 +1,11 @@
-import React, { useState, useEffect, JSX, useMemo, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  JSX,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { UploadIcon } from "../../icons";
 export interface UploadedFile {
@@ -57,7 +64,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
       return [
         {
           id: "mandatory_3",
-          name: "Facture e`mise par le fournisseur",
+          name: "Facture émise par le fournisseur",
           isUploaded: false,
           isMandatory: true,
           isNameEditable: false,
@@ -75,14 +82,14 @@ const UploadFile: React.FC<FileUploadProps> = ({
         },
         {
           id: "mandatory_2",
-          name: "De`claration pour I'importation Conditionnelle <<IC>>",
+          name: "Déclaration pour I'importation Conditionnelle <<IC>>",
           isUploaded: false,
           isMandatory: true,
           isNameEditable: false,
         },
         {
           id: "mandatory_3",
-          name: "Facture e`mise par le fournisseur",
+          name: "Facture émise par le fournisseur",
           isUploaded: false,
           isMandatory: true,
           isNameEditable: false,
@@ -91,8 +98,8 @@ const UploadFile: React.FC<FileUploadProps> = ({
     }
   };
 
-  const [mandatoryDocs, setMandatoryDocs] = useState<DocumentRow[]>(
-    () => getMandatoryDocsByTaxCategory(taxCategory)
+  const [mandatoryDocs, setMandatoryDocs] = useState<DocumentRow[]>(() =>
+    getMandatoryDocsByTaxCategory(taxCategory)
   );
 
   const [additionalDocs, setAdditionalDocs] = useState<DocumentRow[]>([
@@ -112,73 +119,77 @@ const UploadFile: React.FC<FileUploadProps> = ({
   const [removingFile, setRemovingFile] = useState<boolean>(false);
   const [renamingFiles, setRenamingFiles] = useState<Set<string>>(new Set());
 
-  const filesDep = useMemo(
-    () => files?.map((f) => f.id).join(","),
-    [files]
-  );
+  const filesDep = useMemo(() => files?.map((f) => f.id).join(","), [files]);
 
   const isInitialMount = useRef(true);
   const lastNotifiedFiles = useRef<string>("");
 
   // Helper function to process files for display in both mandatory and additional docs
-  const processFilesForDisplay = useCallback((currentFiles: UploadedFile[]) => {
-    if (!currentFiles || currentFiles.length === 0) {
-      // Just update mandatory docs structure without touching files
-      const newMandatoryDocs = getMandatoryDocsByTaxCategory(taxCategory);
-      setMandatoryDocs(newMandatoryDocs);
-      
-      setAdditionalDocs([{
-        id: `additional_${Date.now()}`,
-        name: "",
-        isUploaded: false,
-        isMandatory: false,
-        isNameEditable: true,
-      }]);
-      return;
-    }
-    
-    const newMandatoryDocs = getMandatoryDocsByTaxCategory(taxCategory);
-    const newAdditionalDocs: DocumentRow[] = [];
-    const mandatoryDocNames = newMandatoryDocs.map((doc) => doc.name);
+  const processFilesForDisplay = useCallback(
+    (currentFiles: UploadedFile[]) => {
+      if (!currentFiles || currentFiles.length === 0) {
+        // Just update mandatory docs structure without touching files
+        const newMandatoryDocs = getMandatoryDocsByTaxCategory(taxCategory);
+        setMandatoryDocs(newMandatoryDocs);
 
-    // Process each file and categorize it
-    currentFiles.forEach((file) => {
-      const mandatoryIndex = mandatoryDocNames.indexOf(file.original_name || "");
-      if (mandatoryIndex !== -1) {
-        // Update the corresponding mandatory document
-        newMandatoryDocs[mandatoryIndex] = {
-          ...newMandatoryDocs[mandatoryIndex],
-          isUploaded: true,
-          uploadedFile: file,
-        };
-      } else {
-        // Add to additional documents
+        setAdditionalDocs([
+          {
+            id: `additional_${Date.now()}`,
+            name: "",
+            isUploaded: false,
+            isMandatory: false,
+            isNameEditable: true,
+          },
+        ]);
+        return;
+      }
+
+      const newMandatoryDocs = getMandatoryDocsByTaxCategory(taxCategory);
+      const newAdditionalDocs: DocumentRow[] = [];
+      const mandatoryDocNames = newMandatoryDocs.map((doc) => doc.name);
+
+      // Process each file and categorize it
+      currentFiles.forEach((file) => {
+        const mandatoryIndex = mandatoryDocNames.indexOf(
+          file.original_name || ""
+        );
+        if (mandatoryIndex !== -1) {
+          // Update the corresponding mandatory document
+          newMandatoryDocs[mandatoryIndex] = {
+            ...newMandatoryDocs[mandatoryIndex],
+            isUploaded: true,
+            uploadedFile: file,
+          };
+        } else {
+          // Add to additional documents
+          newAdditionalDocs.push({
+            id: file.id,
+            name: file.original_name || "",
+            file: undefined,
+            uploadedFile: file,
+            isUploaded: true,
+            isMandatory: false,
+            isNameEditable: true,
+          });
+        }
+      });
+
+      // Ensure at least one empty additional doc row exists
+      if (newAdditionalDocs.length === 0) {
         newAdditionalDocs.push({
-          id: file.id,
-          name: file.original_name || "",
-          file: undefined,
-          uploadedFile: file,
-          isUploaded: true,
+          id: `additional_${Date.now()}`,
+          name: "",
+          isUploaded: false,
           isMandatory: false,
           isNameEditable: true,
         });
       }
-    });
 
-    // Ensure at least one empty additional doc row exists
-    if (newAdditionalDocs.length === 0) {
-      newAdditionalDocs.push({
-        id: `additional_${Date.now()}`,
-        name: "",
-        isUploaded: false,
-        isMandatory: false,
-        isNameEditable: true,
-      });
-    }
-
-    setMandatoryDocs(newMandatoryDocs);
-    setAdditionalDocs(newAdditionalDocs);
-  }, [taxCategory]);
+      setMandatoryDocs(newMandatoryDocs);
+      setAdditionalDocs(newAdditionalDocs);
+    },
+    [taxCategory]
+  );
 
   // Effect to update mandatory documents when tax category changes
   useEffect(() => {
@@ -191,7 +202,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
     const resetFilesListener = () => {
       // Reset all document states based on current tax category
       setMandatoryDocs(getMandatoryDocsByTaxCategory(taxCategory));
-      
+
       setAdditionalDocs([
         {
           id: "additional_1",
@@ -201,26 +212,26 @@ const UploadFile: React.FC<FileUploadProps> = ({
           isNameEditable: true,
         },
       ]);
-      
+
       // Reset other states
       setError("");
       setUploadingFiles(new Set());
       setUploadProgress({});
       setRemovingFile(false);
       setRenamingFiles(new Set());
-      
+
       // Reset refs
       isInitialMount.current = true;
       lastNotifiedFiles.current = "";
-      
+
       // Notify parent with empty files array
       onFilesSelect?.([]);
     };
 
-    window.addEventListener('form-reset', resetFilesListener);
+    window.addEventListener("form-reset", resetFilesListener);
 
     return () => {
-      window.removeEventListener('form-reset', resetFilesListener);
+      window.removeEventListener("form-reset", resetFilesListener);
     };
   }, [onFilesSelect, taxCategory]);
 
@@ -233,32 +244,31 @@ const UploadFile: React.FC<FileUploadProps> = ({
 
   // Process files when the files prop changes
   useEffect(() => {
-    console.log('Files changed, processing for display:', files);
+    console.log("Files changed, processing for display:", files);
     processFilesForDisplay(files || []);
   }, [filesDep, processFilesForDisplay]);
 
   useEffect(() => {
     const allUploadedFiles = [
-      ...mandatoryDocs
-        .filter((d) => d.isUploaded)
-        .map((d) => d.uploadedFile!),
-      ...additionalDocs
-        .filter((d) => d.isUploaded)
-        .map((d) => d.uploadedFile!),
+      ...mandatoryDocs.filter((d) => d.isUploaded).map((d) => d.uploadedFile!),
+      ...additionalDocs.filter((d) => d.isUploaded).map((d) => d.uploadedFile!),
     ].filter(Boolean);
-    
+
     // Create a stable string representation of the files to compare
     const currentFilesSignature = allUploadedFiles
       .map((f) => `${f.id}-${f.original_name}`)
       .sort()
       .join("|");
-    
+
     // Only call onFilesSelect if this is not the initial mount and files have actually changed
-    if (!isInitialMount.current && currentFilesSignature !== lastNotifiedFiles.current) {
+    if (
+      !isInitialMount.current &&
+      currentFilesSignature !== lastNotifiedFiles.current
+    ) {
       lastNotifiedFiles.current = currentFilesSignature;
       onFilesSelect?.(allUploadedFiles);
     }
-    
+
     if (isInitialMount.current) {
       isInitialMount.current = false;
       lastNotifiedFiles.current = currentFilesSignature;
@@ -523,8 +533,8 @@ const UploadFile: React.FC<FileUploadProps> = ({
               type="text"
               value={row.name}
               onChange={(e) => handleNameChange(row.id, e.target.value)}
-                      placeholder={t("enter_file_name")}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+              placeholder={t("enter_file_name")}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
             />
           ) : (
             <span className="text-gray-900 font-medium">{row.name}</span>
@@ -712,7 +722,10 @@ const UploadFile: React.FC<FileUploadProps> = ({
                 className="group flex items-center justify-center text-white text-xs font-medium px-2 py-1.5 rounded-md bg-primary-150 hover:bg-primary-100 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-150 focus:ring-offset-1 cursor-pointer transition-all duration-200 ease-in-out transform hover:scale-110 active:scale-95 w-8 h-8 shadow-sm"
                 title="Upload file"
               >
-                <UploadIcon className="text-white group-hover:animate-pulse" size={14} />
+                <UploadIcon
+                  className="text-white group-hover:animate-pulse"
+                  size={14}
+                />
               </label>
             </div>
           )}
@@ -781,12 +794,12 @@ const UploadFile: React.FC<FileUploadProps> = ({
   const showMandatoryDocs = context === "create-request";
   // Show additional docs based on prop
   const shouldShowAdditionalDocs = Boolean(showAdditionalDocs);
-  
-  console.log('UploadFile render check:', {
+
+  console.log("UploadFile render check:", {
     context,
     showAdditionalDocs,
     shouldShowAdditionalDocs,
-    showMandatoryDocs
+    showMandatoryDocs,
   });
 
   // Calculate starting index for additional docs serial numbers

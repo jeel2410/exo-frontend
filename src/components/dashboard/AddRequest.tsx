@@ -285,7 +285,7 @@ const AddRequest = () => {
 
     if (financialAuthority === "location_acquisition") {
       // For Location Acquisition: only 1 document is required
-      mandatoryDocNames = ["Facture e`mise par le fournisseur"];
+      mandatoryDocNames = ["Facture émise par le fournisseur"];
       requiredFileCount = 1;
       errorMessage =
         t("location_acquisition_file_required") ||
@@ -293,8 +293,8 @@ const AddRequest = () => {
     } else if (financialAuthority === "importation") {
       mandatoryDocNames = [
         "Letter de transport, note de fret, note d'assurance",
-        "De`claration pour I'importation Conditionnelle <<IC>>",
-        "Facture e`mise par le fournisseur",
+        "Déclaration pour I'importation Conditionnelle <<IC>>",
+        "Facture émise par le fournisseur",
       ];
       requiredFileCount = 3;
       errorMessage =
@@ -326,7 +326,10 @@ const AddRequest = () => {
 
     // Debug: Log the current data state before API call
     console.log("🚀 Form data before API call:", data);
-    console.log("🚀 Reference fields in data:", data.map(d => ({ id: d.id, reference: d.reference, label: d.label })));
+    console.log(
+      "🚀 Reference fields in data:",
+      data.map((d) => ({ id: d.id, reference: d.reference, label: d.label }))
+    );
 
     const requestEntities = data.map((d) => ({
       label: d.label,
@@ -703,7 +706,7 @@ const AddRequest = () => {
           </Button>
         </div>
       </div>
-      
+
       {/* Request Success Confirmation Modal */}
       <CreateRequestConfirmationModal
         isOpen={isOpen}

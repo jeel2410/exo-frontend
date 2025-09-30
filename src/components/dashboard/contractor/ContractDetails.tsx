@@ -24,7 +24,7 @@ import requestService from "../../../services/request.service";
 import { useRoleRoute } from "../../../hooks/useRoleRoute";
 import Breadcrumbs from "../../common/Breadcrumbs";
 import CurrencyBadge from "../../common/CurrencyBadge";
-import { formatCurrencyFrench } from "../../../utils/numberFormat";
+import { formatAmount } from "../../../utils/numberFormat";
 
 interface ContractProps {
   id?: string;
@@ -147,7 +147,7 @@ const ContractDetails = () => {
         pending_requests: 0,
         rejected_requests: 0,
         requests_total: 0,
-        total_requests: 0
+        total_requests: 0,
       };
 
       setCardData(card);
@@ -177,9 +177,12 @@ const ContractDetails = () => {
   });
 
   const requestMutation = useMutation({
-    mutationFn: async (data: { projectId: string; contractId: string | undefined }) => {
+    mutationFn: async (data: {
+      projectId: string;
+      contractId: string | undefined;
+    }) => {
       if (!data.contractId) {
-        throw new Error('Contract ID is required');
+        throw new Error("Contract ID is required");
       }
       const payload = {
         contract_id: data.contractId,
@@ -381,16 +384,11 @@ const ContractDetails = () => {
               {t("contract_info")}
             </Typography>
           </motion.div>
-          <motion.div
-            className="p-4 sm:p-6"
-            variants={staggerContainer}
-          >
+          <motion.div className="p-4 sm:p-6" variants={staggerContainer}>
             {/* Contract Information Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              
               {/* Basic Details - Full width on mobile, 2 columns on xl */}
               <div className="xl:col-span-2 space-y-6">
-                
                 {/* Basic Information Card */}
                 <div className="border border-gray-200 rounded-lg p-4 sm:p-6 bg-white">
                   <Typography
@@ -402,69 +400,118 @@ const ContractDetails = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-3">
                       <div className="space-y-1">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("name")}:
                         </Typography>
-                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                        <Typography
+                          className="text-gray-900 text-sm break-words"
+                          weight="normal"
+                        >
                           {contractData?.name || "-"}
                         </Typography>
                       </div>
                       <div className="space-y-1">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("reference")}:
                         </Typography>
-                        <div className="bg-gray-50 rounded-md p-2 border" title={contractData?.reference || "-"}>
-                          <Typography className="text-gray-900 text-sm break-all font-mono" weight="normal">
+                        <div
+                          className="bg-gray-50 rounded-md p-2 border"
+                          title={contractData?.reference || "-"}
+                        >
+                          <Typography
+                            className="text-gray-900 text-sm break-all font-mono"
+                            weight="normal"
+                          >
                             {contractData?.reference || "-"}
                           </Typography>
                         </div>
                       </div>
                       <div className="flex justify-between items-start">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("contract_amount")}:
                         </Typography>
-                        <Typography className="text-gray-900 text-sm font-medium text-right ml-2" weight="semibold">
+                        <Typography
+                          className="text-gray-900 text-sm font-medium text-right ml-2"
+                          weight="semibold"
+                        >
                           {contractData?.currency}{" "}
                           {contractData?.amount
-                            ? formatCurrencyFrench(contractData.amount)
+                            ? formatAmount(contractData.amount)
                             : "0"}
                         </Typography>
                       </div>
                       <div className="space-y-1">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("place")}:
                         </Typography>
-                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                        <Typography
+                          className="text-gray-900 text-sm break-words"
+                          weight="normal"
+                        >
                           {contractData?.place || "-"}
                         </Typography>
                       </div>
                     </div>
                     <div className="space-y-3">
                       <div className="flex justify-between items-start">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("date_of_signing")}:
                         </Typography>
-                        <Typography className="text-gray-900 text-sm text-right ml-2" weight="normal">
+                        <Typography
+                          className="text-gray-900 text-sm text-right ml-2"
+                          weight="normal"
+                        >
                           {contractData?.date_of_signing
-                            ? moment(contractData.date_of_signing).format("YYYY/MM/DD")
+                            ? moment(contractData.date_of_signing).format(
+                                "YYYY/MM/DD"
+                              )
                             : "-"}
                         </Typography>
                       </div>
                       <div className="flex justify-between items-start">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("date_created")}:
                         </Typography>
-                        <Typography className="text-gray-900 text-sm text-right ml-2" weight="normal">
+                        <Typography
+                          className="text-gray-900 text-sm text-right ml-2"
+                          weight="normal"
+                        >
                           {contractData?.created_at
-                            ? moment(contractData?.created_at).format("YYYY/MM/DD")
+                            ? moment(contractData?.created_at).format(
+                                "YYYY/MM/DD"
+                              )
                             : "-"}
                         </Typography>
                       </div>
                       <div className="flex justify-between items-start">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("no_of_request")}:
                         </Typography>
-                        <Typography className="text-gray-900 text-sm text-right ml-2" weight="normal">
+                        <Typography
+                          className="text-gray-900 text-sm text-right ml-2"
+                          weight="normal"
+                        >
                           {contractData?.requests_data_count || 0}
                         </Typography>
                       </div>
@@ -484,27 +531,46 @@ const ContractDetails = () => {
                     </Typography>
                     <div className="space-y-3">
                       <div className="space-y-1">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("agency_name")}:
                         </Typography>
-                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                        <Typography
+                          className="text-gray-900 text-sm break-words"
+                          weight="normal"
+                        >
                           {contractData?.contracting_agency_name || "-"}
                         </Typography>
                       </div>
                       <div className="space-y-1">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("person_name")}:
                         </Typography>
-                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                        <Typography
+                          className="text-gray-900 text-sm break-words"
+                          weight="normal"
+                        >
                           {contractData?.contracting_agency_person_name || "-"}
                         </Typography>
                       </div>
                       <div className="space-y-1">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("person_position")}:
                         </Typography>
-                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
-                          {contractData?.contracting_agency_person_position || "-"}
+                        <Typography
+                          className="text-gray-900 text-sm break-words"
+                          weight="normal"
+                        >
+                          {contractData?.contracting_agency_person_position ||
+                            "-"}
                         </Typography>
                       </div>
                     </div>
@@ -520,26 +586,44 @@ const ContractDetails = () => {
                     </Typography>
                     <div className="space-y-3">
                       <div className="space-y-1">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("company_name")}:
                         </Typography>
-                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                        <Typography
+                          className="text-gray-900 text-sm break-words"
+                          weight="normal"
+                        >
                           {contractData?.awarded_company_name || "-"}
                         </Typography>
                       </div>
                       <div className="space-y-1">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("person_name")}:
                         </Typography>
-                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                        <Typography
+                          className="text-gray-900 text-sm break-words"
+                          weight="normal"
+                        >
                           {contractData?.awarded_company_person_name || "-"}
                         </Typography>
                       </div>
                       <div className="space-y-1">
-                        <Typography className="text-gray-600 text-sm" weight="semibold">
+                        <Typography
+                          className="text-gray-600 text-sm"
+                          weight="semibold"
+                        >
                           {t("person_position")}:
                         </Typography>
-                        <Typography className="text-gray-900 text-sm break-words" weight="normal">
+                        <Typography
+                          className="text-gray-900 text-sm break-words"
+                          weight="normal"
+                        >
                           {contractData?.awarded_company_person_position || "-"}
                         </Typography>
                       </div>
@@ -548,7 +632,9 @@ const ContractDetails = () => {
                 </div>
 
                 {/* Legacy Information (if available) */}
-                {(contractData?.signed_by || contractData?.organization || contractData?.position) && (
+                {(contractData?.signed_by ||
+                  contractData?.organization ||
+                  contractData?.position) && (
                   <div className="border border-orange-200 bg-orange-50 rounded-lg p-4 sm:p-5">
                     <Typography
                       className="text-orange-800 text-base font-semibold mb-3 border-b border-orange-200 pb-2"
@@ -559,30 +645,48 @@ const ContractDetails = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {contractData?.signed_by && (
                         <div className="space-y-1">
-                          <Typography className="text-orange-700 text-sm" weight="semibold">
+                          <Typography
+                            className="text-orange-700 text-sm"
+                            weight="semibold"
+                          >
                             {t("signed_by")}:
                           </Typography>
-                          <Typography className="text-orange-900 text-sm break-words" weight="normal">
+                          <Typography
+                            className="text-orange-900 text-sm break-words"
+                            weight="normal"
+                          >
                             {contractData.signed_by}
                           </Typography>
                         </div>
                       )}
                       {contractData?.organization && (
                         <div className="space-y-1">
-                          <Typography className="text-orange-700 text-sm" weight="semibold">
+                          <Typography
+                            className="text-orange-700 text-sm"
+                            weight="semibold"
+                          >
                             {t("organization")}:
                           </Typography>
-                          <Typography className="text-orange-900 text-sm break-words" weight="normal">
+                          <Typography
+                            className="text-orange-900 text-sm break-words"
+                            weight="normal"
+                          >
                             {contractData.organization}
                           </Typography>
                         </div>
                       )}
                       {contractData?.position && (
                         <div className="space-y-1">
-                          <Typography className="text-orange-700 text-sm" weight="semibold">
+                          <Typography
+                            className="text-orange-700 text-sm"
+                            weight="semibold"
+                          >
                             {t("position")}:
                           </Typography>
-                          <Typography className="text-orange-900 text-sm break-words" weight="normal">
+                          <Typography
+                            className="text-orange-900 text-sm break-words"
+                            weight="normal"
+                          >
                             {contractData.position}
                           </Typography>
                         </div>
@@ -633,8 +737,18 @@ const ContractDetails = () => {
                     ) : (
                       <div className="text-center py-6">
                         <div className="text-gray-400 mb-2">
-                          <svg className="mx-auto h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          <svg
+                            className="mx-auto h-8 w-8"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
                           </svg>
                         </div>
                         <Typography

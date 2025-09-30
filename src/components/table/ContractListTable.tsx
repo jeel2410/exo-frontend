@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import contractService from "../../services/contract.service";
 import { useLoading } from "../../context/LoaderProvider";
 import { toast } from "react-toastify";
-import { formatCurrencyFrench } from "../../utils/numberFormat";
+import { formatAmount } from "../../utils/numberFormat";
 
 // Utility function to get status color classes
 const getStatusColorClasses = (status: string): string => {
@@ -291,7 +291,7 @@ const ContractListTable = ({
             ) : null}
             <span className="text-xs text-gray-600">{contract.currency}</span>
             <span className="font-medium text-secondary-100 text-sm">
-              {formatCurrencyFrench(contract.amountOfContract)}
+              {formatAmount(contract.amountOfContract)}
             </span>
           </div>
         </div>
@@ -557,7 +557,7 @@ const ContractListTable = ({
                             {data.currency}
                           </span>
                           <span className="block font-medium text-secondary-100 text-sm truncate">
-                            {formatCurrencyFrench(data.amountOfContract)}
+                            {formatAmount(data.amountOfContract)}
                           </span>
                         </div>
                       </TableCell>

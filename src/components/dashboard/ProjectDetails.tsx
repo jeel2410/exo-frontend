@@ -15,7 +15,7 @@ import AddressTable from "../table/AddressTable";
 import RequestTable from "../table/RequestTable";
 import projectService from "../../services/project.service";
 import { useLoading } from "../../context/LoaderProvider";
-import { formatCurrencyFrench } from "../../utils/numberFormat";
+import { formatAmount as formatAmountUtil } from "../../utils/numberFormat";
 
 const ProjectDetails = () => {
   const navigate = useNavigate();
@@ -77,7 +77,7 @@ const ProjectDetails = () => {
     date ? new Date(date).toLocaleDateString("en-US") : "-";
   // Format amount
   const formatAmount = (amount: string | number) =>
-    formatCurrencyFrench(amount);
+    formatAmountUtil(amount);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },

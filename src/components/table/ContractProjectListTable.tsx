@@ -21,7 +21,7 @@ import StatusBadge, { StatusCode } from "../common/StatusBadge.tsx";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
 import Button from "../../lib/components/atoms/Button";
-import { formatCurrencyFrench } from "../../utils/numberFormat";
+import { formatAmount } from "../../utils/numberFormat";
 
 export interface Data {
   id: number;
@@ -282,7 +282,7 @@ const ContractProjectListTable = ({
                         ) : null}
                         <span className="text-gray-500">{data.currency}</span>
                         <span className="block font-medium text-secondary-100 text-sm">
-                          {formatCurrencyFrench(data.amount)}
+                          {formatAmount(data.amount)}
                         </span>
                       </div>
                     </TableCell>

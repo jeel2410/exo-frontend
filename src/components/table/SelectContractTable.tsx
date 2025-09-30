@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import Button from "../../lib/components/atoms/Button";
 import { ContractDetails } from "../../pages/Dashboard/contractor/ContractListPage";
 import { USFlag, CDFFlag } from "../../icons";
-import { formatCurrencyFrench } from "../../utils/numberFormat";
+import { formatAmount } from "../../utils/numberFormat";
 
 export interface TableHeader {
   content: React.ReactNode;
@@ -195,7 +195,7 @@ const SelectContractTable: React.FC<SelectContractTableProps> = ({
                           {contract.currency}
                         </span>
                         <span className="block font-medium text-secondary-100 text-sm truncate">
-                          {formatCurrencyFrench(contract.amount)}
+                          {formatAmount(contract.amount)}
                         </span>
                       </div>
                     </TableCell>

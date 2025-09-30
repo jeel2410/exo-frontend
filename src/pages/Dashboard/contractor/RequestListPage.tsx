@@ -36,6 +36,7 @@ export interface RequestData {
   sub_status?: string;
   request_id: string;
   contract_id: string;
+  total_tax_amount?: string;
 }
 
 export interface RequestDetails {
@@ -50,6 +51,7 @@ export interface RequestDetails {
   current_status: string;
   sub_status?: string;
   created_at: string;
+  total_tax_amount?: string;
   entities?: Array<{
     total?: string;
     [key: string]: any;
@@ -177,6 +179,7 @@ const RequestListPage = () => {
             sub_status: request.sub_status,
             request_id: request.id,
             contract_id: request.contract_id,
+            total_tax_amount: request.total_tax_amount,
           };
         }
       );

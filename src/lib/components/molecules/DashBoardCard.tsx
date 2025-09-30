@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { FileVioletIcon } from "../../../icons";
 import Typography, { TypographyProps } from "../atoms/Typography";
-import { formatCurrencyFrench } from "../../../utils/numberFormat";
+import { formatAmount } from "../../../utils/numberFormat";
 
 interface DashBoardCardProps {
   icon?: React.ReactNode;
@@ -35,7 +35,7 @@ const DashBoardCard: FC<DashBoardCardProps> = ({
             weight="extrabold"
             className="text-secondary-100"
           >
-            {formatCurrencyFrench(count)}
+            {formatAmount(count)}
           </Typography>
 
           <Typography size={titleSize} weight="normal" className="text-secondary-60 truncate">
