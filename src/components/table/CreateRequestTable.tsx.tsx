@@ -128,6 +128,7 @@ const CreateRequestTable = ({
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<Order>>({});
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   // Ref for the dropdown menu container
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -156,7 +157,13 @@ const CreateRequestTable = ({
       const newEntity = tableData.find((order) => order.id === autoEditId);
       if (newEntity) {
         setEditingId(autoEditId);
-        setEditFormData({ ...newEntity });
+        // When auto-editing a freshly added row, avoid pre-filling numeric inputs with 0.
+        // Keep unitPrice/CIF and taxRate empty in the edit form while preserving 0s in the table state.
+        setEditFormData({
+          ...newEntity,
+          unitPrice: newEntity.unitPrice === 0 ? undefined : newEntity.unitPrice,
+          taxRate: newEntity.taxRate === 0 ? undefined : newEntity.taxRate,
+        });
       }
     }
   }, [autoEditId, tableData, editingId]);
@@ -247,8 +254,37 @@ const CreateRequestTable = ({
     }
   };
 
-  const handleMenuToggle = (orderId: number) => {
-    setOpenMenuId(openMenuId === orderId ? null : orderId);
+  const handleMenuToggle = (orderId: number, event?: React.MouseEvent) => {
+    if (openMenuId === orderId) {
+      setOpenMenuId(null);
+      return;
+    }
+
+    if (event) {
+      const buttonRect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const dropdownWidth = 128; // w-32
+      const dropdownHeight = 120; // approx
+      const margin = 16;
+
+      const wouldOverflowRight = buttonRect.right + dropdownWidth > windowWidth - margin;
+      const wouldOverflowLeft = buttonRect.left - dropdownWidth < margin;
+      let left = wouldOverflowRight && !wouldOverflowLeft
+        ? buttonRect.left - dropdownWidth + buttonRect.width
+        : buttonRect.left;
+
+      const wouldOverflowBottom = buttonRect.bottom + dropdownHeight > windowHeight - margin;
+      const top = wouldOverflowBottom && buttonRect.top > dropdownHeight
+        ? buttonRect.top - dropdownHeight
+        : buttonRect.bottom;
+
+      left = Math.max(margin, Math.min(left, windowWidth - dropdownWidth - margin));
+
+      setDropdownStyle({ position: "fixed", left: `${left}px`, top: `${top}px`, zIndex: 9999 });
+    }
+
+    setOpenMenuId(orderId);
   };
 
   const handleEdit = (order: Order) => {
@@ -380,7 +416,8 @@ const CreateRequestTable = ({
       currentEditFormData: editFormData,
     });
 
-    let parsedValue: string | number = value;
+    let parsedValue: string | number | undefined = value as any;
+    // For numeric fields, do NOT coerce empty/invalid to 0 — keep them undefined so the input stays blank
     if (
       [
         "quantity",
@@ -394,14 +431,17 @@ const CreateRequestTable = ({
         "droit",
       ].includes(field)
     ) {
-      parsedValue = value === "" ? 0 : parseFloat(value as string);
-      if (isNaN(parsedValue)) parsedValue = 0;
+      if (value === "") {
+        parsedValue = undefined;
+      } else {
+        const n = typeof value === "number" ? value : parseFloat(value as string);
+        parsedValue = Number.isNaN(n) ? undefined : n;
+      }
     }
 
     setEditFormData((prev) => {
       const updatedFormData = { ...prev, [field]: parsedValue };
-      const { total, taxAmount, vatIncluded } =
-        calculateTaxAndVat(updatedFormData);
+      const { total, taxAmount, vatIncluded } = calculateTaxAndVat(updatedFormData);
       const finalFormData = {
         ...updatedFormData,
         total,
@@ -550,8 +590,8 @@ const CreateRequestTable = ({
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 handleInputChange("reference", e.target.value)
               }
-              className="block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none bg-secondary-10 border-secondary-30"
-              placeholder="Add Reference"
+              className="block w-full min-w-[120px] px-3 py-2 text-sm rounded-md focus:border focus:outline-none bg-secondary-10 border-secondary-30"
+              placeholder="Ajouter une référence"
               aria-label="Reference"
             />
           </div>
@@ -574,8 +614,8 @@ const CreateRequestTable = ({
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 handleInputChange("tarrifPosition", e.target.value)
               }
-              className="block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none bg-secondary-10 border-secondary-30"
-              placeholder="Add Tarrif Position"
+              className="block w-full min-w-[120px] px-3 py-2 text-sm rounded-md focus:border focus:outline-none bg-secondary-10 border-secondary-30"
+              placeholder="Ajouter position tarifaire"
               aria-label="Tarrif Position"
             />
           </div>
@@ -603,14 +643,14 @@ const CreateRequestTable = ({
                   handleInputChange("taxRate", constraints.fixed);
                 }
               }}
-              className={`px-2 py-1 text-sm border rounded-md bg-white ${
+              className={`w-full min-w-[140px] px-3 py-2 text-sm border rounded-md bg-white ${
                 editFormData.customDuty && editFormData.customDuty.trim() !== ""
                   ? "border-gray-300"
                   : "border-red-500"
               }`}
               aria-label="Custom Duty"
             >
-              <option value="">Select Custom Duty *</option>
+              <option value="">Sélectionner les droits de douane *</option>
               {getCustomDutyOptions().map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -652,7 +692,7 @@ const CreateRequestTable = ({
                   handleInputChange("label", e.target.value)
                 }
                 disabled={!editFormData.customDuty}
-                className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
+                className={`block w-full min-w-[140px] px-3 py-2 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
                     : editFormData.label && editFormData.label.trim() !== ""
@@ -661,8 +701,8 @@ const CreateRequestTable = ({
                 }`}
                 placeholder={
                   editFormData.customDuty
-                    ? "Add Nature Marchandise *"
-                    : "Select Custom Duty first"
+                    ? "Ajouter Nature Marchandise *"
+                    : "Sélectionner d'abord les droits de douane"
                 }
                 aria-label="Nature Marchandise"
               />
@@ -784,13 +824,17 @@ const CreateRequestTable = ({
           {editingId === order.id ? (
             <div className="flex flex-col gap-1">
               <input
-                type="text"
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                onWheel={(e) => e.currentTarget.blur()}
                 value={editFormData.unitPrice ?? ""}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   handleInputChange("unitPrice", e.target.value)
                 }
                 disabled={!editFormData.customDuty}
-                className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
+                className={`block w-full min-w-[120px] px-3 py-2 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
                     : editFormData.unitPrice !== undefined &&
@@ -800,8 +844,8 @@ const CreateRequestTable = ({
                 }`}
                 placeholder={
                   editFormData.customDuty
-                    ? "Add Price *"
-                    : "Select Custom Duty first"
+                    ? "Ajouter prix *"
+                  : "Sélectionner d'abord les droits de douane"
                 }
                 aria-label="Unit Price"
               />
@@ -841,6 +885,8 @@ const CreateRequestTable = ({
                 min="0"
                 max="100"
                 step="0.01"
+                inputMode="decimal"
+                onWheel={(e) => e.currentTarget.blur()}
                 value={editFormData.taxRate ?? ""}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const constraints = getTaxRateConstraints(
@@ -860,7 +906,7 @@ const CreateRequestTable = ({
                   !editFormData.customDuty ||
                   getTaxRateConstraints(editFormData.customDuty).fixed !== null
                 }
-                className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
+                className={`block w-full min-w-[100px] px-3 py-2 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
                     : getTaxRateConstraints(editFormData.customDuty).fixed !==
@@ -876,14 +922,14 @@ const CreateRequestTable = ({
                 }`}
                 placeholder={
                   !editFormData.customDuty
-                    ? "Select Custom Duty first"
+                    ? "Sélectionner d'abord les droits de douane"
                     : getTaxRatePlaceholder(editFormData.customDuty)
                 }
                 aria-label="Tax Rate"
                 title={
                   !editFormData.customDuty
-                    ? "Select Custom Duty first"
-                    : `Tax rate constraints: ${getTaxRatePlaceholder(
+                    ? "Sélectionner d'abord les droits de douane"
+                    : `Contraintes du taux d'imposition: ${getTaxRatePlaceholder(
                         editFormData.customDuty
                       )}`
                 }
@@ -894,8 +940,8 @@ const CreateRequestTable = ({
                   editFormData.taxRate,
                   editFormData.customDuty
                 ) && (
-                  <span className="text-xs text-red-500">
-                    Rate must be{" "}
+                  <span className="text-xs text-red-500 mt-1">
+                    Le taux doit être{" "}
                     {getTaxRatePlaceholder(editFormData.customDuty)}
                   </span>
                 )}
@@ -960,7 +1006,7 @@ const CreateRequestTable = ({
                   handleInputChange("label", e.target.value)
                 }
                 disabled={!editFormData.customDuty}
-                className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
+                className={`block w-full min-w-[140px] px-3 py-2 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
                     : editFormData.label && editFormData.label.trim() !== ""
@@ -969,8 +1015,8 @@ const CreateRequestTable = ({
                 }`}
                 placeholder={
                   editFormData.customDuty
-                    ? "Add Nature Marchandise *"
-                    : "Select Custom Duty first"
+                    ? "Ajouter Nature Marchandise *"
+                    : "Sélectionner d'abord les droits de douane"
                 }
                 aria-label="Nature Marchandise"
               />
@@ -1092,13 +1138,17 @@ const CreateRequestTable = ({
           {editingId === order.id ? (
             <div className="flex flex-col gap-1">
               <input
-                type="text"
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                onWheel={(e) => e.currentTarget.blur()}
                 value={editFormData.unitPrice ?? ""}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   handleInputChange("unitPrice", e.target.value)
                 }
                 disabled={!editFormData.customDuty}
-                className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
+                className={`block w-full min-w-[100px] px-3 py-2 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
                     : editFormData.unitPrice !== undefined &&
@@ -1108,8 +1158,8 @@ const CreateRequestTable = ({
                 }`}
                 placeholder={
                   editFormData.customDuty
-                    ? "Add CIF *"
-                    : "Select Custom Duty first"
+                    ? "Ajouter CIF *"
+                    : "Sélectionner d'abord les droits de douane"
                 }
                 aria-label="CIF"
               />
@@ -1149,6 +1199,8 @@ const CreateRequestTable = ({
                 min="0"
                 max="100"
                 step="0.01"
+                inputMode="decimal"
+                onWheel={(e) => e.currentTarget.blur()}
                 value={editFormData.taxRate ?? ""}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const constraints = getTaxRateConstraints(
@@ -1168,7 +1220,7 @@ const CreateRequestTable = ({
                   !editFormData.customDuty ||
                   getTaxRateConstraints(editFormData.customDuty).fixed !== null
                 }
-                className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
+                className={`block w-full min-w-[100px] px-3 py-2 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
                     : getTaxRateConstraints(editFormData.customDuty).fixed !==
@@ -1184,14 +1236,14 @@ const CreateRequestTable = ({
                 }`}
                 placeholder={
                   !editFormData.customDuty
-                    ? "Select Custom Duty first"
+                    ? "Sélectionner d'abord les droits de douane"
                     : getTaxRatePlaceholder(editFormData.customDuty)
                 }
                 aria-label="Tax Rate"
                 title={
                   !editFormData.customDuty
-                    ? "Select Custom Duty first"
-                    : `Tax rate constraints: ${getTaxRatePlaceholder(
+                    ? "Sélectionner d'abord les droits de douane"
+                    : `Contraintes du taux d'imposition: ${getTaxRatePlaceholder(
                         editFormData.customDuty
                       )}`
                 }
@@ -1202,8 +1254,8 @@ const CreateRequestTable = ({
                   editFormData.taxRate,
                   editFormData.customDuty
                 ) && (
-                  <span className="text-xs text-red-500">
-                    Rate must be{" "}
+                  <span className="text-xs text-red-500 mt-1">
+                    Le taux doit être{" "}
                     {getTaxRatePlaceholder(editFormData.customDuty)}
                   </span>
                 )}
@@ -1266,7 +1318,7 @@ const CreateRequestTable = ({
                   handleInputChange("label", e.target.value)
                 }
                 disabled={!editFormData.customDuty}
-                className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
+                className={`block w-full min-w-[140px] px-3 py-2 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
                     : editFormData.label && editFormData.label.trim() !== ""
@@ -1275,8 +1327,8 @@ const CreateRequestTable = ({
                 }`}
                 placeholder={
                   editFormData.customDuty
-                    ? "Add Label *"
-                    : "Select Custom Duty first"
+                    ? "Ajouter libellé *"
+                    : "Sélectionner d'abord les droits de douane"
                 }
                 aria-label="Label"
               />
@@ -1394,13 +1446,15 @@ const CreateRequestTable = ({
           {editingId === order.id ? (
             <div className="flex flex-col gap-1">
               <input
-                type="text"
+                type="number"
+                min="0"
+                step="0.01"
                 value={editFormData.unitPrice ?? ""}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   handleInputChange("unitPrice", e.target.value)
                 }
                 disabled={!editFormData.customDuty}
-                className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
+                className={`block w-full min-w-[120px] px-3 py-2 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
                     : editFormData.unitPrice !== undefined &&
@@ -1410,8 +1464,8 @@ const CreateRequestTable = ({
                 }`}
                 placeholder={
                   editFormData.customDuty
-                    ? "Add Price *"
-                    : "Select Custom Duty first"
+                    ? "Ajouter prix *"
+                    : "Sélectionner d'abord les droits de douane"
                 }
                 aria-label="Unit Price"
               />
@@ -1445,6 +1499,8 @@ const CreateRequestTable = ({
                 min="0"
                 max="100"
                 step="0.01"
+                inputMode="decimal"
+                onWheel={(e) => e.currentTarget.blur()}
                 value={editFormData.taxRate ?? ""}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const constraints = getTaxRateConstraints(
@@ -1464,7 +1520,7 @@ const CreateRequestTable = ({
                   !editFormData.customDuty ||
                   getTaxRateConstraints(editFormData.customDuty).fixed !== null
                 }
-                className={`block w-full px-2 py-1 text-sm rounded-md focus:border focus:outline-none ${
+                className={`block w-full min-w-[100px] px-3 py-2 text-sm rounded-md focus:border focus:outline-none ${
                   !editFormData.customDuty
                     ? "bg-gray-100 cursor-not-allowed border-gray-200 text-gray-400"
                     : getTaxRateConstraints(editFormData.customDuty).fixed !==
@@ -1480,14 +1536,14 @@ const CreateRequestTable = ({
                 }`}
                 placeholder={
                   !editFormData.customDuty
-                    ? "Select Custom Duty first"
+                    ? "Sélectionner d'abord les droits de douane"
                     : getTaxRatePlaceholder(editFormData.customDuty)
                 }
                 aria-label="Tax Rate"
                 title={
                   !editFormData.customDuty
-                    ? "Select Custom Duty first"
-                    : `Tax rate constraints: ${getTaxRatePlaceholder(
+                    ? "Sélectionner d'abord les droits de douane"
+                    : `Contraintes du taux d'imposition: ${getTaxRatePlaceholder(
                         editFormData.customDuty
                       )}`
                 }
@@ -1498,8 +1554,8 @@ const CreateRequestTable = ({
                   editFormData.taxRate,
                   editFormData.customDuty
                 ) && (
-                  <span className="text-xs text-red-500">
-                    Rate must be{" "}
+                  <span className="text-xs text-red-500 mt-1">
+                    Le taux doit être{" "}
                     {getTaxRatePlaceholder(editFormData.customDuty)}
                   </span>
                 )}
@@ -1557,15 +1613,15 @@ const CreateRequestTable = ({
       },
       {
         content: <div>{t("reference")}</div>,
-        className: "w-32",
+        className: "w-36 min-w-[140px]",
       },
       {
         content: <div>{t("tarrif_position")}</div>,
-        className: "w-32",
+        className: "w-36 min-w-[140px]",
       },
       {
         content: <div>{t("custom_duties")}</div>,
-        className: "w-32",
+        className: "w-40 min-w-[160px]",
       },
     ];
 
@@ -1575,7 +1631,7 @@ const CreateRequestTable = ({
         ...baseHeaders,
         {
           content: <div>{t("nature_marchandise")}</div>,
-          className: "min-w-[120px]",
+          className: "w-40 min-w-[160px]",
         },
         {
           content: (
@@ -1601,7 +1657,7 @@ const CreateRequestTable = ({
         },
         {
           content: <div>{t("rate")}</div>,
-          className: "w-24",
+          className: "w-32 min-w-[120px]",
         },
         {
           content: <div>{t("tax_amount")}</div>,
@@ -1615,7 +1671,7 @@ const CreateRequestTable = ({
           ? [
               {
                 content: <div>{t("actions")}</div>,
-                className: "w-20",
+                className: "w-32 min-w-[120px]",
               },
             ]
           : []),
@@ -1626,7 +1682,7 @@ const CreateRequestTable = ({
         ...baseHeaders,
         {
           content: <div>{t("nature_marchandise")}</div>,
-          className: "min-w-[120px]",
+          className: "w-40 min-w-[160px]",
         },
         {
           content: (
@@ -1651,8 +1707,8 @@ const CreateRequestTable = ({
           className: "w-28",
         },
         {
-          content: <div>{t("rate")}</div>,
-          className: "w-24",
+          content: <div>Taux</div>,
+          className: "w-32 min-w-[120px]",
         },
         {
           content: <div>{t("droit")}</div>,
@@ -1666,7 +1722,7 @@ const CreateRequestTable = ({
           ? [
               {
                 content: <div>{t("actions")}</div>,
-                className: "w-20",
+                className: "w-32 min-w-[120px]",
               },
             ]
           : []),
@@ -1678,7 +1734,7 @@ const CreateRequestTable = ({
       ...baseHeaders,
       {
         content: <div>{t("label")}</div>,
-        className: "min-w-[120px]",
+        className: "w-40 min-w-[160px]",
       },
       {
         content: (
@@ -1708,7 +1764,7 @@ const CreateRequestTable = ({
       },
       {
         content: <div>{t("tax_rate")}</div>,
-        className: "w-24",
+        className: "w-32 min-w-[120px]",
       },
       {
         content: <div>{t("tax_amount")}</div>,
@@ -1722,7 +1778,7 @@ const CreateRequestTable = ({
         ? [
             {
               content: <div>{t("actions")}</div>,
-              className: "w-20",
+              className: "w-32 min-w-[120px]",
             },
           ]
         : []),
@@ -1733,8 +1789,8 @@ const CreateRequestTable = ({
 
   return (
     <div className="relative rounded-lg border border-secondary-30 bg-white">
-      <div className="relative min-h-[200px]">
-        <Table>
+      <div className="relative min-h-[200px] overflow-x-auto">
+        <Table className="min-w-full">
           <TableHeader className="border-b border-gray-100 bg-secondary-10 rounded-lg">
             <TableRow>
               {tableHeader.map((header, index) => {
@@ -1757,21 +1813,21 @@ const CreateRequestTable = ({
               <TableRow key={order.id}>
                 {renderDynamicColumns(order, index)}
                 {showActions && (
-                  <TableCell className="px-4 py-3 text-gray-500 text-sm">
+                  <TableCell className="px-2 py-3 text-gray-500 text-sm min-w-[120px]">
                     {editingId === order.id ? (
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center justify-center space-x-2">
                         <RightGreenIcon
                           onClick={() => handleSaveEdit(order.id)}
-                          width={24}
-                          height={24}
-                          className="cursor-pointer"
+                          width={20}
+                          height={20}
+                          className="cursor-pointer flex-shrink-0"
                         />
 
                         <CrossRedIcon
                           onClick={handleCancelEdit}
-                          width={24}
-                          height={24}
-                          className="cursor-pointer"
+                          width={20}
+                          height={20}
+                          className="cursor-pointer flex-shrink-0"
                         />
                       </div>
                     ) : (
@@ -1782,7 +1838,7 @@ const CreateRequestTable = ({
                         <button
                           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                             e.stopPropagation();
-                            handleMenuToggle(order.id);
+                            handleMenuToggle(order.id, e);
                           }}
                           className="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                           aria-label="Open actions menu"
@@ -1799,7 +1855,8 @@ const CreateRequestTable = ({
                         </button>
                         {openMenuId === order.id && (
                           <div
-                            className="absolute right-0 top-full mt-2 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                            className="w-32 bg-white border border-gray-200 rounded-md shadow-lg"
+                            style={dropdownStyle}
                             role="menu"
                           >
                             <button

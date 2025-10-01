@@ -1067,8 +1067,8 @@ ProjectInfoFormProps) => {
                 <div>
                   <Label>{t("upload_files")}</Label>
                   <UploadFile
-                    maxSize={10}
-                    acceptedFormats={[".pdf", ".doc", ".txt", ".ppt"]}
+                    maxSize={2}
+                    acceptedFormats={[".pdf"]}
                     onFilesSelect={(files: UploadedFile[]) =>
                       setFieldValue("files", files)
                     }

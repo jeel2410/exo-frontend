@@ -369,8 +369,8 @@ const ContactInfoForm = ({
         <div>
           <Label>{t("upload_files")}</Label>
           <UploadFile
-            maxSize={5}
-            acceptedFormats={[".pdf", ".doc", ".docx"]}
+            maxSize={2}
+            acceptedFormats={[".pdf"]}
             onFilesSelect={handleFilesSelect}
             files={projectData.contractFiles}
             onUploadFile={handleUploadFile}

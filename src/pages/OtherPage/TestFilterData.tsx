@@ -36,22 +36,24 @@ const TestFilterData = () => {
         </div>
         <div className="flex gap-5 mt-5">
           <DashBoardCard
-            icon={<CopyIcon width={44} height={44} />}
+            icon={<CopyIcon width={36} height={36} />}
             count={1}
             title={t("total_project")}
+            formatType="count"
           />
           <DashBoardCard
-            icon={<GreenIcon width={44} height={44} />}
+            icon={<GreenIcon width={36} height={36} />}
             count={2500000}
             title={t("total_amount_of_project")}
           />
           <DashBoardCard
-            icon={<BlueCopyIcon width={44} height={44} />}
+            icon={<BlueCopyIcon width={36} height={36} />}
             count={1}
             title={t("total_request")}
+            formatType="count"
           />
           <DashBoardCard
-            icon={<UsdOrangeIcon width={44} height={44} />}
+            icon={<UsdOrangeIcon width={36} height={36} />}
             count={25000000}
             title={t("total_amount_requested")}
           />

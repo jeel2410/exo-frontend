@@ -61,22 +61,23 @@ const TestRequest = () => {
           </Typography>
           <div className="flex gap-5 mt-5">
             <DashBoardCard
-              icon={<FileVioletIcon width={44} height={44} />}
+              icon={<FileVioletIcon width={36} height={36} />}
               count={2}
               title={t("total_entity")}
+              formatType="count"
             />
             <DashBoardCard
-              icon={<UsdGreenIcon width={44} height={44} />}
+              icon={<UsdGreenIcon width={36} height={36} />}
               count={2200}
               title={t("total_amount")}
             />
             <DashBoardCard
-              icon={<UsdVioletIcon width={44} height={44} />}
+              icon={<UsdVioletIcon width={36} height={36} />}
               count={440}
               title={t("total_tax_amount")}
             />
             <DashBoardCard
-              icon={<UsdOrangeIcon width={44} height={44} />}
+              icon={<UsdOrangeIcon width={36} height={36} />}
               count={4840}
               title={t("total_amount_with_tax")}
             />

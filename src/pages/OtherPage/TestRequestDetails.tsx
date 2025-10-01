@@ -670,9 +670,10 @@ const TestRequestDetails = () => {
             <div className="mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <DashBoardCard
-                  icon={<BlueCopyIcon width={44} height={44} />}
+                  icon={<BlueCopyIcon width={36} height={36} />}
                   count={requestData ? requestData.entities.length : 0}
                   title={t("total_entity")}
+                  formatType="count"
                 />
                 <DashBoardCard
                   icon={
@@ -683,8 +684,8 @@ const TestRequestDetails = () => {
                           | "CDF") || "USD"
                       }
                       variant="green"
-                      width={44}
-                      height={44}
+                      width={36}
+                      height={36}
                     />
                   }
                   count={
@@ -701,8 +702,8 @@ const TestRequestDetails = () => {
                           | "CDF") || "USD"
                       }
                       variant="violet"
-                      width={44}
-                      height={44}
+                      width={36}
+                      height={36}
                     />
                   }
                   count={
@@ -719,8 +720,8 @@ const TestRequestDetails = () => {
                           | "CDF") || "USD"
                       }
                       variant="orange"
-                      width={44}
-                      height={44}
+                      width={36}
+                      height={36}
                     />
                   }
                   count={

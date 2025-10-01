@@ -905,7 +905,7 @@ const AddRequest = () => {
 
         {/* Form Fields */}
         <div className="mt-4 md:mt-6">
-          <Label htmlFor="address">{t("address")}</Label>
+          <Label htmlFor="address">{t("location")}</Label>
           <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
             {isLoadingAddresses ? (
               <Typography className="text-gray-500">{t("loading")}</Typography>
@@ -960,8 +960,8 @@ const AddRequest = () => {
           </div>
           {selectedAddresses.length > 0 && (
             <Typography size="sm" className="text-primary-70 mt-2">
-              {selectedAddresses.length} {t("address")}
-              {selectedAddresses.length > 1 ? "es" : ""} {t("selected")}
+              {selectedAddresses.length} {t("location")}
+              {selectedAddresses.length > 1 ? "s" : ""} {t("selected")}
             </Typography>
           )}
           {validationErrors.address && (
@@ -1034,17 +1034,18 @@ const AddRequest = () => {
           {/* Dashboard Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mt-3 md:mt-5">
             <DashBoardCard
-              icon={<FileVioletIcon width={44} height={44} />}
+              icon={<FileVioletIcon width={36} height={36} />}
               count={totals.totalEntity}
               title={t("total_items")}
+              formatType="count"
             />
             <DashBoardCard
               icon={
                 <CurrencyBadge
                   currency={(contractData?.currency as "USD" | "CDF") || "USD"}
                   variant="green"
-                  width={44}
-                  height={44}
+                  width={36}
+                  height={36}
                 />
               }
               count={totals.totalAmount}
@@ -1055,8 +1056,8 @@ const AddRequest = () => {
                 <CurrencyBadge
                   currency={(contractData?.currency as "USD" | "CDF") || "USD"}
                   variant="violet"
-                  width={44}
-                  height={44}
+                  width={36}
+                  height={36}
                 />
               }
               count={totals.totalTaxAmount}
@@ -1067,8 +1068,8 @@ const AddRequest = () => {
                 <CurrencyBadge
                   currency={(contractData?.currency as "USD" | "CDF") || "USD"}
                   variant="orange"
-                  width={44}
-                  height={44}
+                  width={36}
+                  height={36}
                 />
               }
               count={totals.totalAmountWithTax}
@@ -1100,8 +1101,8 @@ const AddRequest = () => {
             <div className="mt-5 md:mt-7 mb-4 md:mb-6">
               <Label>{t("invoice_files")}</Label>
               <UploadFile
-                maxSize={10}
-                acceptedFormats={[".pdf", ".doc", ".txt", ".ppt"]}
+                maxSize={2}
+                acceptedFormats={[".pdf"]}
                 files={uploadedFiles}
                 onFilesSelect={handleFilesSelect}
                 onUploadFile={handleUploadFile}

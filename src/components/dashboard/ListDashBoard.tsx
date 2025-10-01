@@ -340,6 +340,7 @@ const ListDashBoard = () => {
                   ),
                   count: totalProject,
                   title: t("total_project"),
+                  formatType: "count" as const,
                 },
                 {
                   icon: (
@@ -380,6 +381,7 @@ const ListDashBoard = () => {
                     icon={card.icon}
                     count={card.count}
                     title={card.title}
+                    formatType={(card as any).formatType}
                   />
                 </motion.div>
               ))}
