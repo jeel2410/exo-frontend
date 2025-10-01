@@ -105,7 +105,8 @@ const ContractInfoForm = ({
       .required(t("amount_required"))
       .test("is-positive-number", t("amount_must_be_positive"), (value) => {
         if (!value) return false;
-        const num = parseFloat(value.replace(/,/g, ""));
+        // Value is now raw digits only (e.g., "456" instead of "456.00")
+        const num = parseFloat(value);
         return !isNaN(num) && num > 0;
       })
       .test(
@@ -113,8 +114,10 @@ const ContractInfoForm = ({
         t("contract_amount_exceeds_project"),
         (value) => {
           if (!projectAmount || !value) return true;
-          const contractAmount = parseFloat(value.replace(/,/g, ""));
-          const projAmount = parseFloat(projectAmount);
+          // Value is now raw digits only 
+          const contractAmount = parseFloat(value);
+          // Project amount might still come formatted, so clean it
+          const projAmount = parseFloat(projectAmount.replace(/[^0-9.]/g, ""));
           return (
             !isNaN(contractAmount) &&
             !isNaN(projAmount) &&

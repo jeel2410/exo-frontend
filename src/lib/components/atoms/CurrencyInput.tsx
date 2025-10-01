@@ -2,7 +2,7 @@ import Input, { InputProps } from "./Input";
 import { useState, useEffect } from "react";
 import Typography from "./Typography";
 import CustomDropdown from "./CustomDropdown";
-import { formatAmount } from "../../../utils/numberFormat";
+import { formatAmount, formatCurrencyFrench } from "../../../utils/numberFormat";
 
 type CurrencyOption = {
   value: string;
@@ -42,11 +42,14 @@ const CurrencyInput = ({
     }
   }, [currency]);
 
-  const formatNumber = (num: string) => {
-    const numStr = num.replace(/[^0-9]/g, "");
-    if (!numStr) return "";
-    const number = parseInt(numStr, 10);
-    return formatAmount(number);
+  // Format display value - this should only be used for display, never for processing input
+  const getDisplayValue = (rawValue: string) => {
+    if (!rawValue || rawValue === "") return "";
+    // rawValue should contain only digits
+    const number = parseInt(rawValue, 10);
+    if (isNaN(number)) return "";
+    // Show grouping only while typing (no decimals) to avoid confusing re-parsing like "4.00"
+    return formatCurrencyFrench(number);
   };
 
   const handleCurrencyChange = (currency: string) => {
@@ -55,10 +58,15 @@ const CurrencyInput = ({
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Remove spaces (French thousand separators) and other non-digit characters except digits
-    const newValue = e.target.value.replace(/\s/g, "").replace(/[^\d]/g, "");
-    if (/^\d*$/.test(newValue)) {
-      onChange?.(newValue, selectedCurrency);
+    const input = e.target as HTMLInputElement;
+    const inputValue = e.target.value;
+    
+    // Remove all non-digit characters (spaces, dots, commas, etc.)
+    const cleanValue = inputValue.replace(/[^0-9]/g, "");
+    
+    // Always pass the clean numeric string to onChange
+    if (onChange) {
+      onChange(cleanValue, selectedCurrency);
     }
   };
 
@@ -91,7 +99,7 @@ const CurrencyInput = ({
         </div>
         <div className="h-6 w-px bg-secondary-30" />
         <Input
-          value={formatNumber(value)}
+          value={getDisplayValue(value)}
           type="text"
           placeholder="0"
           className="border-none flex-1 pr-4"

@@ -466,7 +466,7 @@ const ContractCreatePage = () => {
           // Contract basic info
           name: contractData.name || "",
           reference: contractData.reference || "",
-          amount: parseFloat(contractData.amount).toString(),
+          amount: contractData.amount ? contractData.amount.toString().replace(/[^0-9]/g, '') : "",
           currency: contractData.currency,
           
           // Contracting/Executing Agency
