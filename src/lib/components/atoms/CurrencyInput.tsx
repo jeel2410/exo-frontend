@@ -2,7 +2,7 @@ import Input, { InputProps } from "./Input";
 import { useState, useEffect } from "react";
 import Typography from "./Typography";
 import CustomDropdown from "./CustomDropdown";
-import { formatAmount, formatCurrencyFrench } from "../../../utils/numberFormat";
+import { formatCurrencyFrench } from "../../../utils/numberFormat";
 
 type CurrencyOption = {
   value: string;
@@ -58,12 +58,11 @@ const CurrencyInput = ({
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target as HTMLInputElement;
     const inputValue = e.target.value;
-    
+
     // Remove all non-digit characters (spaces, dots, commas, etc.)
     const cleanValue = inputValue.replace(/[^0-9]/g, "");
-    
+
     // Always pass the clean numeric string to onChange
     if (onChange) {
       onChange(cleanValue, selectedCurrency);
