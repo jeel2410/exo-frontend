@@ -390,9 +390,40 @@ const UploadFile: React.FC<FileUploadProps> = ({
 
     if (!row) return;
 
-    // Cannot delete mandatory documents
-    if (row.isMandatory) {
-      setError(t("cannot_delete_mandatory"));
+    // Allow deletion of mandatory documents for replacement - just reset the row instead of preventing deletion
+    if (row.isMandatory && row.isUploaded) {
+      // Reset the mandatory document row instead of deleting it
+      if (row.uploadedFile && onDeleteFile) {
+        setRemovingFile(true);
+        try {
+          const response = await onDeleteFile(row.uploadedFile.id);
+          if (response?.status) {
+            // Reset the mandatory row to allow new upload
+            setMandatoryDocs((prev) => prev.map((r) => 
+              r.id === rowId ? { ...r, isUploaded: false, uploadedFile: undefined } : r
+            ));
+
+            // Update parent component
+            const remainingFiles = [...mandatoryDocs, ...additionalDocs]
+              .filter((r) => r.id !== rowId && r.isUploaded && r.uploadedFile)
+              .map((r) => r.uploadedFile!)
+              .filter((file): file is UploadedFile => Boolean(file));
+
+            onFilesSelect?.(remainingFiles);
+            setError("");
+          }
+        } catch (error) {
+          console.error("Error removing file:", error);
+          setError("Failed to remove file. Please try again.");
+        } finally {
+          setRemovingFile(false);
+        }
+      } else {
+        // Just reset the row if no file uploaded
+        setMandatoryDocs((prev) => prev.map((r) => 
+          r.id === rowId ? { ...r, isUploaded: false, uploadedFile: undefined } : r
+        ));
+      }
       return;
     }
 
@@ -751,15 +782,9 @@ const UploadFile: React.FC<FileUploadProps> = ({
             {/* Delete button */}
             <button
               onClick={() => removeRow(row.id)}
-              disabled={removingFile || row.isMandatory}
-              className={`p-2 rounded-md transition-colors ${
-                row.isMandatory
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-50"
-              }`}
-              title={
-                row.isMandatory ? t("cannot_delete_mandatory") : t("delete")
-              }
+              disabled={removingFile}
+              className="p-2 rounded-md transition-colors text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-50"
+              title={t("delete")}
             >
               <svg
                 width="16"
