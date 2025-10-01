@@ -161,7 +161,8 @@ const CreateRequestTable = ({
         // Keep unitPrice/CIF and taxRate empty in the edit form while preserving 0s in the table state.
         setEditFormData({
           ...newEntity,
-          unitPrice: newEntity.unitPrice === 0 ? undefined : newEntity.unitPrice,
+          unitPrice:
+            newEntity.unitPrice === 0 ? undefined : newEntity.unitPrice,
           taxRate: newEntity.taxRate === 0 ? undefined : newEntity.taxRate,
         });
       }
@@ -261,27 +262,41 @@ const CreateRequestTable = ({
     }
 
     if (event) {
-      const buttonRect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const buttonRect = (
+        event.currentTarget as HTMLElement
+      ).getBoundingClientRect();
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
       const dropdownWidth = 128; // w-32
       const dropdownHeight = 120; // approx
       const margin = 16;
 
-      const wouldOverflowRight = buttonRect.right + dropdownWidth > windowWidth - margin;
+      const wouldOverflowRight =
+        buttonRect.right + dropdownWidth > windowWidth - margin;
       const wouldOverflowLeft = buttonRect.left - dropdownWidth < margin;
-      let left = wouldOverflowRight && !wouldOverflowLeft
-        ? buttonRect.left - dropdownWidth + buttonRect.width
-        : buttonRect.left;
+      let left =
+        wouldOverflowRight && !wouldOverflowLeft
+          ? buttonRect.left - dropdownWidth + buttonRect.width
+          : buttonRect.left;
 
-      const wouldOverflowBottom = buttonRect.bottom + dropdownHeight > windowHeight - margin;
-      const top = wouldOverflowBottom && buttonRect.top > dropdownHeight
-        ? buttonRect.top - dropdownHeight
-        : buttonRect.bottom;
+      const wouldOverflowBottom =
+        buttonRect.bottom + dropdownHeight > windowHeight - margin;
+      const top =
+        wouldOverflowBottom && buttonRect.top > dropdownHeight
+          ? buttonRect.top - dropdownHeight
+          : buttonRect.bottom;
 
-      left = Math.max(margin, Math.min(left, windowWidth - dropdownWidth - margin));
+      left = Math.max(
+        margin,
+        Math.min(left, windowWidth - dropdownWidth - margin)
+      );
 
-      setDropdownStyle({ position: "fixed", left: `${left}px`, top: `${top}px`, zIndex: 9999 });
+      setDropdownStyle({
+        position: "fixed",
+        left: `${left}px`,
+        top: `${top}px`,
+        zIndex: 9999,
+      });
     }
 
     setOpenMenuId(orderId);
@@ -434,14 +449,16 @@ const CreateRequestTable = ({
       if (value === "") {
         parsedValue = undefined;
       } else {
-        const n = typeof value === "number" ? value : parseFloat(value as string);
+        const n =
+          typeof value === "number" ? value : parseFloat(value as string);
         parsedValue = Number.isNaN(n) ? undefined : n;
       }
     }
 
     setEditFormData((prev) => {
       const updatedFormData = { ...prev, [field]: parsedValue };
-      const { total, taxAmount, vatIncluded } = calculateTaxAndVat(updatedFormData);
+      const { total, taxAmount, vatIncluded } =
+        calculateTaxAndVat(updatedFormData);
       const finalFormData = {
         ...updatedFormData,
         total,
@@ -845,7 +862,7 @@ const CreateRequestTable = ({
                 placeholder={
                   editFormData.customDuty
                     ? "Ajouter prix *"
-                  : "Sélectionner d'abord les droits de douane"
+                    : "Sélectionner d'abord les droits de douane"
                 }
                 aria-label="Unit Price"
               />
@@ -1790,7 +1807,7 @@ const CreateRequestTable = ({
   return (
     <div className="relative rounded-lg border border-secondary-30 bg-white">
       <div className="relative min-h-[200px] overflow-x-auto">
-        <Table className="min-w-full">
+        <Table>
           <TableHeader className="border-b border-gray-100 bg-secondary-10 rounded-lg">
             <TableRow>
               {tableHeader.map((header, index) => {

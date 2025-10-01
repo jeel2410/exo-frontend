@@ -2,7 +2,6 @@ import Input, { InputProps } from "./Input";
 import { useState, useEffect } from "react";
 import Typography from "./Typography";
 import CustomDropdown from "./CustomDropdown";
-import { formatCurrencyFrenchSpacesEnglishDecimals } from "../../../utils/numberFormat";
 
 type CurrencyOption = {
   value: string;
@@ -60,21 +59,23 @@ const CurrencyInput = ({
     // rawValue can contain digits and one decimal point
     const number = parseFloat(rawValue);
     if (isNaN(number)) return "";
-    
+
     // If the input contains a decimal point, preserve it in formatting
-    if (rawValue.includes('.')) {
-      const parts = rawValue.split('.');
+    if (rawValue.includes(".")) {
+      const parts = rawValue.split(".");
       const integerPart = parseInt(parts[0]) || 0;
-      const decimalPart = parts[1] || '';
-      
+      const decimalPart = parts[1] || "";
+
       // Format the integer part with spaces
-      const formattedInteger = new Intl.NumberFormat('fr-FR').format(integerPart);
-      
+      const formattedInteger = new Intl.NumberFormat("fr-FR").format(
+        integerPart
+      );
+
       // Return with decimal part (limit to 2 decimal places)
-      return formattedInteger + '.' + decimalPart.substring(0, 2);
+      return formattedInteger + "." + decimalPart.substring(0, 2);
     } else {
       // Format without decimals for whole numbers
-      return new Intl.NumberFormat('fr-FR').format(number);
+      return new Intl.NumberFormat("fr-FR").format(number);
     }
   };
 
@@ -86,21 +87,21 @@ const CurrencyInput = ({
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     setIsTyping(true);
-    
+
     // Remove spaces and other formatting characters but keep digits and one decimal point
     let cleanValue = inputValue.replace(/[^0-9.]/g, "");
-    
+
     // Ensure only one decimal point is allowed
-    const parts = cleanValue.split('.');
+    const parts = cleanValue.split(".");
     if (parts.length > 2) {
-      cleanValue = parts[0] + '.' + parts.slice(1).join('');
+      cleanValue = parts[0] + "." + parts.slice(1).join("");
     }
-    
+
     // Limit to 2 decimal places
     if (parts.length === 2 && parts[1].length > 2) {
-      cleanValue = parts[0] + '.' + parts[1].substring(0, 2);
+      cleanValue = parts[0] + "." + parts[1].substring(0, 2);
     }
-    
+
     // Update display value immediately while typing
     setDisplayValue(inputValue);
 
@@ -108,7 +109,7 @@ const CurrencyInput = ({
     if (onChange) {
       onChange(cleanValue, selectedCurrency);
     }
-    
+
     // Stop typing mode after a short delay
     setTimeout(() => setIsTyping(false), 500);
   };
