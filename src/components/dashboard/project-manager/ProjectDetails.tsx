@@ -61,16 +61,26 @@ export interface ProjectUser {
 export interface Contract {
   id: string;
   project_id: string;
-  signed_by: string;
-  position: string;
+  // Modern contract fields
+  name?: string;
+  reference?: string;
+  contracting_agency_name?: string;
+  contracting_agency_person_name?: string;
+  contracting_agency_person_position?: string;
+  awarded_company_name?: string;
+  awarded_company_person_name?: string;
+  awarded_company_person_position?: string;
   currency: string;
   amount: string;
-  organization: string;
   place: string;
   date_of_signing: string;
   status: "draft" | "publish" | string;
   created_at: string;
   requests_data_count: number;
+  // Legacy fields for backward compatibility
+  signed_by?: string;
+  position?: string;
+  organization?: string;
 }
 
 interface cardProps {
@@ -243,12 +253,14 @@ const ProjectDetails = () => {
                   <CurrencyBadge
                     currency={projectData?.currency || "CDF"}
                     variant="orange"
-                    width={44}
-                    height={44}
+                    width={36}
+                    height={36}
                   />
                 }
                 count={Number(cardData?.project_amount) || 0}
                 title={t("project_amount")}
+                countSize="xl"
+                titleSize="xs"
               />
             </motion.div>
             <motion.div variants={cardVariants}>
@@ -530,14 +542,26 @@ const ProjectDetails = () => {
               <ContractTable
                 data={(projectData?.contracts ?? []).map((contract, index) => ({
                   id: index + 1,
+                  // Modern contract structure
+                  contractName: contract.name || contract.reference,
+                  contractingAgencyName: contract.contracting_agency_name,
+                  contractingAgencyPersonName: contract.contracting_agency_person_name,
+                  contractingAgencyPersonPosition: contract.contracting_agency_person_position,
+                  awardedCompanyName: contract.awarded_company_name,
+                  awardedCompanyPersonName: contract.awarded_company_person_name,
+                  awardedCompanyPersonPosition: contract.awarded_company_person_position,
+                  amountByContract: Number(contract.amount),
+                  currency: contract.currency,
+                  place: contract.place,
+                  dateOfSigning: contract.date_of_signing ? moment(contract.date_of_signing).format("YYYY/MM/DD") : undefined,
+                  numberOfRequests: contract.requests_data_count,
+                  contract_id: contract.id,
+                  // Legacy fields as fallback
                   signedBy: contract.signed_by,
                   position: contract.position,
-                  amountByContract: Number(contract.amount),
+                  organization: contract.organization,
                   dateCreated: moment(contract.created_at).format("YYYY/MM/DD"),
                   noOfRequest: contract.requests_data_count,
-                  contract_id: contract.id,
-                  organization: contract.organization,
-                  currency: contract.currency,
                 }))}
               />
             </motion.div>

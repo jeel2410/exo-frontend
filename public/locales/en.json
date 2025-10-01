@@ -271,7 +271,7 @@
   "contract_submitted": "Contract submitted for verification",
   "contract_update_message": "You will receive further updates regarding your contract via email at your registered email address.",
   "failed_to_create_project": "Failed to create project.",
-  "address_is_required": "Address is required",
+  "address_is_required": "Location is required",
   "request_letter_is_required": "Request letter is required",
   "at_least_three_files_required": "At least 3 files are required for mandatory documents",
   "contract_amount_exceeded": "Request amount exceeds the contract amount",

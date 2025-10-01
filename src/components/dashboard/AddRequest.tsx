@@ -654,22 +654,23 @@ const AddRequest = () => {
           {/* Dashboard Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mt-3 md:mt-5">
             <DashBoardCard
-              icon={<FileVioletIcon width={44} height={44} />}
+              icon={<FileVioletIcon width={36} height={36} />}
               count={totals.totalEntity}
               title={t("total_entity")}
+              formatType="count"
             />
             <DashBoardCard
-              icon={<UsdGreenIcon width={44} height={44} />}
+              icon={<UsdGreenIcon width={36} height={36} />}
               count={totals.totalAmount}
               title={t("total_amount")}
             />
             <DashBoardCard
-              icon={<UsdVioletIcon width={44} height={44} />}
+              icon={<UsdVioletIcon width={36} height={36} />}
               count={totals.totalTaxAmount}
               title={t("total_tax_amount")}
             />
             <DashBoardCard
-              icon={<UsdOrangeIcon width={44} height={44} />}
+              icon={<UsdOrangeIcon width={36} height={36} />}
               count={totals.totalAmountWithTax}
               title={t("total_amount_with_tax")}
             />

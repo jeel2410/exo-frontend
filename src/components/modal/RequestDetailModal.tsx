@@ -95,17 +95,18 @@ const RequestDetailModal = ({
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-5">
             <DashBoardCard
-              icon={<FileVioletIcon width={44} height={44} />}
+              icon={<FileVioletIcon width={36} height={36} />}
               count={total_quantity || 0}
               title={t("total_quantity")}
+              formatType="count"
             />
             <DashBoardCard
               icon={
                 <CurrencyBadge
                   currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
                   variant="green"
-                  width={44}
-                  height={44}
+                  width={36}
+                  height={36}
                 />
               }
               count={total_amount || 0}
@@ -116,8 +117,8 @@ const RequestDetailModal = ({
                 <CurrencyBadge
                   currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
                   variant="violet"
-                  width={44}
-                  height={44}
+                  width={36}
+                  height={36}
                 />
               }
               count={total_tax || 0}
@@ -128,8 +129,8 @@ const RequestDetailModal = ({
                 <CurrencyBadge
                   currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
                   variant="orange"
-                  width={44}
-                  height={44}
+                  width={36}
+                  height={36}
                 />
               }
               count={vat_included || 0}
@@ -140,8 +141,8 @@ const RequestDetailModal = ({
                 <CurrencyBadge
                   currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
                   variant="green"
-                  width={44}
-                  height={44}
+                  width={36}
+                  height={36}
                 />
               }
               count={requestDetails?.project_amount || 0}
@@ -152,8 +153,8 @@ const RequestDetailModal = ({
                 <CurrencyBadge
                   currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
                   variant="violet"
-                  width={44}
-                  height={44}
+                  width={36}
+                  height={36}
                 />
               }
               count={requestDetails?.contract_amount || 0}

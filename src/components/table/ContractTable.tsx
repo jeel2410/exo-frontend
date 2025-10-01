@@ -13,14 +13,26 @@ import { formatAmount } from "../../utils/numberFormat";
 
 export interface ContractData {
   id: number;
-  signedBy: string;
-  position: string;
+  // Modern contract structure
+  contractName?: string;
+  contractingAgencyName?: string;
+  contractingAgencyPersonName?: string;
+  contractingAgencyPersonPosition?: string;
+  awardedCompanyName?: string;
+  awardedCompanyPersonName?: string;
+  awardedCompanyPersonPosition?: string;
   amountByContract: number;
-  organization: string;
-  dateCreated: string;
-  noOfRequest: number;
-  contract_id: string;
   currency: string;
+  place?: string;
+  dateOfSigning?: string;
+  numberOfRequests?: number;
+  contract_id: string;
+  // Legacy fields for backward compatibility
+  signedBy?: string;
+  position?: string;
+  organization?: string;
+  dateCreated?: string;
+  noOfRequest?: number;
 }
 
 const ContractTable = ({ data }: { data: ContractData[] | [] }) => {
@@ -37,48 +49,40 @@ const ContractTable = ({ data }: { data: ContractData[] | [] }) => {
   };
 
   const tableHeader: TableHeader[] = [
-    // {
-    //   content: (
-    //     <input
-    //       type="checkbox"
-    //       checked={tableData && selectedRows.length === tableData.length}
-    //       onChange={handleSelectAll}
-    //       className="w-4 h-4 rounded border-secondary-30 text-blue-600 focus:ring-blue-500"
-    //       aria-label="Select all rows"
-    //     />
-    //   ),
-    //   className: "w-10", // Fixed width for checkbox
-    // },
     {
       content: <div>{t("sr_no")}</div>,
       className: "w-16",
     },
     {
-      content: <div>{t("signed_by")}</div>,
-      className: "min-w-[120px]",
+      content: <div className="text-nowrap">{t("contract_name")}</div>,
+      className: "min-w-[160px]",
     },
     {
-      content: <div>{t("position")}</div>,
-      className: "min-w-[120px]",
+      content: <div className="text-nowrap">{t("contracting_agency")}</div>,
+      className: "min-w-[180px]",
     },
     {
-      content: <div>{t("amount_by_contract")}</div>,
+      content: <div className="text-nowrap">{t("awarded_company")}</div>,
+      className: "min-w-[180px]",
+    },
+    {
+      content: <div className="text-nowrap">{t("contract_amount")}</div>,
       className: "min-w-[140px]",
     },
     {
-      content: <div>{t("organization")}</div>,
-      className: "min-w-[140px]",
+      content: <div className="text-nowrap">{t("place")}</div>,
+      className: "min-w-[120px]",
     },
     {
-      content: <div>{t("date_created")}</div>,
-      className: "w-28",
+      content: <div className="text-nowrap">{t("date_of_signing")}</div>,
+      className: "min-w-[120px]",
     },
     {
-      content: <div>{t("no_of_request")}</div>,
+      content: <div className="text-nowrap">{t("number_of_requests")}</div>,
       className: "w-24",
     },
     {
-      content: <div>Actions</div>,
+      content: <div>{t("actions")}</div>,
       className: "w-20",
     },
   ];
@@ -109,56 +113,62 @@ const ContractTable = ({ data }: { data: ContractData[] | [] }) => {
               tableData.map((data) => {
                 return (
                   <TableRow key={data.id}>
-                    {/* <TableCell className="px-5 py-4 w-10">
-                      <input
-                        type="checkbox"
-                        checked={selectedRows.includes(data.id)}
-                        onChange={() => handleSelectRow(data.id)}
-                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        aria-label={`Select row ${data.id}`}
-                      />
-                    </TableCell> */}
                     <TableCell className="px-5 py-4 text-gray-500 text-sm">
                       {data.id}
                     </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6">
-                      <span className="block font-medium text-secondary-100 text-sm">
-                        {data.signedBy}
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[160px]">
+                      <span className="block font-medium text-secondary-100 text-sm truncate" title={data.contractName}>
+                        {data.contractName || "-"}
                       </span>
                     </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6">
-                      <span className="block font-medium text-secondary-100 text-sm">
-                        {data.position}
-                      </span>
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[180px]">
+                      <div className="text-sm">
+                        <div className="font-medium text-secondary-100 truncate" title={data.contractingAgencyName || data.organization}>
+                          {data.contractingAgencyName || data.organization || data.signedBy || "-"}
+                        </div>
+                        <div className="text-xs text-gray-600 truncate" title={data.contractingAgencyPersonName}>
+                          {data.contractingAgencyPersonName || data.position || "-"}
+                        </div>
+                      </div>
                     </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6">
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[180px]">
+                      <div className="text-sm">
+                        <div className="font-medium text-secondary-100 truncate" title={data.awardedCompanyName}>
+                          {data.awardedCompanyName || "-"}
+                        </div>
+                        <div className="text-xs text-gray-600 truncate" title={data.awardedCompanyPersonName}>
+                          {data.awardedCompanyPersonName || "-"}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[140px]">
                       <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
                         {data.currency === "USD" ? (
-                          <USFlag width={24} height={14} />
+                          <USFlag width={20} height={12} />
                         ) : data.currency === "CDF" ? (
-                          <CDFFlag width={24} height={14} />
+                          <CDFFlag width={20} height={12} />
                         ) : null}
-                        <span className="text-gray-600">
+                        <span className="text-gray-600 text-xs">
                           {data.currency || "USD"}
                         </span>
-                        <span className="block font-medium text-secondary-100 text-sm">
+                        <span className="block font-medium text-secondary-100 text-sm truncate">
                           {formatAmount(data.amountByContract)}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6">
-                      <span className="block font-medium text-secondary-100 text-sm">
-                        {data.organization}
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[120px]">
+                      <span className="block font-medium text-secondary-100 text-sm truncate" title={data.place}>
+                        {data.place || "-"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-5 py-4 sm:px-6 min-w-[120px]">
+                      <span className="block font-medium text-secondary-100 text-sm text-nowrap">
+                        {data.dateOfSigning || data.dateCreated || "-"}
                       </span>
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6">
-                      <span className="block font-medium text-secondary-100 text-sm">
-                        {data.dateCreated}
-                      </span>
-                    </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6">
-                      <span className="block font-medium text-secondary-100 text-sm">
-                        {data.noOfRequest}
+                      <span className="block font-medium text-secondary-100 text-sm text-nowrap">
+                        {data.numberOfRequests || data.noOfRequest || 0}
                       </span>
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-sm">
