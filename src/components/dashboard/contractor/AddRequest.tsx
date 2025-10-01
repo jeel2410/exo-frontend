@@ -1101,8 +1101,8 @@ const AddRequest = () => {
             <div className="mt-5 md:mt-7 mb-4 md:mb-6">
               <Label>{t("invoice_files")}</Label>
               <UploadFile
-                maxSize={10}
-                acceptedFormats={[".pdf", ".doc", ".txt", ".ppt"]}
+                maxSize={2}
+                acceptedFormats={[".pdf"]}
                 files={uploadedFiles}
                 onFilesSelect={handleFilesSelect}
                 onUploadFile={handleUploadFile}

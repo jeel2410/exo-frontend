@@ -128,6 +128,7 @@ const CreateRequestTable = ({
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<Order>>({});
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   // Ref for the dropdown menu container
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -156,7 +157,13 @@ const CreateRequestTable = ({
       const newEntity = tableData.find((order) => order.id === autoEditId);
       if (newEntity) {
         setEditingId(autoEditId);
-        setEditFormData({ ...newEntity });
+        // When auto-editing a freshly added row, avoid pre-filling numeric inputs with 0.
+        // Keep unitPrice/CIF and taxRate empty in the edit form while preserving 0s in the table state.
+        setEditFormData({
+          ...newEntity,
+          unitPrice: newEntity.unitPrice === 0 ? undefined : newEntity.unitPrice,
+          taxRate: newEntity.taxRate === 0 ? undefined : newEntity.taxRate,
+        });
       }
     }
   }, [autoEditId, tableData, editingId]);
@@ -247,8 +254,37 @@ const CreateRequestTable = ({
     }
   };
 
-  const handleMenuToggle = (orderId: number) => {
-    setOpenMenuId(openMenuId === orderId ? null : orderId);
+  const handleMenuToggle = (orderId: number, event?: React.MouseEvent) => {
+    if (openMenuId === orderId) {
+      setOpenMenuId(null);
+      return;
+    }
+
+    if (event) {
+      const buttonRect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const dropdownWidth = 128; // w-32
+      const dropdownHeight = 120; // approx
+      const margin = 16;
+
+      const wouldOverflowRight = buttonRect.right + dropdownWidth > windowWidth - margin;
+      const wouldOverflowLeft = buttonRect.left - dropdownWidth < margin;
+      let left = wouldOverflowRight && !wouldOverflowLeft
+        ? buttonRect.left - dropdownWidth + buttonRect.width
+        : buttonRect.left;
+
+      const wouldOverflowBottom = buttonRect.bottom + dropdownHeight > windowHeight - margin;
+      const top = wouldOverflowBottom && buttonRect.top > dropdownHeight
+        ? buttonRect.top - dropdownHeight
+        : buttonRect.bottom;
+
+      left = Math.max(margin, Math.min(left, windowWidth - dropdownWidth - margin));
+
+      setDropdownStyle({ position: "fixed", left: `${left}px`, top: `${top}px`, zIndex: 9999 });
+    }
+
+    setOpenMenuId(orderId);
   };
 
   const handleEdit = (order: Order) => {
@@ -380,7 +416,8 @@ const CreateRequestTable = ({
       currentEditFormData: editFormData,
     });
 
-    let parsedValue: string | number = value;
+    let parsedValue: string | number | undefined = value as any;
+    // For numeric fields, do NOT coerce empty/invalid to 0 — keep them undefined so the input stays blank
     if (
       [
         "quantity",
@@ -394,14 +431,17 @@ const CreateRequestTable = ({
         "droit",
       ].includes(field)
     ) {
-      parsedValue = value === "" ? 0 : parseFloat(value as string);
-      if (isNaN(parsedValue)) parsedValue = 0;
+      if (value === "") {
+        parsedValue = undefined;
+      } else {
+        const n = typeof value === "number" ? value : parseFloat(value as string);
+        parsedValue = Number.isNaN(n) ? undefined : n;
+      }
     }
 
     setEditFormData((prev) => {
       const updatedFormData = { ...prev, [field]: parsedValue };
-      const { total, taxAmount, vatIncluded } =
-        calculateTaxAndVat(updatedFormData);
+      const { total, taxAmount, vatIncluded } = calculateTaxAndVat(updatedFormData);
       const finalFormData = {
         ...updatedFormData,
         total,
@@ -787,6 +827,8 @@ const CreateRequestTable = ({
                 type="number"
                 min="0"
                 step="0.01"
+                inputMode="decimal"
+                onWheel={(e) => e.currentTarget.blur()}
                 value={editFormData.unitPrice ?? ""}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   handleInputChange("unitPrice", e.target.value)
@@ -803,7 +845,7 @@ const CreateRequestTable = ({
                 placeholder={
                   editFormData.customDuty
                     ? "Ajouter prix *"
-                    : "Sélectionner d'abord les droits de douane"
+                  : "Sélectionner d'abord les droits de douane"
                 }
                 aria-label="Unit Price"
               />
@@ -843,6 +885,8 @@ const CreateRequestTable = ({
                 min="0"
                 max="100"
                 step="0.01"
+                inputMode="decimal"
+                onWheel={(e) => e.currentTarget.blur()}
                 value={editFormData.taxRate ?? ""}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const constraints = getTaxRateConstraints(
@@ -1097,6 +1141,8 @@ const CreateRequestTable = ({
                 type="number"
                 min="0"
                 step="0.01"
+                inputMode="decimal"
+                onWheel={(e) => e.currentTarget.blur()}
                 value={editFormData.unitPrice ?? ""}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   handleInputChange("unitPrice", e.target.value)
@@ -1153,6 +1199,8 @@ const CreateRequestTable = ({
                 min="0"
                 max="100"
                 step="0.01"
+                inputMode="decimal"
+                onWheel={(e) => e.currentTarget.blur()}
                 value={editFormData.taxRate ?? ""}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const constraints = getTaxRateConstraints(
@@ -1451,6 +1499,8 @@ const CreateRequestTable = ({
                 min="0"
                 max="100"
                 step="0.01"
+                inputMode="decimal"
+                onWheel={(e) => e.currentTarget.blur()}
                 value={editFormData.taxRate ?? ""}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   const constraints = getTaxRateConstraints(
@@ -1788,7 +1838,7 @@ const CreateRequestTable = ({
                         <button
                           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                             e.stopPropagation();
-                            handleMenuToggle(order.id);
+                            handleMenuToggle(order.id, e);
                           }}
                           className="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                           aria-label="Open actions menu"
@@ -1805,7 +1855,8 @@ const CreateRequestTable = ({
                         </button>
                         {openMenuId === order.id && (
                           <div
-                            className="absolute right-0 top-full mt-2 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                            className="w-32 bg-white border border-gray-200 rounded-md shadow-lg"
+                            style={dropdownStyle}
                             role="menu"
                           >
                             <button

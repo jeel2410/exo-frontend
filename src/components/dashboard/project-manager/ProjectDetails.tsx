@@ -505,7 +505,7 @@ const ProjectDetails = () => {
           >
             <motion.div className="p-6" variants={itemVariants}>
               <Typography element="p" size="base" weight="bold">
-                {t("location")}
+                {t("address")}
               </Typography>
             </motion.div>
             <motion.div

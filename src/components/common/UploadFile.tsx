@@ -283,9 +283,10 @@ const UploadFile: React.FC<FileUploadProps> = ({
     const fileExtension =
       "." + (file.name.split(".").pop()?.toLowerCase() || "");
     if (!acceptedFormats.includes(fileExtension)) {
-      setError(
-        `File ${file.name} is not a supported format. Supported formats: PDF, DOC, TXT and PNG`
-      );
+      const formats = acceptedFormats
+        .map((ext) => ext.replace(".", "").toUpperCase())
+        .join(", ");
+      setError(`File ${file.name} is not a supported format. Supported formats: ${formats}`);
       return false;
     }
     return true;
@@ -832,12 +833,10 @@ const UploadFile: React.FC<FileUploadProps> = ({
 
   return (
     <div className="w-full bg-white">
-      {/* Header */}
-      {/* <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Document Upload
-        </h2>
-      </div> */}
+      {/* Upload restrictions note */}
+      <div className="mb-3 p-3 bg-secondary-10 border border-secondary-30 rounded-md">
+        <p className="text-sm text-secondary-80">{t("upload_restrictions_note")}</p>
+      </div>
 
       {/* Mandatory Documents Section - Only show for create-request */}
       {showMandatoryDocs && (

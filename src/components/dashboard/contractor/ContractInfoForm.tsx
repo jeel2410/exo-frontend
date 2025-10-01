@@ -589,8 +589,8 @@ const ContractInfoForm = ({
                     values.contractFiles
                   );
                 }}
-                maxSize={5}
-                acceptedFormats={[".pdf", ".doc", ".docx"]}
+                maxSize={2}
+                acceptedFormats={[".pdf"]}
               />
             </div>
           </div>

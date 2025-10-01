@@ -328,6 +328,7 @@ const ContractDetails = () => {
               }
               count={requestsData.length || 0}
               title={t("number_of_request")}
+              formatType="count"
             />
           </motion.div>
           <motion.div variants={cardVariants}>

@@ -346,13 +346,13 @@ const ProjectDetails = () => {
             animate="visible"
             transition={{ delay: 0.4 }}
           >
-            <Typography
-              size="base"
-              weight="bold"
-              className="text-secondary-100"
-            >
-              Address
-            </Typography>
+              <Typography
+                size="base"
+                weight="bold"
+                className="text-secondary-100"
+              >
+                {t("address")}
+              </Typography>
             <motion.div
               className="mt-4 sm:mt-6 overflow-x-auto"
               variants={itemVariants}
