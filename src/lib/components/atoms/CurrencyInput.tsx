@@ -2,7 +2,7 @@ import Input, { InputProps } from "./Input";
 import { useState, useEffect } from "react";
 import Typography from "./Typography";
 import CustomDropdown from "./CustomDropdown";
-import { formatCurrencyFrench } from "../../../utils/numberFormat";
+import { formatCurrencyFrenchSpacesEnglishDecimals } from "../../../utils/numberFormat";
 
 type CurrencyOption = {
   value: string;
@@ -34,6 +34,8 @@ const CurrencyInput = ({
   const [selectedCurrency, setSelectedCurrency] = useState(
     currency || options[0]?.value || "USD"
   );
+  const [displayValue, setDisplayValue] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
 
   // Update selected currency when currency prop changes
   useEffect(() => {
@@ -42,14 +44,38 @@ const CurrencyInput = ({
     }
   }, [currency]);
 
+  // Update display value when value prop changes (but not while typing)
+  useEffect(() => {
+    if (!isTyping && value) {
+      const formatted = getDisplayValue(value);
+      setDisplayValue(formatted);
+    } else if (!value) {
+      setDisplayValue("");
+    }
+  }, [value, isTyping]);
+
   // Format display value - this should only be used for display, never for processing input
   const getDisplayValue = (rawValue: string) => {
     if (!rawValue || rawValue === "") return "";
-    // rawValue should contain only digits
-    const number = parseInt(rawValue, 10);
+    // rawValue can contain digits and one decimal point
+    const number = parseFloat(rawValue);
     if (isNaN(number)) return "";
-    // Show grouping only while typing (no decimals) to avoid confusing re-parsing like "4.00"
-    return formatCurrencyFrench(number);
+    
+    // If the input contains a decimal point, preserve it in formatting
+    if (rawValue.includes('.')) {
+      const parts = rawValue.split('.');
+      const integerPart = parseInt(parts[0]) || 0;
+      const decimalPart = parts[1] || '';
+      
+      // Format the integer part with spaces
+      const formattedInteger = new Intl.NumberFormat('fr-FR').format(integerPart);
+      
+      // Return with decimal part (limit to 2 decimal places)
+      return formattedInteger + '.' + decimalPart.substring(0, 2);
+    } else {
+      // Format without decimals for whole numbers
+      return new Intl.NumberFormat('fr-FR').format(number);
+    }
   };
 
   const handleCurrencyChange = (currency: string) => {
@@ -59,14 +85,32 @@ const CurrencyInput = ({
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
-
-    // Remove all non-digit characters (spaces, dots, commas, etc.)
-    const cleanValue = inputValue.replace(/[^0-9]/g, "");
+    setIsTyping(true);
+    
+    // Remove spaces and other formatting characters but keep digits and one decimal point
+    let cleanValue = inputValue.replace(/[^0-9.]/g, "");
+    
+    // Ensure only one decimal point is allowed
+    const parts = cleanValue.split('.');
+    if (parts.length > 2) {
+      cleanValue = parts[0] + '.' + parts.slice(1).join('');
+    }
+    
+    // Limit to 2 decimal places
+    if (parts.length === 2 && parts[1].length > 2) {
+      cleanValue = parts[0] + '.' + parts[1].substring(0, 2);
+    }
+    
+    // Update display value immediately while typing
+    setDisplayValue(inputValue);
 
     // Always pass the clean numeric string to onChange
     if (onChange) {
       onChange(cleanValue, selectedCurrency);
     }
+    
+    // Stop typing mode after a short delay
+    setTimeout(() => setIsTyping(false), 500);
   };
 
   // const selectedOption = options.find((opt) => opt.value === selectedCurrency);
@@ -98,7 +142,7 @@ const CurrencyInput = ({
         </div>
         <div className="h-6 w-px bg-secondary-30" />
         <Input
-          value={getDisplayValue(value)}
+          value={isTyping ? displayValue : getDisplayValue(value)}
           type="text"
           placeholder="0"
           className="border-none flex-1 pr-4"
