@@ -46,12 +46,16 @@ export interface RequestDetails {
   project_name: string;
   amount: string;
   total_amount?: string;
-  currency: string;
+  currency?: string;
   status: string;
   current_status: string;
   sub_status?: string;
   created_at: string;
   total_tax_amount?: string;
+  amount_summary?: {
+    contract_currency?: string;
+    [key: string]: any;
+  };
   entities?: Array<{
     total?: string;
     [key: string]: any;
@@ -68,6 +72,7 @@ const RequestListPage = () => {
   const [offset, setOffset] = useState(0);
   const [data, setData] = useState<RequestData[]>([]);
   const [hasContracts, setHasContracts] = useState(false);
+  const [contractCurrencyMap, setContractCurrencyMap] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [hasInitialData, setHasInitialData] = useState(false);
   const [showNoContractModal, setShowNoContractModal] = useState(false);
@@ -173,7 +178,11 @@ const RequestListPage = () => {
             requestNo: request.id,
             amount: request.amount || "0",
             total_amount: request.total_amount || finalAmount,
-            currency: request.currency || "USD",
+            currency:
+              request.amount_summary?.contract_currency ||
+              request.currency ||
+              contractCurrencyMap[request.contract_id] ||
+              "USD",
             createdDate: moment(request.created_at).format("YYYY/MM/DD"),
             status: request.current_status || request.status,
             sub_status: request.sub_status,
@@ -208,13 +217,25 @@ const RequestListPage = () => {
   const checkContracts = useMutation({
     mutationFn: async () => {
       const response = await contractService.getAllContractList({
-        limit: 1,
+        limit: 1000,
         offset: 0,
         search: "",
         start_date: "",
         end_date: "",
       });
       setHasContracts(response.data.total > 0);
+      try {
+        const list = (response.data?.data || []) as any[];
+        const map: Record<string, string> = {};
+        list.forEach((c: any) => {
+          if (c?.id) {
+            map[c.id] = c.currency || c.contract_currency || "USD";
+          }
+        });
+        setContractCurrencyMap(map);
+      } catch (err) {
+        // ignore mapping errors
+      }
     },
   });
 
@@ -224,6 +245,13 @@ const RequestListPage = () => {
       checkContracts.mutate();
     }
   }, [limit, offset, range, selectedStage]);
+
+  // Re-fetch when contract currencies are loaded to update currency display
+  useEffect(() => {
+    if (Object.keys(contractCurrencyMap).length > 0) {
+      requestMutaion.mutate({});
+    }
+  }, [contractCurrencyMap]);
 
   const handleSearch = (nextTerm?: string) => {
     const term = nextTerm !== undefined ? nextTerm : searchTerm;
@@ -473,7 +501,7 @@ const RequestListPage = () => {
                   {isDatePickerOpen && (
                     <div
                       ref={datePickerRef}
-                      className="absolute top-[100%] right-0 w-max  mt-2 bg-white border border-secondary-30 rounded-lg shadow-lg p-4"
+                      className="absolute top-[100%] right-0 w-max z-50 mt-2 bg-white border border-secondary-30 rounded-lg shadow-lg p-4"
                     >
                       <Filter
                         startDate={range.startDate}
