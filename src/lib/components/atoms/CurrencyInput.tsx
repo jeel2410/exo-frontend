@@ -2,7 +2,6 @@ import Input, { InputProps } from "./Input";
 import { useState, useEffect } from "react";
 import Typography from "./Typography";
 import CustomDropdown from "./CustomDropdown";
-import { formatCurrencyFrenchSpacesEnglishDecimals } from "../../../utils/numberFormat";
 
 type CurrencyOption = {
   value: string;
