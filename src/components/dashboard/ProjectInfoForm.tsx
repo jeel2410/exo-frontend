@@ -21,6 +21,7 @@ import projectService from "../../services/project.service";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../../lib/components/atoms/Button";
 import CustomDropdown from "../../lib/components/atoms/CustomDropdown";
+import fundedByOptionsService from "../../services/fundedByOptions.service";
 
 interface ProjectInfoFormProps {
   initialValues?: ProjectFormValues;
@@ -277,18 +278,61 @@ ProjectInfoFormProps) => {
     },
   ];
 
-  const financeByOptions = [
-    { value: "Government", label: t("government") },
-    { value: "Bank", label: t("bank") },
-    { value: "Private Investor", label: t("private_investor") },
-    {
-      value: "International Organization",
-      label: t("international_organization"),
-    },
-    { value: "NGO", label: t("ngo") },
-    { value: "Self Funded", label: t("self_funded") },
-    { value: "Other", label: t("other") },
-  ];
+  // API-driven Funded By options state
+  const [fundedByOptions, setFundedByOptions] = useState<{ value: string; label: string }[]>([]);
+  const [fundedBySearch, setFundedBySearch] = useState("");
+  const [fundedByTotal, setFundedByTotal] = useState(0);
+  const [fundedByLimit] = useState(15);
+  const [fundedByOffset, setFundedByOffset] = useState(0);
+  const [fundedByLoadingMore, setFundedByLoadingMore] = useState(false);
+  const hasMoreFundedBy = fundedByOptions.length < fundedByTotal;
+
+  const loadFundedBy = async (opts?: { reset?: boolean; search?: string }) => {
+    const reset = opts?.reset ?? false;
+    const search = opts?.search ?? fundedBySearch;
+    const nextOffset = reset ? 0 : fundedByOffset;
+    if (!reset) setFundedByLoadingMore(true);
+    try {
+      const res = await fundedByOptionsService.getOptions({
+        search: search || undefined,
+        active: true,
+        limit: fundedByLimit,
+        offset: nextOffset,
+      });
+      const list = (res.data || []).map((it: any) => ({ value: it.name, label: it.name }));
+      setFundedByTotal(res.total ?? list.length);
+
+      setFundedByOptions(prev => {
+        const base = reset ? [] : prev;
+        // avoid duplicates by value
+        const seen = new Set(base.map(o => o.value));
+        const merged = [...base];
+        list.forEach(o => { if (!seen.has(o.value)) { merged.push(o); seen.add(o.value); } });
+        return merged;
+      });
+      setFundedByOffset(nextOffset + (res.limit ?? fundedByLimit));
+    } catch (e) {
+      console.error("Failed to load funded by options", e);
+    } finally {
+      if (!reset) setFundedByLoadingMore(false);
+    }
+  };
+
+  // Debounce search
+  useEffect(() => {
+    const id = setTimeout(() => {
+      // reset list when searching
+      setFundedByOffset(0);
+      loadFundedBy({ reset: true, search: fundedBySearch });
+    }, 300);
+    return () => clearTimeout(id);
+  }, [fundedBySearch]);
+
+  // Prefetch on mount
+  useEffect(() => {
+    loadFundedBy({ reset: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const defaultInitialValues: ProjectFormValues = {
     projectName: "",
@@ -311,18 +355,7 @@ ProjectInfoFormProps) => {
       .min(3, t("project_name_must_be_at_least_3_characters")),
     fundedBy: Yup.string()
       .required(t("finance_by_is_required"))
-      .oneOf(
-        [
-          "Government",
-          "Bank",
-          "Private Investor",
-          "International Organization",
-          "NGO",
-          "Self Funded",
-          "Other",
-        ],
-        t("invalid_finance_by_selection")
-      ),
+      .min(2, t("funded_by_must_be_at_least_2_characters")),
     projectReference: Yup.string().required(t("project_reference_is_required")),
     amount: Yup.string()
       .required(t("amount_is_required"))
@@ -655,12 +688,35 @@ ProjectInfoFormProps) => {
                   <CustomDropdown
                     id="fundedBy"
                     name="fundedBy"
-                    options={financeByOptions}
+                    options={(function(){
+                      // Ensure current value is present so label renders, even if not in the fetched page
+                      const exists = fundedByOptions.some(o => o.value === values.fundedBy);
+                      return exists || !values.fundedBy
+                        ? fundedByOptions
+                        : [{ value: values.fundedBy, label: values.fundedBy }, ...fundedByOptions];
+                    })()}
                     value={values.fundedBy}
                     onChange={(value) => setFieldValue("fundedBy", value)}
                     onBlur={() => handleBlur("fundedBy")}
                     placeholder={t("select_finance_by")}
                     error={touched.fundedBy && !!errors.fundedBy}
+                    searchable
+                    searchValue={fundedBySearch}
+                    onSearchChange={(v) => {
+                      setFundedBySearch(v);
+                    }}
+                    onOpen={() => {
+                      if (fundedByOptions.length === 0) {
+                        loadFundedBy({ reset: true });
+                      }
+                    }}
+                    onLoadMore={() => {
+                      if (!fundedByLoadingMore && (fundedByOptions.length < fundedByTotal)) {
+                        loadFundedBy();
+                      }
+                    }}
+                    hasMore={hasMoreFundedBy}
+                    loadingMore={fundedByLoadingMore}
                   />
                   <ErrorMessage
                     name="fundedBy"
