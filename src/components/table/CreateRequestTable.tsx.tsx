@@ -15,6 +15,7 @@ export interface TableHeader {
 
 interface TableProps {
   children: React.ReactNode;
+  className?: string;
 }
 
 interface TableHeaderProps {
@@ -39,8 +40,8 @@ interface TableCellProps {
 }
 
 // Mock Table components
-export const Table: React.FC<TableProps> = ({ children }) => (
-  <table className="w-full border-collapse" role="grid">
+export const Table: React.FC<TableProps> = ({ children, className }) => (
+  <table className={`w-full border-collapse ${className ?? ""}`} role="grid">
     {children}
   </table>
 );

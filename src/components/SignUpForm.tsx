@@ -23,6 +23,7 @@ import { useMutation } from "@tanstack/react-query";
 import authService from "../services/auth.service";
 import { toast } from "react-toastify";
 import PrivacyModal from "./modal/PrivacyModal";
+import { normalizePhone } from "../utils/phone";
 
 const SignUpForm = () => {
   const [remember, setRemember] = useState(false);
@@ -114,12 +115,13 @@ const SignUpForm = () => {
 
   const sendOtpMutation = useMutation({
     mutationFn: async (data: { email: string; first_name: string; mobile: string; country_code: string }) => {
-      const mobileWithCountryCode = data.country_code + data.mobile;
+      // If mobile already looks like E.164, use it as-is; otherwise, prepend country code
+      const mobileToSend = data.mobile.startsWith("+") ? data.mobile : data.country_code + data.mobile;
       await authService.sendOtp({
         email: data.email,
         first_name: data.first_name,
         is_login: "no",
-        mobile: mobileWithCountryCode
+        mobile: mobileToSend
       });
     },
     onSuccess: () => {
@@ -150,12 +152,15 @@ const SignUpForm = () => {
       localStorageService.setUser(JSON.stringify(values));
       localStorageService.setPath("sign-up");
       
+      // Normalize phone for FR (+33) and DRC (+243)
+      const { national } = normalizePhone(values.country_code, values.mobile);
+
       // First validate mobile number, then send OTP if successful
       await checkMobileMutation.mutateAsync({
         email: values.email,
         password: values.password,
         country_code: values.country_code,
-        mobile: values.mobile,
+        mobile: national,
         lang: i18n.language || "en" // Use current language from i18n
       });
     },

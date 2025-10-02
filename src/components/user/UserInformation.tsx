@@ -12,6 +12,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 
 import authService from "../../services/auth.service";
+import { normalizePhone } from "../../utils/phone";
 
 // 📌 Type definitions
 interface UserData {
@@ -116,8 +117,12 @@ const UserInformation = ({
       // Add _method first (some backends require this to be first)
       formData.append("_method", "PUT");
 
+      // Normalize phone number for FR (+33) and DRC (+243)
+      const { national } = normalizePhone(values.country_code, values.mobile);
+      const valuesToAppend: FormValues = { ...values, mobile: national };
+
       // Append all form data (including empty fields)
-      Object.entries(values).forEach(([key, value]) => {
+      Object.entries(valuesToAppend).forEach(([key, value]) => {
         const stringValue = value !== undefined && value !== null ? String(value) : "";
         console.log(`Appending ${key}:`, stringValue);
         formData.append(key, stringValue);

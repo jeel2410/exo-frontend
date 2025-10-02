@@ -22,6 +22,14 @@ interface CustomDropdownProps {
   autoFocus?: boolean;
   id?: string;
   name?: string;
+  // New optional features for search + infinite scroll
+  searchable?: boolean;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  onOpen?: () => void;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  loadingMore?: boolean;
 }
 
 const CustomDropdown: React.FC<CustomDropdownProps> = ({
@@ -38,6 +46,13 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
   autoFocus = false,
   id,
   name,
+  searchable = false,
+  searchValue = "",
+  onSearchChange,
+  onOpen,
+  onLoadMore,
+  hasMore = false,
+  loadingMore = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -84,6 +99,12 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
       window.removeEventListener('resize', handleScrollOrResize);
     };
   }, [isOpen, onBlur]);
+
+  useEffect(() => {
+    if (isOpen && onOpen) {
+      onOpen();
+    }
+  }, [isOpen, onOpen]);
 
   const updateDropdownPosition = () => {
     const rect = buttonRef.current?.getBoundingClientRect();
@@ -162,6 +183,14 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
     }
   };
 
+  const handleListScroll = () => {
+    if (!listRef.current || !onLoadMore || !hasMore || loadingMore) return;
+    const el = listRef.current;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
+      onLoadMore();
+    }
+  };
+
   const buttonClasses = `
     relative w-full flex items-center justify-between px-3 py-2.5 text-left
     border rounded-lg bg-transparent transition-colors duration-200
@@ -230,7 +259,20 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
             style={dropdownStyles}
             role="listbox"
             aria-labelledby={id ? `${id}-label` : undefined}
+            onScroll={handleListScroll}
           >
+            {searchable && (
+              <li className="px-2 pb-1 sticky top-0 bg-white z-10">
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Search..."
+                  value={searchValue}
+                  onChange={(e) => onSearchChange?.(e.target.value)}
+                />
+              </li>
+            )}
+
             {options.length === 0 ? (
               <li className="px-3 py-2.5 text-gray-500 text-sm">
                 No options available
@@ -238,7 +280,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
             ) : (
               options.map((option, index) => (
                 <li
-                  key={option.value}
+                  key={`${option.value}-${index}`}
                   className={optionClasses(index, option.value === value)}
                   onClick={() => handleSelect(option)}
                   role="option"
@@ -253,6 +295,12 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
                   <span className="block truncate">{option.label}</span>
                 </li>
               ))
+            )}
+
+            {hasMore && (
+              <li className="px-3 py-2 text-center text-sm text-gray-500">
+                {loadingMore ? 'Loading more...' : 'Scroll to load more'}
+              </li>
             )}
           </ul>,
           document.body
