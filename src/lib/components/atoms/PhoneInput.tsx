@@ -37,7 +37,8 @@ const PhoneInput = ({
     // Allow special keys (backspace, tab, enter, escape, delete, arrows)
     if (
       [8, 9, 13, 27, 46].includes(e.keyCode) ||
-      (e.ctrlKey && [65, 67, 86, 88].includes(e.keyCode)) ||
+      (e.ctrlKey && [65, 67, 86, 88].includes(e.keyCode)) || // Ctrl+A/C/V/X (Windows/Linux)
+      (e.metaKey && [65, 67, 86, 88].includes(e.keyCode)) || // Cmd+A/C/V/X (macOS)
       (e.keyCode >= 35 && e.keyCode <= 39)
     ) {
       return;
