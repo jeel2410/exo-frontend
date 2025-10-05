@@ -555,8 +555,13 @@ const CreateRequestTable = ({
 
         // Tax Amount
         columns.push(
-          <TableCell key="tax_amount" className="px-5 py-4 sm:px-6">
-            {renderAmountOnly(order.taxAmount || order.tax_amount || 0)}
+          <TableCell key="tax_amount" className="px-5 py-4 sm:px-6 bg-green-100 border-l-4 border-green-500 border-r-2 border-green-300 relative shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-green-200">
+            <div className="absolute inset-0 bg-gradient-to-r from-green-50 via-green-100 to-green-50 opacity-60 animate-pulse"></div>
+            <div className="relative z-10 font-bold text-green-900 text-center">
+              <div className="bg-white bg-opacity-80 rounded px-2 py-1 shadow-sm">
+                {renderAmountOnly(order.taxAmount || order.tax_amount || 0)}
+              </div>
+            </div>
           </TableCell>
         );
 
@@ -628,8 +633,13 @@ const CreateRequestTable = ({
 
         // Droit
         columns.push(
-          <TableCell key="droit" className="px-5 py-4 sm:px-6">
-            {renderAmountOnly(order.taxAmount || order.tax_amount || 0)}
+          <TableCell key="droit" className="px-5 py-4 sm:px-6 bg-green-100 border-l-4 border-green-500 border-r-2 border-green-300 relative shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-green-200">
+            <div className="absolute inset-0 bg-gradient-to-r from-green-50 via-green-100 to-green-50 opacity-60 animate-pulse"></div>
+            <div className="relative z-10 font-bold text-green-900 text-center">
+              <div className="bg-white bg-opacity-80 rounded px-2 py-1 shadow-sm">
+                {renderAmountOnly(order.taxAmount || order.tax_amount || 0)}
+              </div>
+            </div>
           </TableCell>
         );
 
@@ -671,8 +681,13 @@ const CreateRequestTable = ({
               {order.taxRate || order.tax_rate}%
             </span>
           </TableCell>,
-          <TableCell key="taxAmount" className="px-5 py-4 sm:px-6">
-            {renderAmountOnly(order.taxAmount || order.tax_amount || 0)}
+          <TableCell key="taxAmount" className="px-5 py-4 sm:px-6 bg-green-100 border-l-4 border-green-500 border-r-2 border-green-300 relative shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-green-200">
+            <div className="absolute inset-0 bg-gradient-to-r from-green-50 via-green-100 to-green-50 opacity-60 animate-pulse"></div>
+            <div className="relative z-10 font-bold text-green-900 text-center">
+              <div className="bg-white bg-opacity-80 rounded px-2 py-1 shadow-sm">
+                {renderAmountOnly(order.taxAmount || order.tax_amount || 0)}
+              </div>
+            </div>
           </TableCell>,
           <TableCell key="vatIncluded" className="px-5 py-4 sm:px-6">
             {renderAmountOnly(order.vatIncluded || order.vat_included || 0)}
@@ -782,8 +797,12 @@ const CreateRequestTable = ({
             className: "w-32 min-w-[120px]",
           },
           {
-            content: <div>{t("tax_amount")}</div>,
-            className: "w-28",
+            content: (
+              <div className="bg-green-600 text-white px-3 py-2 rounded-lg font-bold text-center shadow-md border-2 border-green-700">
+                <span>{t("tax_amount")}</span>
+              </div>
+            ),
+            className: "w-28 bg-green-100 border-l-4 border-green-500 border-r-2 border-green-300",
           },
           {
             content: <div>{t("ttc")}</div>,
@@ -837,8 +856,12 @@ const CreateRequestTable = ({
             className: "w-32 min-w-[120px]",
           },
           {
-            content: <div>{t("droit")}</div>,
-            className: "w-24",
+            content: (
+              <div className="bg-green-600 text-white px-3 py-2 rounded-lg font-bold text-center shadow-md border-2 border-green-700">
+                <span>{t("droit")}</span>
+              </div>
+            ),
+            className: "w-24 bg-green-100 border-l-4 border-green-500 border-r-2 border-green-300",
           },
           {
             content: <div>{t("ttc")}</div>,
@@ -894,8 +917,12 @@ const CreateRequestTable = ({
           className: "w-32 min-w-[120px]",
         },
         {
-          content: <div>{safeTrans("tax_amount", "Tax Amount")}</div>,
-          className: "w-28",
+          content: (
+            <div className="bg-green-600 text-white px-3 py-2 rounded-lg font-bold text-center shadow-md border-2 border-green-700">
+              <span>{safeTrans("tax_amount", "Tax Amount")}</span>
+            </div>
+          ),
+          className: "w-28 bg-green-100 border-l-4 border-green-500 border-r-2 border-green-300",
         },
         {
           content: <div>{safeTrans("vat_included", "VAT Included")}</div>,
