@@ -188,11 +188,12 @@ const CreateRequestTable = ({
     return (
       <div className="relative rounded-lg border border-yellow-300 bg-yellow-50 p-4">
         <h3 className="text-yellow-800 font-bold">
-          Please select a tax category
+          {t("please_select_a_tax_category")}
         </h3>
         <p className="text-yellow-600">
-          The table will be displayed once you select a tax category from the
-          dropdown above.
+          {t(
+            "the_table_will_be_displayed_once_you_select_a_tax_category_from_the_dropdown_above"
+          )}
         </p>
       </div>
     );
@@ -515,7 +516,7 @@ const CreateRequestTable = ({
         columns.push(
           <TableCell key="quantity" className="px-4 py-3 text-gray-500 text-sm">
             <span className="font-medium text-secondary-100">
-              {formatAmount(order.quantity).replace('.00', '')}
+              {formatAmount(order.quantity).replace(".00", "")}
             </span>
           </TableCell>
         );
@@ -588,7 +589,7 @@ const CreateRequestTable = ({
         columns.push(
           <TableCell key="quantity" className="px-4 py-3 text-gray-500 text-sm">
             <span className="font-medium text-secondary-100">
-              {formatAmount(order.quantity).replace('.00', '')}
+              {formatAmount(order.quantity).replace(".00", "")}
             </span>
           </TableCell>
         );
@@ -648,7 +649,7 @@ const CreateRequestTable = ({
           </TableCell>,
           <TableCell key="quantity" className="px-4 py-3 text-gray-500 text-sm">
             <span className="font-medium text-secondary-100">
-              {formatAmount(order.quantity).replace('.00', '')}
+              {formatAmount(order.quantity).replace(".00", "")}
             </span>
           </TableCell>,
           <TableCell key="unit" className="px-5 py-4 sm:px-6">
@@ -720,7 +721,9 @@ const CreateRequestTable = ({
         ...(currentTaxCategory === "importation"
           ? [
               {
-                content: <div>{safeTrans("tarrif_position", "Tarrif Position")}</div>,
+                content: (
+                  <div>{safeTrans("tarrif_position", "Tarrif Position")}</div>
+                ),
                 className: "w-36 min-w-[140px]",
               },
             ]
@@ -771,7 +774,7 @@ const CreateRequestTable = ({
             className: "w-28",
           },
           {
-            content: <div>{t("total")}</div>,
+            content: <div>{t("total_amount")}</div>,
             className: "w-24",
           },
           {
@@ -950,8 +953,18 @@ const CreateRequestTable = ({
                 className="flex items-center w-full md:w-fit gap-2 py-2 mt-4 justify-center"
                 onClick={handleAddEntity}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 <Typography>{t("add_entity")}</Typography>
               </Button>

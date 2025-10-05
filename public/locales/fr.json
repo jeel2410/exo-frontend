@@ -155,7 +155,7 @@
   "request_letter": "Lettre de demande",
   "entity": "Entité",
   "total_entity": "Nombre total d'entités",
-  "total_amount": "Montant total",
+  "total_amount": "Total HT",
   "total_tax_amount": "Montant total des taxes",
   "total_amount_with_tax": "Montant total avec taxes",
   "invoice_files": "Fichiers de facture",
@@ -358,11 +358,11 @@
   "fo_preparation": "Préparation FO",
   "transmission_to_secretariat": "Transmission au secrétariat",
   "coordinator_final_validation": "Validation finale du coordinateur",
-  "custom_duties": "Droits de douane",
+  "custom_duties": "Types de tâches",
   "duties": "Droits",
   "label": "Libellé",
   "quantity": "Quantité",
-  "unit_price": "Prix unitaire",
+  "unit_price": "Pu HT",
   "total": "Total",
   "tax_rate": "Taux de taxe",
   "tax_amount": "Montant de la taxe",
@@ -560,5 +560,8 @@
   "it_ic_required": "IT/IC *",
   "select_it_ic": "Sélectionner IT/IC",
   "tax_rate_disabled_for_it": "Le taux de taxe est 0% pour IT (non modifiable)",
-  "total_covered_amount": "Montant couvert"
+  "total_covered_amount": "Montant couvert",
+  "please_select_a_tax_category": "Veuillez sélectionner une catégorie de taxe",
+  "the_table_will_be_displayed_once_you_select_a_tax_category_from_the_dropdown_above": "Le tableau s'affichera une fois que vous aurez sélectionné une catégorie de taxe dans la liste déroulante ci-dessus.",
+  "rate": "Taux"
 }

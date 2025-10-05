@@ -157,7 +157,7 @@
   "request_letter": "Request letter",
   "entity": "Entity",
   "total_entity": "Total Entity",
-  "total_amount": "Total Amount",
+  "total_amount": "Total HT",
   "total_tax_amount": "Total Tax Amount",
   "total_amount_with_tax": "Total Amount with Tax",
   "invoice_files": "Invoice Files",
@@ -357,11 +357,11 @@
   "fo_preparation": "FO Preparation",
   "transmission_to_secretariat": "Transmission to Secretariat",
   "coordinator_final_validation": "Coordinator Final Validation",
-  "custom_duties": "Custom Duties",
+  "custom_duties": "Types of Duties",
   "duties": "Duties",
   "label": "Label",
   "quantity": "Quantity",
-  "unit_price": "Unit Price",
+  "unit_price": "Pu HT",
   "total": "Total",
   "tax_rate": "Tax Rate",
   "tax_amount": "Tax Amount",
@@ -558,5 +558,8 @@
   "it_ic_required": "IT/IC *",
   "select_it_ic": "Select IT/IC",
   "tax_rate_disabled_for_it": "Tax rate is 0% for IT (non-editable)",
-  "total_covered_amount": "Covered Amount"
+  "total_covered_amount": "Covered Amount",
+  "please_select_a_tax_category": "Please select a tax category",
+  "the_table_will_be_displayed_once_you_select_a_tax_category_from_the_dropdown_above": "The table will be displayed once you select a tax category from the dropdown above.",
+  "rate": "Rate"
 }
