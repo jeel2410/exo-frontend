@@ -114,7 +114,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
         top: `${rect.bottom + window.scrollY}px`,
         left: `${rect.left + window.scrollX}px`,
         width: `${rect.width}px`,
-        zIndex: 9999,
+        zIndex: 2147483648, // Higher than modal's z-index (2147483647)
       });
     }
   };

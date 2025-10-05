@@ -51,6 +51,9 @@ interface Entity {
   unit?: string;
   reference?: string; // Add reference field for API compatibility
   tarrif_position?: string; // Add tarrif position field for API compatibility
+  issue_date?: string; // Add issue_date field for local acquisition
+  nature_of_operation?: string; // Add nature_of_operations field for local acquisition
+  custom_duties?: string; // Add custom_duties field
 }
 
 // Type for create request payload
@@ -85,9 +88,8 @@ const AddRequest = () => {
   });
   const { getRoute } = useRoleRoute();
   const [financialAuthority, setFinancialAuthority] = useState<string>(
-    "location_acquisition"
+    ""
   );
-  const [autoEditId, setAutoEditId] = useState<number | null>(null);
   const [validationErrors, setValidationErrors] = useState<{
     address?: string;
     requestLetter?: string;
@@ -159,24 +161,40 @@ const AddRequest = () => {
   };
 
   const handleAddEntity = () => {
-    const newId = new Date().getTime();
-    const newOrder: Order = {
-      id: newId,
-      // id: data.length + 1,
-      label: "",
-      quantity: 1,
-      unitPrice: 0,
-      unit: "",
-      total: 0,
-      taxRate: 0,
-      taxAmount: 0,
-      vatIncluded: 0,
-      customDuty: "",
-      reference: "", // Initialize reference field for new entities
-      tarrifPosition: "", // Initialize tarrif position field for new entities
-    };
-    setData(recalculateTableData([...data, newOrder]));
-    setAutoEditId(newId); // Set the newly added entity to auto-edit mode
+    try {
+      console.log("🚀 handleAddEntity called with financialAuthority:", financialAuthority);
+      const newId = new Date().getTime();
+      
+      // Base order object
+      const baseOrder: Order = {
+        id: newId,
+        label: "",
+        quantity: 1,
+        unitPrice: 0,
+        unit: "",
+        total: 0,
+        taxRate: 0,
+        taxAmount: 0,
+        vatIncluded: 0,
+        customDuty: "",
+        reference: "", // Initialize reference field for new entities
+        tarrifPosition: "", // Initialize tarrif position field for new entities
+      };
+      
+      // Add location_acquisition specific fields if needed
+      const newOrder: Order = financialAuthority === "location_acquisition" 
+        ? {
+            ...baseOrder,
+            issueDate: "", // Initialize issue_date field for local acquisition
+            natureOfOperations: "", // Initialize nature_of_operations field for local acquisition
+          }
+        : baseOrder;
+      
+      console.log("🚀 Created new order:", newOrder);
+      setData(recalculateTableData([...data, newOrder]));
+    } catch (error) {
+      console.error("🚨 Error in handleAddEntity:", error);
+    }
   };
 
   const updateEntitys = (entitys: Entity[]) => {
@@ -192,6 +210,9 @@ const AddRequest = () => {
       vatIncluded: entity.vat_included,
       reference: entity.reference || "", // Map reference field from API response
       tarrifPosition: entity.tarrif_position || "", // Map tarrif position field from API response
+      issueDate: entity.issue_date || "", // Map issue_date field from API response
+      natureOfOperations: entity.nature_of_operation || "", // Map nature_of_operations field from API response
+      customDuty: entity.custom_duties || "", // Map custom_duties field from API response
       financialAuthority: entity.financial_authority,
     }));
     setFinancialAuthority(
@@ -218,7 +239,8 @@ const AddRequest = () => {
   };
 
   const handleEditComplete = () => {
-    setAutoEditId(null); // Clear auto-edit mode when editing is complete
+    // Previously cleared auto-edit mode, now just a placeholder for completion callback
+    console.log("Edit complete");
   };
 
   // const totalEntity = data.length;
@@ -346,19 +368,35 @@ const AddRequest = () => {
       }))
     );
 
-    const requestEntities = data.map((d) => ({
-      label: d.label,
-      quantity: d.quantity.toString(),
-      unit: d.unit || "",
-      unit_price: d.unitPrice.toString(),
-      total: d.total.toString(),
-      tax_rate: d.taxRate.toString(),
-      tax_amount: d.taxAmount.toString(),
-      vat_included: d.vatIncluded.toString(),
-      reference: d.reference || "", // Add reference field for API compatibility
-      tarrif_position: d.tarrifPosition || "", // Add tarrif position field for API compatibility
-      financial_authority: financialAuthority,
-    }));
+    const requestEntities = data.map((d) => {
+      const entityData: any = {
+        label: d.label,
+        quantity: d.quantity.toString(),
+        unit: d.unit || "",
+        unit_price: d.unitPrice.toString(),
+        total: d.total.toString(),
+        tax_rate: d.taxRate.toString(),
+        tax_amount: d.taxAmount.toString(),
+        vat_included: d.vatIncluded.toString(),
+        reference: d.reference || "", // Add reference field for API compatibility
+        financial_authority: financialAuthority,
+        custom_duties: d.customDuty || "", // Add custom_duties field
+      };
+      
+      // Only include tariff position and IT/IC for importation tax category
+      if (financialAuthority === "importation") {
+        entityData.tarrif_position = d.tarrifPosition || "";
+        entityData.it_ic = d.itIc || "";
+      }
+      
+      // Add new fields for location_acquisition tax category
+      if (financialAuthority === "location_acquisition") {
+        entityData.issue_date = d.issueDate || ""; // Add issue_date field for local acquisition
+        entityData.nature_of_operation = d.natureOfOperations || ""; // Add nature_of_operations field for local acquisition
+      }
+      
+      return entityData;
+    });
 
     console.log("🚀 Request entities before stringify:", requestEntities);
 
@@ -541,7 +579,33 @@ const AddRequest = () => {
   const handleFinancialAuthority = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    setFinancialAuthority(event.target.value);
+    const newTaxCategory = event.target.value;
+    const previousTaxCategory = financialAuthority;
+    console.log("🚀 Tax category changing from", previousTaxCategory, "to", newTaxCategory);
+    
+    try {
+      // If there are existing entities and the tax category is actually changing
+      if (data.length > 0 && previousTaxCategory !== newTaxCategory && previousTaxCategory !== "") {
+        const confirmMessage = t("tax_category_change_warning") || 
+          "Changing the tax category will clear all existing entities from the table. Do you want to continue?";
+        const shouldClearEntities = window.confirm(confirmMessage);
+        
+        if (!shouldClearEntities) {
+          // User cancelled, don't change the tax category
+          console.log("🚀 Tax category change cancelled by user");
+          return;
+        }
+        
+        // Clear all entities
+        console.log("🚀 Clearing all entities due to tax category change");
+        setData([]);
+      }
+      
+      setFinancialAuthority(newTaxCategory);
+      console.log("🚀 Tax category change completed successfully");
+    } catch (error) {
+      console.error("🚨 Error changing tax category:", error);
+    }
   };
   if (isLoading) return <Loader />;
 
@@ -681,7 +745,6 @@ const AddRequest = () => {
             <CreateRequestTable
               data={data}
               onDataChange={handleTableDataChange}
-              autoEditId={autoEditId}
               onEditComplete={handleEditComplete}
               currentTaxCategory={financialAuthority}
             />

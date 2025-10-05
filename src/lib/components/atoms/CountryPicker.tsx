@@ -101,7 +101,7 @@ const CountryPicker = ({
       ...provided,
       minWidth: "250px", // Reduced width
       maxWidth: "300px", // Reduced width
-      zIndex: 9999,
+      zIndex: 2147483648, // Higher than modal's z-index (2147483647)
     }),
     menuList: (provided: any) => ({
       ...provided,

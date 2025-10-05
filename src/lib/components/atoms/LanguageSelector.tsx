@@ -75,7 +75,7 @@ const LanguageSelector: React.FC<Props> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute mt-2 w-fit bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+        <div className="absolute mt-2 w-fit bg-white rounded-lg shadow-lg border border-gray-200 py-1" style={{zIndex: 2147483648}}>
           {languages.map((language) => (
             <button
               key={language.code}

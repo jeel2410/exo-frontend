@@ -390,7 +390,7 @@ const TestRequestDetails = () => {
         </AppLayout>
       ) : (
         <AppLayout>
-          <div className="px-4 md:px-8 py-6">
+          <div className="px-4 md:px-8 py-6 overflow-x-hidden">
             <div className="mb-6">
               <div className="cursor-pointer mb-4">
                 <Breadcrumbs crumbs={crumbs} />
@@ -694,6 +694,7 @@ const TestRequestDetails = () => {
                   title={t("total_amount")}
                 />
                 <DashBoardCard
+                  isSelected={true}
                   icon={
                     <CurrencyBadge
                       currency={
@@ -732,12 +733,12 @@ const TestRequestDetails = () => {
               </div>
             </div>
 
-            <div className="flex gap-6">
-              <div>
+            <div className="flex gap-6 min-w-0">
+              <div className="flex-shrink-0">
                 <RequestProgress steps={steps} />
               </div>
-              <div className="flex flex-col gap-6">
-                <div className="border border-secondary-30 bg-white rounded-lg">
+              <div className="flex flex-col gap-6 flex-1 min-w-0">
+                <div className="border border-secondary-30 bg-white rounded-lg min-w-0">
                   <div className="px-4 md:px-6 py-5 ">
                     <div className="flex justify-between items-center">
                       <Typography
@@ -932,8 +933,8 @@ const TestRequestDetails = () => {
                   </div>
 
                   {/* Entity Table Section */}
-                  <div className="px-4 md:px-6 py-5 border-t border-gray-100">
-                    <div className="overflow-x-auto">
+                  <div className="px-4 md:px-6 py-5 border-t border-gray-100 min-w-0">
+                    <div className="w-full overflow-x-auto min-w-0">
                       <CreateRequestTable
                         data={
                           requestData.entities?.map((entity, index) => {
@@ -956,6 +957,12 @@ const TestRequestDetails = () => {
                                 (entity as any).tarrif_position || "", // Add tarrif position field mapping
                               customDuty: (entity as any).custom_duties,
                               custom_duty: (entity as any).custom_duties,
+                              // Map new fields for location_acquisition tax category
+                              issueDate: (entity as any).issue_date || "",
+                              natureOfOperations:
+                                (entity as any).nature_of_operation || "",
+                              // Map it_ic field for importation tax category
+                              itIc: (entity as any).it_ic || "",
                               currency:
                                 requestData.amount_summary.contract_currency,
                             };
@@ -967,6 +974,7 @@ const TestRequestDetails = () => {
                           }) || []
                         }
                         showActions={false}
+                        showAddButton={false}
                         currentTaxCategory={requestData.tax_category}
                       />
                     </div>

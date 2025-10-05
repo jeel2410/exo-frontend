@@ -37,12 +37,35 @@ class ApiBaseService {
 
         if (accessToken) {
           // Configure this as per your backend requirements
-          config.headers['VAuthorization'] = `Bearer ${accessToken}`;
+          config.headers["VAuthorization"] = `Bearer ${accessToken}`;
         }
 
         return config;
       },
       (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    // Response interceptor to handle 401/403 errors
+    this.authorizedRequest.interceptors.response.use(
+      (response) => {
+        return response;
+      },
+      (error) => {
+        if (
+          error.response &&
+          (error.response.status === 401 || error.response.status === 403)
+        ) {
+          // Clear user data from localStorage
+          localStorage.removeItem("isLogin");
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("userData");
+          localStorageService.removeUser();
+
+          // Redirect to login page
+          window.location.href = "/sign-in";
+        }
         return Promise.reject(error);
       }
     );

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { FileVioletIcon, WhitePlusIcon } from "../../../icons";
+import { FileVioletIcon } from "../../../icons";
 import CurrencyBadge from "../../common/CurrencyBadge";
 import Label from "../../../lib/components/atoms/Label";
 import Typography from "../../../lib/components/atoms/Typography";
@@ -44,6 +44,9 @@ interface Entity {
   custom_duties?: string;
   reference?: string; // Add reference field for API compatibility
   tarrif_position?: string; // Add tarrif_position field for API compatibility
+  issue_date?: string; // Issue date field for local acquisition
+  nature_of_operation?: string; // Nature of operation field for local acquisition
+  it_ic?: string; // IT/IC code field for importation
 }
 
 interface CreateRequestPayload {
@@ -65,7 +68,7 @@ const financialAuthorityList: {
   textColor: string;
 }[] = [
   {
-    name: "Acquisition Location",
+    name: "Acquisition locale",
     value: "location_acquisition",
     shortName: "D",
     bgColor: "bg-green-500",
@@ -105,7 +108,6 @@ const AddRequest = () => {
   });
   const { getRoute } = useRoleRoute();
   const [financialAuthority, setFinancialAuthority] = useState<string>("");
-  const [autoEditId, setAutoEditId] = useState<number | null>(null);
   const [validationErrors, setValidationErrors] = useState<{
     address?: string;
     requestLetter?: string;
@@ -191,26 +193,6 @@ const AddRequest = () => {
     });
   };
 
-  const handleAddEntity = () => {
-    const newId = new Date().getTime();
-    const newOrder: Order = {
-      id: newId,
-      // id: data.length + 1,
-      label: "",
-      quantity: 1,
-      unitPrice: 0,
-      total: 0,
-      taxRate: 0,
-      taxAmount: 0,
-      vatIncluded: 0,
-      customDuty: "",
-      reference: "", // Initialize reference field for new entities
-      tarrifPosition: "", // Initialize tarrif_position field for new entities
-    };
-    setData(recalculateTableData([...data, newOrder]));
-    setAutoEditId(newId); // Set the newly added entity to auto-edit mode
-  };
-
   const updateEntitys = (entitys: Entity[]) => {
     const newOrder: Order[] = entitys.map((entity: Entity, index: number) => {
       console.log("🔍 Processing entity:", {
@@ -231,6 +213,9 @@ const AddRequest = () => {
         tarrifPosition: entity.tarrif_position || "", // Map tarrif_position field from API response
         customDuty: entity.custom_duties || "",
         custom_duties: entity.custom_duties || "", // Add this for backward compatibility
+        issueDate: entity.issue_date || "", // Map issue_date from API response
+        natureOfOperations: entity.nature_of_operation || "", // Map nature_of_operation from API response
+        itIc: entity.it_ic || "", // Map it_ic from API response for importation
       };
     });
     // Note: For editing existing requests, tax_category will be fetched separately
@@ -264,7 +249,8 @@ const AddRequest = () => {
   };
 
   const handleEditComplete = () => {
-    setAutoEditId(null); // Clear auto-edit mode when editing is complete
+    // Previously cleared auto-edit mode, now just a placeholder for completion callback
+    console.log("Edit complete");
   };
 
   // const totalEntity = data.length;
@@ -447,28 +433,8 @@ const AddRequest = () => {
     );
     console.log(
       "🚀 Individual entities for request_entity:",
-      data.map((d) => ({
-        label: d.label,
-        quantity: d.quantity.toString(),
-        unit_price: d.unitPrice.toString(),
-        unit: d?.unit?.toString(),
-        total: d.total.toString(),
-        tax_rate: d.taxRate.toString(),
-        tax_amount: d.taxAmount.toString(),
-        vat_included: d.vatIncluded.toString(),
-        reference: d.reference || "",
-        tarrif_position: d.tarrifPosition || "",
-        custom_duties: d.customDuty || d.custom_duty || "",
-      }))
-    );
-
-    const apiData: CreateRequestPayload = {
-      project_id: projectId,
-      address_id: selectedAddresses.join(","), // Convert array to comma-separated string
-      request_letter: requestLetter,
-      ...(documentIds !== undefined && { document_ids: documentIds }),
-      request_entity: JSON.stringify(
-        data.map((d) => ({
+      data.map((d) => {
+        const entityData: any = {
           label: d.label,
           quantity: d.quantity.toString(),
           unit_price: d.unitPrice.toString(),
@@ -477,10 +443,60 @@ const AddRequest = () => {
           tax_rate: d.taxRate.toString(),
           tax_amount: d.taxAmount.toString(),
           vat_included: d.vatIncluded.toString(),
-          reference: d.reference || "", // Add reference field for API compatibility
-          tarrif_position: d.tarrifPosition || "", // Add tarrif_position field for API compatibility
+          reference: d.reference || "",
           custom_duties: d.customDuty || d.custom_duty || "",
-        }))
+        };
+
+        // Add specific fields for location acquisition
+        if (financialAuthority === "location_acquisition") {
+          entityData.issue_date = d.issueDate || "";
+          entityData.nature_of_operation = d.natureOfOperations || "";
+        }
+
+        // Only include tariff position and IT/IC for importation tax category
+        if (financialAuthority === "importation") {
+          entityData.tarrif_position = d.tarrifPosition || "";
+          entityData.it_ic = d.itIc || "";
+        }
+
+        return entityData;
+      })
+    );
+
+    const apiData: CreateRequestPayload = {
+      project_id: projectId,
+      address_id: selectedAddresses.join(","), // Convert array to comma-separated string
+      request_letter: requestLetter,
+      ...(documentIds !== undefined && { document_ids: documentIds }),
+      request_entity: JSON.stringify(
+        data.map((d) => {
+          const entityData: any = {
+            label: d.label,
+            quantity: d.quantity.toString(),
+            unit_price: d.unitPrice.toString(),
+            unit: d?.unit?.toString(),
+            total: d.total.toString(),
+            tax_rate: d.taxRate.toString(),
+            tax_amount: d.taxAmount.toString(),
+            vat_included: d.vatIncluded.toString(),
+            reference: d.reference || "", // Add reference field for API compatibility
+            custom_duties: d.customDuty || d.custom_duty || "",
+          };
+
+          // Add specific fields for location acquisition
+          if (financialAuthority === "location_acquisition") {
+            entityData.issue_date = d.issueDate || "";
+            entityData.nature_of_operation = d.natureOfOperations || "";
+          }
+
+          // Only include tariff position and IT/IC for importation tax category
+          if (financialAuthority === "importation") {
+            entityData.tarrif_position = d.tarrifPosition || "";
+            entityData.it_ic = d.itIc || "";
+          }
+
+          return entityData;
+        })
       ),
       tax_category: financialAuthority, // separate field outside entity JSON
       ...(requestId && { request_id: requestId }),
@@ -727,19 +743,50 @@ const AddRequest = () => {
       return currentFiles;
     });
   }, []);
+
+  // const handleCardClick = (cardId: string) => {
+  //   setSelectedCard(selectedCard === cardId ? null : cardId);
+  // };
+
   const handleFinancialAuthority = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    const newFinancialAuthority = event.target.value;
-    setFinancialAuthority(newFinancialAuthority);
+    const newTaxCategory = event.target.value;
+    const previousTaxCategory = financialAuthority;
+    console.log(
+      "🚀 Tax category changing from",
+      previousTaxCategory,
+      "to",
+      newTaxCategory
+    );
 
-    // Update all existing entities with the new financial authority
-    if (data.length > 0) {
-      const updatedData = data.map((item) => ({
-        ...item,
-        financialAuthority: newFinancialAuthority,
-      }));
-      setData(updatedData);
+    try {
+      // If there are existing entities and the tax category is actually changing
+      if (
+        data.length > 0 &&
+        previousTaxCategory !== newTaxCategory &&
+        previousTaxCategory !== ""
+      ) {
+        const confirmMessage =
+          t("tax_category_change_warning") ||
+          "Changing the tax category will clear all existing entities from the table. Do you want to continue?";
+        const shouldClearEntities = window.confirm(confirmMessage);
+
+        if (!shouldClearEntities) {
+          // User cancelled, don't change the tax category
+          console.log("🚀 Tax category change cancelled by user");
+          return;
+        }
+
+        // Clear all entities
+        console.log("🚀 Clearing all entities due to tax category change");
+        setData([]);
+      }
+
+      setFinancialAuthority(newTaxCategory);
+      console.log("🚀 Tax category change completed successfully");
+    } catch (error) {
+      console.error("🚨 Error changing tax category:", error);
     }
   };
   if (isLoading) return <Loader />;
@@ -1015,14 +1062,14 @@ const AddRequest = () => {
 
         {/* Add Entity Button */}
         <div className="mb-3 md:mb-5 flex gap-2 justify-end">
-          <Button
+          {/* <Button
             variant="primary"
             className="flex items-center w-full md:w-fit gap-1 py-2 mt-4 justify-center"
             onClick={handleAddEntity}
           >
             <WhitePlusIcon />
             <Typography>{t("add_entity")}</Typography>
-          </Button>
+          </Button> */}
         </div>
 
         {/* Entity Section */}
@@ -1038,6 +1085,8 @@ const AddRequest = () => {
               count={totals.totalEntity}
               title={t("total_items")}
               formatType="count"
+              isSelected={false}
+              // onClick={() => handleCardClick("total_items")}
             />
             <DashBoardCard
               icon={
@@ -1050,6 +1099,8 @@ const AddRequest = () => {
               }
               count={totals.totalAmount}
               title={t("total_amount")}
+              isSelected={false}
+              // onClick={() => handleCardClick("total_amount")}
             />
             <DashBoardCard
               icon={
@@ -1061,7 +1112,9 @@ const AddRequest = () => {
                 />
               }
               count={totals.totalTaxAmount}
-              title={t("total_tax_amount")}
+              title={t("total_covered_amount")}
+              isSelected={true}
+              // onClick={() => handleCardClick("total_covered_amount")}
             />
             <DashBoardCard
               icon={
@@ -1074,6 +1127,8 @@ const AddRequest = () => {
               }
               count={totals.totalAmountWithTax}
               title={t("total_amount_with_tax")}
+              isSelected={false}
+              // onClick={() => handleCardClick("total_amount_with_tax")}
             />
           </div>
 
@@ -1085,7 +1140,6 @@ const AddRequest = () => {
                 currency: contractData?.currency || "USD",
               }))}
               onDataChange={handleTableDataChange}
-              autoEditId={autoEditId}
               onEditComplete={handleEditComplete}
               currentTaxCategory={financialAuthority}
             />

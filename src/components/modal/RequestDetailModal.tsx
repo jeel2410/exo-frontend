@@ -25,6 +25,13 @@ export interface RequestEntity {
   vat_included: number;
   financial_authority: string;
   status: string;
+  unit?: string;
+  reference?: string;
+  tarrif_position?: string;
+  issue_date?: string; // Add issue_date field for local acquisition
+  nature_of_operation?: string; // Add nature_of_operations field for local acquisition
+  custom_duties?: string; // Add custom_duties field
+  it_ic?: string; // Add it_ic field for importation
 }
 
 export interface AmountSummary {
@@ -162,7 +169,7 @@ const RequestDetailModal = ({
             />
           </div>
         </div>
-        <div className="mt-3 md:mt-5 mb-2">
+        <div className="mt-3 md:mt-5 mb-2 min-w-0">
           <CreateRequestTable
             data={
               requestDetails.entities?.map((entity: any, index: number) => ({
@@ -183,10 +190,16 @@ const RequestDetailModal = ({
                 tarrifPosition: entity.tarrif_position || "",
                 customDuty: entity.custom_duties,
                 custom_duty: entity.custom_duties,
+                // Map new fields for location_acquisition tax category
+                issueDate: entity.issue_date || "",
+                natureOfOperations: entity.nature_of_operation || "",
+                // Map it_ic field for importation tax category
+                itIc: entity.it_ic || "",
                 currency: requestDetails.contract_currency,
               })) || []
             }
             showActions={false}
+            showAddButton={false}
             currentTaxCategory={requestDetails.tax_category}
           />
         </div>

@@ -12,6 +12,7 @@ interface DashBoardCardProps {
   titleSize?: TypographyProps["size"]; // optional override for title text size
   className?: string; // optional container class overrides
   formatType?: "amount" | "count"; // determines whether to format as money (with decimals) or count (no decimals)
+  isSelected?: boolean; // indicates whether the card is currently selected
 }
 
 const DashBoardCard: FC<DashBoardCardProps> = ({
@@ -23,11 +24,16 @@ const DashBoardCard: FC<DashBoardCardProps> = ({
   titleSize = "xs",
   className = "",
   formatType = "amount", // default to amount for backward compatibility
+  isSelected = false,
 }) => {
   return (
     <div
       onClick={onClick}
-      className={`w-full bg-white rounded-[8px] shadow-light-20 px-4 py-5 flex items-center justify-center hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer hover:bg-gray-50 border border-secondary-30 hover:border-secondary-20 min-h-[100px] ${className}`}
+      className={`w-full rounded-[8px] px-4 py-5 flex items-center justify-center transition-all duration-300 ease-in-out cursor-pointer min-h-[100px] ${
+        isSelected
+          ? "bg-green-50 border-2 border-green-500 shadow-green-200/50 shadow-lg hover:bg-green-100"
+          : "bg-white shadow-light-20 border border-secondary-30 hover:shadow-lg hover:scale-105 hover:bg-gray-50 hover:border-secondary-20"
+      } ${className}`}
     >
       <div className="flex items-center gap-4 w-full">
         <div className="flex-shrink-0">
