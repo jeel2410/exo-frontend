@@ -244,11 +244,18 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
         if (parsedValue === "IT") {
           // IT selected: set tax rate to 0
           updated.taxRate = 0;
-        } else if (parsedValue === "IC" && updated.customDuty) {
-          // IC selected: revert to normal tax rate based on custom duty
-          const constraints = getTaxRateConstraints(updated.customDuty as string, "IC");
+        } else if (parsedValue === "IC") {
+          // IC selected: ensure a valid non-zero tax rate is applied based on custom duty
+          const constraints = updated.customDuty
+            ? getTaxRateConstraints(updated.customDuty as string, "IC")
+            : { min: 1, max: 100, fixed: null as number | null, allowedValues: null as number[] | null };
+
           if (constraints.fixed !== null) {
             updated.taxRate = constraints.fixed;
+          } else {
+            // If current taxRate is 0 or undefined (likely after switching from IT), set to minimum allowed
+            const current = typeof updated.taxRate === "number" ? updated.taxRate : undefined;
+            updated.taxRate = current && current > 0 ? current : (constraints.min ?? 1);
           }
         }
       }
@@ -344,10 +351,22 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
       // Auto-set tax rate if fixed (including IT case which sets to 0)
       if (constraints.fixed !== null) {
         updated.taxRate = constraints.fixed;
+      } else {
+        // If IC (not IT) and taxRate is 0/undefined (possibly after switching from IT), set to minimum allowed
+        const isIC = currentTaxCategory === "importation" && updated.itIc === "IC";
+        if (isIC && (!updated.taxRate || updated.taxRate === 0)) {
+          if (constraints.allowedValues && constraints.allowedValues.length > 0) {
+            updated.taxRate = constraints.allowedValues[0];
+          } else if (typeof constraints.min === "number") {
+            updated.taxRate = constraints.min;
+          } else {
+            updated.taxRate = 1; // sensible default
+          }
+        }
       }
 
-      // Recalculate if tax rate was auto-set
-      if (constraints.fixed !== null) {
+      // Recalculate if tax rate was auto-set or adjusted
+      if (constraints.fixed !== null || (updated.itIc === "IC" && (updated.taxRate ?? 0) > 0)) {
         const { total, taxAmount, vatIncluded } = calculateTaxAndVat(updated);
         updated.total = total;
         updated.taxAmount = taxAmount;

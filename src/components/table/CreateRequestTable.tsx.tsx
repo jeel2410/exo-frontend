@@ -277,30 +277,34 @@ const CreateRequestTable = ({
   };
 
   const handleModalSave = (data: Partial<Order>) => {
-    if (modalMode === "add") {
-      // Add new entity
-      const newId = Math.max(...tableData.map((item) => item.id), 0) + 1;
-      const newEntity: Order = {
-        id: newId,
-        reference: data.reference || "",
-        tarrifPosition: data.tarrifPosition || "",
-        issueDate: data.issueDate,
-        natureOfOperations: data.natureOfOperations,
-        label: data.label || "",
-        quantity: data.quantity || 0,
-        unitPrice: data.unitPrice || 0,
-        unit: data.unit,
-        total: data.total || 0,
-        taxRate: data.taxRate || 0,
-        taxAmount: data.taxAmount || 0,
-        vatIncluded: data.vatIncluded || 0,
-        customDuty: data.customDuty,
-        currency: data.currency,
-        cif: data.cif,
-        totalCif: data.totalCif,
-        droit: data.droit,
-        itIc: data.itIc,
-      };
+      if (modalMode === "add") {
+        // Add new entity
+        const newId = Math.max(...tableData.map((item) => item.id), 0) + 1;
+        const isImportation = currentTaxCategory === "importation";
+        const computedUnitPrice = isImportation
+          ? (data.cif ?? data.unitPrice ?? 0)
+          : (data.unitPrice ?? 0);
+        const newEntity: Order = {
+          id: newId,
+          reference: data.reference || "",
+          tarrifPosition: data.tarrifPosition || "",
+          issueDate: data.issueDate,
+          natureOfOperations: data.natureOfOperations,
+          label: data.label || "",
+          quantity: data.quantity || 0,
+          unitPrice: computedUnitPrice,
+          unit: data.unit,
+          total: data.total || 0,
+          taxRate: data.taxRate || 0,
+          taxAmount: data.taxAmount || 0,
+          vatIncluded: data.vatIncluded || 0,
+          customDuty: data.customDuty,
+          currency: data.currency,
+          cif: data.cif ?? (isImportation ? (data.unitPrice ?? undefined) : undefined),
+          totalCif: data.totalCif,
+          droit: isImportation ? (data.taxAmount || 0) : (data.droit || 0),
+          itIc: data.itIc,
+        };
 
       const newTableData = [...tableData, newEntity];
       setTableData(newTableData);
@@ -611,7 +615,9 @@ const CreateRequestTable = ({
         // CIF
         columns.push(
           <TableCell key="cif" className="px-5 py-4 sm:px-6">
-            {renderAmountOnly(order.unitPrice || order.unit_price || 0)}
+            {renderAmountOnly(
+              (order.cif ?? order.unitPrice ?? order.unit_price ?? 0)
+            )}
           </TableCell>
         );
 
