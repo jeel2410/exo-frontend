@@ -41,7 +41,7 @@ const SignInForm = () => {
 
       console.log(userData, "user data on sign in");
 
-      // Navigate based on user type
+      // Navigate based on user typee
       if (userData.type === "project_manager") {
         navigate("/project-dashboard");
       } else {
