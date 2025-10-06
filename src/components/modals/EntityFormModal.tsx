@@ -85,6 +85,23 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
     }
   };
 
+  // During typing: format with thousand separators and preserve trailing decimal
+  const getTypingDisplayValue = (inputValue: string) => {
+    if (inputValue === "") return "";
+    // Allow only digits and one dot for processing
+    const hadDot = inputValue.includes(".");
+    const trailingDot = inputValue.endsWith(".");
+    const parts = inputValue.split(".");
+    const integerRaw = (parts[0] || "").replace(/\D/g, "");
+    const decimalRaw = parts[1] ? parts[1].replace(/\D/g, "") : "";
+
+    const integerNum = parseInt(integerRaw || "0", 10);
+    const formattedInteger = new Intl.NumberFormat("fr-FR").format(integerNum);
+
+    const decimalPart = trailingDot ? "" : decimalRaw.substring(0, 2);
+    return formattedInteger + (hadDot ? "." : "") + decimalPart;
+  };
+
   // Reset form when modal opens/closes or initialData changes
   useEffect(() => {
     if (isOpen) {
@@ -290,8 +307,8 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
       cleanValue = parts[0] + "." + parts[1].substring(0, 2);
     }
 
-    // Update display value immediately while typing
-    setQuantityDisplay(inputValue);
+    // Update display value immediately while typing, preserving trailing '.' and adding thousand separators
+    setQuantityDisplay(getTypingDisplayValue(inputValue));
 
     // Parse and update form data
     const numericValue = cleanValue === "" ? undefined : parseFloat(cleanValue);
@@ -301,8 +318,7 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
       handleInputChange("quantity", "");
     }
 
-    // Stop typing mode after a delay
-    setTimeout(() => setIsQuantityTyping(false), 500);
+    // Do not auto-stop typing; we'll stop on blur so trailing decimals like "10." are preserved while focused
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: "unitPrice" | "cif") => {
@@ -323,8 +339,8 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
       cleanValue = parts[0] + "." + parts[1].substring(0, 2);
     }
 
-    // Update display value immediately while typing
-    setPriceDisplay(inputValue);
+    // Update display value immediately while typing, preserving trailing '.' and adding thousand separators
+    setPriceDisplay(getTypingDisplayValue(inputValue));
 
     // Parse and update form data
     const numericValue = cleanValue === "" ? undefined : parseFloat(cleanValue);
@@ -334,8 +350,7 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
       handleInputChange(fieldName, "");
     }
 
-    // Stop typing mode after a delay
-    setTimeout(() => setIsPriceTyping(false), 500);
+    // Do not auto-stop typing; we'll stop on blur so trailing decimals like "10." are preserved while focused
   };
 
   const handleCustomDutyChange = (newCustomDuty: string) => {
@@ -494,6 +509,7 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
                 value={formData.reference || ""}
                 onChange={(e) => handleInputChange("reference", e.target.value)}
                 placeholder={t("add_reference")}
+                className="!bg-white"
               />
             </div>
 
@@ -538,6 +554,7 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
                     handleInputChange("tarrifPosition", e.target.value)
                   }
                   placeholder={t("add_tariff_position")}
+                  className="!bg-white"
                 />
               </div>
             )}
@@ -584,6 +601,7 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
                 value={formData.label || ""}
                 onChange={(e) => handleInputChange("label", e.target.value)}
                 disabled={!formData.customDuty}
+                className={formData.customDuty ? "!bg-white" : undefined}
                 placeholder={
                   formData.customDuty
                     ? t("description")
@@ -633,7 +651,10 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
                 type="text"
                 value={isQuantityTyping ? quantityDisplay : getQuantityDisplayValue(formData.quantity)}
                 onChange={handleQuantityChange}
+                onFocus={() => setIsQuantityTyping(true)}
+                onBlur={() => setIsQuantityTyping(false)}
                 placeholder={t("enter_quantity")}
+                className="!bg-white"
               />
             </div>
 
@@ -679,12 +700,15 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
                     : getPriceDisplayValue(formData.unitPrice)
                 }
                 onChange={(e) => handlePriceChange(e, currentTaxCategory === "importation" ? "cif" : "unitPrice")}
+                onFocus={() => setIsPriceTyping(true)}
+                onBlur={() => setIsPriceTyping(false)}
                 placeholder={t("enter_price", {
                   type:
                     currentTaxCategory === "importation"
                       ? t("cif")
                       : t("unit_price"),
                 })}
+                className="!bg-white"
               />
             </div>
 
@@ -750,10 +774,10 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
                   max="100"
                   step={0.01}
                   className={
-                    currentTaxCategory === "importation" &&
-                    formData.itIc === "IT"
+                    !formData.customDuty ||
+                    (currentTaxCategory === "importation" && formData.itIc === "IT")
                       ? "bg-gray-50 text-gray-600"
-                      : ""
+                      : "!bg-white"
                   }
                 />
               )}

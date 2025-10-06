@@ -88,7 +88,9 @@ export const formatCurrencyFrenchSpacesEnglishDecimals = (
   }).format(numValue);
 
   // Replace French decimal comma with English decimal dot
-  return frenchFormatted.replace(',', '.');
+  const withEnglishDecimal = frenchFormatted.replace(',', '.');
+  // Normalize non-breaking/narrow spaces to regular spaces for consistent input rendering
+  return withEnglishDecimal.replace(/\u00A0|\u202F/g, ' ');
 };
 
 /**
