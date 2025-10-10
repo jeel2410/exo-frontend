@@ -90,10 +90,7 @@ const RequestListPage = () => {
       label: t("calculation_notes_transmission"),
     },
     { value: "FO Preparation", label: t("fo_preparation") },
-    {
-      value: "Transmission to Secretariat",
-      label: t("transmission_to_secretariat"),
-    },
+    { value: "FO Validation", label: t("fo_validation") },
     {
       value: "Coordinator Final Validation",
       label: t("coordinator_final_validation"),
