@@ -651,9 +651,9 @@ ProjectInfoFormProps) => {
             values.fundedBy.trim() !== "" ||
             values.projectReference.trim() !== "" ||
             values.amount.trim() !== "" ||
-            values.beginDate.trim() !== "" ||
-            values.endDate.trim() !== "" ||
-            values.description.trim() !== "" ||
+            (typeof values.beginDate === 'string' ? values.beginDate.trim() !== "" : !!values.beginDate) ||
+            (typeof values.endDate === 'string' ? values.endDate.trim() !== "" : !!values.endDate) ||
+            (values.description && values.description.trim() !== "") ||
             values.addresses.length > 0 ||
             values.files.length > 0
           );
@@ -667,8 +667,8 @@ ProjectInfoFormProps) => {
             values.fundedBy.trim() !== "" &&
             values.projectReference.trim() !== "" &&
             values.amount.trim() !== "" &&
-            values.beginDate.trim() !== "" &&
-            values.endDate.trim() !== "";
+            (typeof values.beginDate === 'string' ? values.beginDate.trim() !== "" : !!values.beginDate) &&
+            (typeof values.endDate === 'string' ? values.endDate.trim() !== "" : !!values.endDate);
           
           // Check if at least one complete address is added
           const hasValidAddress = values.addresses.some(addr => 
@@ -1198,10 +1198,10 @@ ProjectInfoFormProps) => {
                   setFieldValue("status", "draft");
                   submitForm();
                 }}
-                disabled={!hasMinimumContent()}
+                disabled={!dirty || !hasMinimumContent()}
                 loading={loading && values.status === "draft"}
                 className={`px-6 py-3 bg-white rounded-lg text-primary-150 font-medium flex items-center justify-center gap-2 shadow-md hover:bg-gray-50 w-full md:w-auto ${
-                  !hasMinimumContent() ? 'opacity-50 cursor-not-allowed' : ''
+                  (!dirty || !hasMinimumContent()) ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
                 <SaveDraftIcon
@@ -1219,10 +1219,10 @@ ProjectInfoFormProps) => {
                   setFieldValue("status", "publish");
                   submitForm();
                 }}
-                disabled={!hasAllRequiredFields()}
+                disabled={!dirty || !hasAllRequiredFields()}
                 loading={loading && values.status === "publish"}
                 className={`px-6 py-3 bg-primary-150 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary-200 w-full md:w-auto ${
-                  !hasAllRequiredFields() ? 'opacity-50 cursor-not-allowed' : ''
+                  (!dirty || !hasAllRequiredFields()) ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
                 {t("submit")}
