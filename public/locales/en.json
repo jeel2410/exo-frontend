@@ -244,6 +244,7 @@
   "begin_date_cannot_be_in_past": "Begin date cannot be in the past",
   "end_date_must_be_after_begin_date": "End date must be after begin date",
   "description_max_500_characters": "Description cannot exceed 500 characters",
+  "description_max_2500_characters": "Description cannot exceed 2500 characters",
   "country_is_required": "Country is required",
   "province_is_required": "Province is required",
   "city_is_required": "City is required",
@@ -563,5 +564,7 @@
   "please_select_a_tax_category": "Please select a tax category",
   "the_table_will_be_displayed_once_you_select_a_tax_category_from_the_dropdown_above": "The table will be displayed once you select a tax category from the dropdown above.",
   "rate": "Rate",
-  "no_entities_added_yet_click_add_entity_to_get_started": "No entities added yet. Click \"Add Entity\" to get started."
+  "no_entities_added_yet_click_add_entity_to_get_started": "No entities added yet. Click \"Add Entity\" to get started.",
+  "contract_document_required": "At least one contract document is required",
+  "project_files_required": "At least one project file is required"
 }

@@ -243,6 +243,7 @@
   "begin_date_cannot_be_in_past": "La date de début ne peut pas être dans le passé",
   "end_date_must_be_after_begin_date": "La date de fin doit être postérieure à la date de début",
   "description_max_500_characters": "La description ne peut pas dépasser 500 caractères",
+  "description_max_2500_characters": "La description ne peut pas dépasser 2500 caractères",
   "country_is_required": "Le pays est requis",
   "province_is_required": "La province est requise",
   "city_is_required": "La ville est requise",
@@ -561,5 +562,7 @@
   "please_select_a_tax_category": "Veuillez sélectionner une catégorie de taxe",
   "the_table_will_be_displayed_once_you_select_a_tax_category_from_the_dropdown_above": "Le tableau s'affichera une fois que vous aurez sélectionné une catégorie de taxe dans la liste déroulante ci-dessus.",
   "rate": "Taux",
-  "no_entities_added_yet_click_add_entity_to_get_started": "Aucune entité ajoutée pour le moment. Cliquez sur \"Ajouter une entité\" pour commencer."
+  "no_entities_added_yet_click_add_entity_to_get_started": "Aucune entité ajoutée pour le moment. Cliquez sur \"Ajouter une entité\" pour commencer.",
+  "contract_document_required": "Au moins un document contractuel est requis",
+  "project_files_required": "Au moins un fichier de projet est requis"
 }

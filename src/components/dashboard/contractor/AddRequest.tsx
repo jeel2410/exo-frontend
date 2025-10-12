@@ -248,6 +248,68 @@ const AddRequest = () => {
     setData(recalculateTableData(newData));
   };
 
+  // Function to check if all required fields are filled
+  const isFormValid = () => {
+    // Check if addresses are selected
+    if (selectedAddresses.length === 0) return false;
+    
+    // Check if request letter is filled
+    if (!requestLetter || requestLetter.trim() === "") return false;
+    
+    // Check if tax category is selected
+    if (!financialAuthority) return false;
+    
+    // Check if at least one entity is added
+    if (data.length === 0) return false;
+    
+    // Check if all entities have required fields filled
+    const hasInvalidEntities = data.some(entity => {
+      if (!entity.label || !entity.quantity || !entity.unitPrice) return true;
+      
+      // Additional validation based on tax category
+      if (financialAuthority === "location_acquisition") {
+        return !entity.customDuty || !entity.natureOfOperations;
+      }
+      
+      if (financialAuthority === "importation") {
+        return !entity.customDuty || !entity.tarrifPosition;
+      }
+      
+      return false;
+    });
+    
+    if (hasInvalidEntities) return false;
+    
+    // Check mandatory file requirements
+    if (financialAuthority === "location_acquisition") {
+      const mandatoryDocNames = ["Facture émise par le fournisseur"];
+      const mandatoryFilesUploaded = uploadedFiles.filter((file) => {
+        const fileName = file.original_name || "";
+        return mandatoryDocNames.some((docName) => 
+          fileName.toLowerCase().includes(docName.toLowerCase()) ||
+          docName.toLowerCase().includes(fileName.toLowerCase())
+        );
+      });
+      if (mandatoryFilesUploaded.length < 1) return false;
+    } else if (financialAuthority === "importation") {
+      const mandatoryDocNames = [
+        "Letter de transport, note de fret, note d'assurance",
+        "Déclaration pour I'importation Conditionnelle <<IC>>",
+        "Facture émise par le fournisseur",
+      ];
+      const mandatoryFilesUploaded = uploadedFiles.filter((file) => {
+        const fileName = file.original_name || "";
+        return mandatoryDocNames.some((docName) => 
+          fileName.toLowerCase().includes(docName.toLowerCase()) ||
+          docName.toLowerCase().includes(fileName.toLowerCase())
+        );
+      });
+      if (mandatoryFilesUploaded.length < 3) return false;
+    }
+    
+    return true;
+  };
+
   const handleEditComplete = () => {
     // Previously cleared auto-edit mode, now just a placeholder for completion callback
     console.log("Edit complete");
@@ -1183,10 +1245,14 @@ const AddRequest = () => {
           <Button
             type="submit"
             onClick={handleSubmit}
-            disable={createRequestMutation.isPending}
+            disable={createRequestMutation.isPending || !isFormValid()}
             loading={createRequestMutation.isPending}
             variant="primary"
-            className="flex items-center w-full md:w-fit gap-1 py-2 mt-4 justify-center"
+            className={`flex items-center w-full md:w-fit gap-1 py-2 mt-4 justify-center ${
+              !isFormValid() && !createRequestMutation.isPending 
+                ? 'opacity-50 cursor-not-allowed' 
+                : ''
+            }`}
           >
             {requestId ? t("update_request") : t("submit_request")}
           </Button>

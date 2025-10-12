@@ -380,7 +380,7 @@ ProjectInfoFormProps) => {
           return endDate > startDate;
         }
       ),
-    description: Yup.string().max(500, t("description_max_500_characters")),
+    description: Yup.string().max(2500, t("description_max_2500_characters")),
     addresses: Yup.array().of(
       Yup.object().shape({
         country: Yup.string().required(t("country_is_required")),
@@ -632,6 +632,8 @@ ProjectInfoFormProps) => {
         handleBlur,
         submitForm,
         resetForm,
+        isValid,
+        dirty,
       }) => {
         useEffect(() => {
           if (isFormResetRequested) {
@@ -641,6 +643,43 @@ ProjectInfoFormProps) => {
             setIsFormResetRequested(false);
           }
         }, [isFormResetRequested, resetForm, setFieldValue]);
+
+        // Helper function to check if at least one field is filled (for Save as Draft)
+        const hasMinimumContent = () => {
+          return (
+            values.projectName.trim() !== "" ||
+            values.fundedBy.trim() !== "" ||
+            values.projectReference.trim() !== "" ||
+            values.amount.trim() !== "" ||
+            values.beginDate.trim() !== "" ||
+            values.endDate.trim() !== "" ||
+            values.description.trim() !== "" ||
+            values.addresses.length > 0 ||
+            values.files.length > 0
+          );
+        };
+
+        // Helper function to check if all required fields are filled (for Submit)
+        const hasAllRequiredFields = () => {
+          // Check core required fields
+          const coreFieldsValid = 
+            values.projectName.trim() !== "" &&
+            values.fundedBy.trim() !== "" &&
+            values.projectReference.trim() !== "" &&
+            values.amount.trim() !== "" &&
+            values.beginDate.trim() !== "" &&
+            values.endDate.trim() !== "";
+          
+          // Check if at least one complete address is added
+          const hasValidAddress = values.addresses.some(addr => 
+            addr.country && addr.province && addr.city && addr.municipality
+          );
+          
+          // Check if at least one document is uploaded
+          const hasRequiredDocuments = values.files.length > 0;
+          
+          return coreFieldsValid && hasValidAddress && hasRequiredDocuments && isValid;
+        };
 
         return (
           <Form>
@@ -862,7 +901,7 @@ ProjectInfoFormProps) => {
                   <TextEditor
                     key={`description-${formResetKey}`}
                     placeholder={t("write_here")}
-                    maxLength={100}
+                    maxLength={2500}
                     initialValue={values.description || ""}
                     onChange={(value: string) =>
                       setFieldValue("description", value)
@@ -1121,7 +1160,10 @@ ProjectInfoFormProps) => {
                 </div>
 
                 <div>
-                  <Label>{t("upload_files")}</Label>
+                  <Label>
+                    {t("upload_files")}
+                    <span className="text-red-500">*</span>
+                  </Label>
                   <UploadFile
                     maxSize={2}
                     acceptedFormats={[".pdf"]}
@@ -1140,6 +1182,11 @@ ProjectInfoFormProps) => {
                     }}
                     onRenameFile={handleRenameFile}
                   />
+                  {values.files.length === 0 && hasMinimumContent() && (
+                    <Typography size="sm" className="text-red-500 mt-1">
+                      {t("project_files_required")}
+                    </Typography>
+                  )}
                 </div>
               </div>
             </div>
@@ -1151,8 +1198,11 @@ ProjectInfoFormProps) => {
                   setFieldValue("status", "draft");
                   submitForm();
                 }}
+                disabled={!hasMinimumContent()}
                 loading={loading && values.status === "draft"}
-                className="px-6 py-3 bg-white rounded-lg text-primary-150 font-medium flex items-center justify-center gap-2 shadow-md hover:bg-gray-50 w-full md:w-auto"
+                className={`px-6 py-3 bg-white rounded-lg text-primary-150 font-medium flex items-center justify-center gap-2 shadow-md hover:bg-gray-50 w-full md:w-auto ${
+                  !hasMinimumContent() ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
                 <SaveDraftIcon
                   width={20}
@@ -1169,8 +1219,11 @@ ProjectInfoFormProps) => {
                   setFieldValue("status", "publish");
                   submitForm();
                 }}
+                disabled={!hasAllRequiredFields()}
                 loading={loading && values.status === "publish"}
-                className="px-6 py-3 bg-primary-150 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary-200 w-full md:w-auto"
+                className={`px-6 py-3 bg-primary-150 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary-200 w-full md:w-auto ${
+                  !hasAllRequiredFields() ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
                 {t("submit")}
                 <ArrowRightIconButton
