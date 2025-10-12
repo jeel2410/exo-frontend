@@ -459,7 +459,7 @@
   "contract_reference": "Contract Number/Reference",
   "contract_reference_placeholder": "Enter contract reference number",
   "contract_amount": "Contract Amount",
-  "contracting_executing_agency": "Executing Agency",
+  "contracting_executing_agency": "Implementing Agency",
   "agency_name": "Agency Name",
   "agency_name_placeholder": "Enter agency name",
   "authorized_person_name": "Authorized Person Name",
@@ -485,7 +485,7 @@
   "invalid_finance_by_selection": "Please select a valid finance option",
   "basic_details": "Basic Details",
   "legacy_info": "Legacy Information",
-  "contracting_agency": "Contracting Agency",
+  "contracting_agency": "Implementing Agency",
   "awarded_company": "Awarded Company",
   "person_name": "Person Name",
   "person_position": "Person Position",
@@ -562,5 +562,6 @@
   "total_covered_amount": "Covered Amount",
   "please_select_a_tax_category": "Please select a tax category",
   "the_table_will_be_displayed_once_you_select_a_tax_category_from_the_dropdown_above": "The table will be displayed once you select a tax category from the dropdown above.",
-  "rate": "Rate"
+  "rate": "Rate",
+  "no_entities_added_yet_click_add_entity_to_get_started": "No entities added yet. Click \"Add Entity\" to get started."
 }

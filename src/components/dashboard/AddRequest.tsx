@@ -664,7 +664,7 @@ const AddRequest = () => {
           <Label htmlFor="requestLetter">{t("request_letter")}</Label>
           <TextEditor
             placeholder="Write here..."
-            maxLength={100}
+            maxLength={2500}
             initialValue={requestLetter}
             onChange={(value) => {
               setRequestLetter(value);

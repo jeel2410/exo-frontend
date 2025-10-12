@@ -462,7 +462,7 @@
   "contract_reference": "Numéro/Référence du contrat",
   "contract_reference_placeholder": "Entrez le numéro de référence du contrat",
   "contract_amount": "Montant du contrat",
-  "contracting_executing_agency": "Agence exécutante",
+  "contracting_executing_agency": "Agence de mise en œuvre",
   "agency_name": "Nom de l'agence",
   "agency_name_placeholder": "Entrez le nom de l'agence",
   "authorized_person_name": "Nom de la personne autorisée",
@@ -486,7 +486,7 @@
   "rewarded_authorized_person_position_required": "Le poste de la personne autorisée est requis",
   "basic_details": "Détails de base",
   "legacy_info": "Informations héritées",
-  "contracting_agency": "Agence d'execution",
+  "contracting_agency": "Agence de mise en œuvre",
   "awarded_company": "Entreprise attributaire",
   "person_name": "Nom de la personne",
   "person_position": "Poste de la personne",
@@ -560,5 +560,6 @@
   "total_covered_amount": "Montant couvert",
   "please_select_a_tax_category": "Veuillez sélectionner une catégorie de taxe",
   "the_table_will_be_displayed_once_you_select_a_tax_category_from_the_dropdown_above": "Le tableau s'affichera une fois que vous aurez sélectionné une catégorie de taxe dans la liste déroulante ci-dessus.",
-  "rate": "Taux"
+  "rate": "Taux",
+  "no_entities_added_yet_click_add_entity_to_get_started": "Aucune entité ajoutée pour le moment. Cliquez sur \"Ajouter une entité\" pour commencer."
 }

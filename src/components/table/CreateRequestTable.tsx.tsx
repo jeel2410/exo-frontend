@@ -1030,7 +1030,7 @@ const CreateRequestTable = ({
                       colSpan={tableHeader.length}
                       className="px-5 py-8 text-center text-gray-500"
                     >
-                      No entities added yet. Click "Add Entity" to get started.
+                      {t("no_entities_added_yet_click_add_entity_to_get_started")}
                     </TableCell>
                   </TableRow>
                 ) : (
