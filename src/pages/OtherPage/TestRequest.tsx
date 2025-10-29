@@ -53,7 +53,7 @@ const TestRequest = () => {
         </div>
         <div className="mt-6">
           <Label htmlFor="requestLetter">{t("request_letter")}</Label>
-          <TextEditor placeholder="Write here..." maxLength={100} />
+          <TextEditor placeholder="Write here..." maxLength={2500} />
         </div>
         <div className="">
           <Typography size="base" weight="normal" className="text-secondary-60">

@@ -69,6 +69,8 @@ const mapStageToTranslationKey = (stage: string): string => {
       return "calculation_notes_transmission";
     case "fopreparation":
       return "fo_preparation";
+    case "fovalidation":
+      return "fo_validation";
     case "transmissiontosecretariat":
       return "transmission_to_secretariat";
     case "coordinatorfinalvalidation":

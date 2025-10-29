@@ -261,7 +261,7 @@ const ContractInfoForm = ({
       validationSchema={validationSchema}
       onSubmit={onSubmit}
     >
-      {({ values, setFieldValue, touched, errors, validateField }) => (
+      {({ values, setFieldValue, touched, errors, validateField, isValid, dirty }) => (
         <Form className="space-y-6">
           <div className="mb-6">
             <Typography
@@ -564,7 +564,10 @@ const ContractInfoForm = ({
             </Typography>
             
             <div>
-              <Label>{t("upload_contract_files")}</Label>
+              <Label>
+                {t("upload_contract_files")}
+                <span className="text-red-500">*</span>
+              </Label>
               <Typography size="sm" className="text-secondary-60 mb-2">
                 {t("contract_document_description")}
               </Typography>
@@ -592,6 +595,11 @@ const ContractInfoForm = ({
                 maxSize={2}
                 acceptedFormats={[".pdf"]}
               />
+              {values.contractFiles.length === 0 && dirty && (
+                <Typography size="sm" className="text-red-500 mt-1">
+                  {t("contract_document_required")}
+                </Typography>
+              )}
             </div>
           </div>
 
@@ -599,8 +607,10 @@ const ContractInfoForm = ({
             <Button
               variant="primary"
               type="submit"
-              //   form="project-form"
-              className="px-6 py-3 bg-primary-150 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary-200 w-full md:w-auto"
+              disabled={!isValid || !dirty || values.contractFiles.length === 0}
+              className={`px-6 py-3 bg-primary-150 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary-200 w-full md:w-auto ${
+                (!isValid || !dirty || values.contractFiles.length === 0) ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               {t("next")}
               <ArrowRightIconButton

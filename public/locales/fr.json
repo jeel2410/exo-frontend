@@ -243,6 +243,7 @@
   "begin_date_cannot_be_in_past": "La date de début ne peut pas être dans le passé",
   "end_date_must_be_after_begin_date": "La date de fin doit être postérieure à la date de début",
   "description_max_500_characters": "La description ne peut pas dépasser 500 caractères",
+  "description_max_2500_characters": "La description ne peut pas dépasser 2500 caractères",
   "country_is_required": "Le pays est requis",
   "province_is_required": "La province est requise",
   "city_is_required": "La ville est requise",
@@ -356,6 +357,7 @@
   "financial_review": "Examen financier",
   "calculation_notes_transmission": "Transmission des notes de calcul",
   "fo_preparation": "Préparation FO",
+  "fo_validation": "Validation FO",
   "transmission_to_secretariat": "Transmission au secrétariat",
   "coordinator_final_validation": "Validation finale du coordinateur",
   "custom_duties": "Type de taxes",
@@ -461,7 +463,7 @@
   "contract_reference": "Numéro/Référence du contrat",
   "contract_reference_placeholder": "Entrez le numéro de référence du contrat",
   "contract_amount": "Montant du contrat",
-  "contracting_executing_agency": "Agence exécutante",
+  "contracting_executing_agency": "Agence de mise en œuvre",
   "agency_name": "Nom de l'agence",
   "agency_name_placeholder": "Entrez le nom de l'agence",
   "authorized_person_name": "Nom de la personne autorisée",
@@ -485,7 +487,7 @@
   "rewarded_authorized_person_position_required": "Le poste de la personne autorisée est requis",
   "basic_details": "Détails de base",
   "legacy_info": "Informations héritées",
-  "contracting_agency": "Agence d'execution",
+  "contracting_agency": "Agence de mise en œuvre",
   "awarded_company": "Entreprise attributaire",
   "person_name": "Nom de la personne",
   "person_position": "Poste de la personne",
@@ -559,5 +561,8 @@
   "total_covered_amount": "Montant couvert",
   "please_select_a_tax_category": "Veuillez sélectionner une catégorie de taxe",
   "the_table_will_be_displayed_once_you_select_a_tax_category_from_the_dropdown_above": "Le tableau s'affichera une fois que vous aurez sélectionné une catégorie de taxe dans la liste déroulante ci-dessus.",
-  "rate": "Taux"
+  "rate": "Taux",
+  "no_entities_added_yet_click_add_entity_to_get_started": "Aucune entité ajoutée pour le moment. Cliquez sur \"Ajouter une entité\" pour commencer.",
+  "contract_document_required": "Au moins un document contractuel est requis",
+  "project_files_required": "Au moins un fichier de projet est requis"
 }
