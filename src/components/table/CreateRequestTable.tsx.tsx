@@ -726,7 +726,13 @@ const CreateRequestTable = ({
           className: "w-16",
         },
         {
-          content: <div>{safeTrans("reference", "Reference")}</div>,
+          content: (
+            <div>
+              {currentTaxCategory === "importation"
+                ? safeTrans("reference_it_ic", "IT/IC No")
+                : safeTrans("reference", "Invoice No")}
+            </div>
+          ),
           className: "w-36 min-w-[140px]",
         },
         // Add Issue Date column only for local acquisition

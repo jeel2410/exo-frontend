@@ -3,7 +3,7 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 import Button from "../../lib/components/atoms/Button";
 import { ContractDetails } from "../../pages/Dashboard/contractor/ContractListPage";
-import { USFlag, CDFFlag } from "../../icons";
+import { USFlag, CDFFlag, EURFlag, GBPFlag } from "../../icons";
 import { formatAmount } from "../../utils/numberFormat";
 
 export interface TableHeader {
@@ -186,11 +186,10 @@ const SelectContractTable: React.FC<SelectContractTableProps> = ({
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 min-w-[140px]">
                       <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
-                        {contract.currency === "USD" ? (
-                          <USFlag width={20} height={12} />
-                        ) : contract.currency === "CDF" ? (
-                          <CDFFlag width={20} height={12} />
-                        ) : null}
+                        {contract.currency === "USD" && <USFlag width={20} height={12} />}
+                        {contract.currency === "CDF" && <CDFFlag width={20} height={12} />}
+                        {contract.currency === "EUR" && <EURFlag width={20} height={12} />}
+                        {contract.currency === "GBP" && <GBPFlag width={20} height={12} />}
                         <span className="text-gray-600 text-xs">
                           {contract.currency}
                         </span>

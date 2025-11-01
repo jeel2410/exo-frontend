@@ -501,14 +501,22 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Reference */}
             <div>
-              <Label htmlFor="reference">{t("reference")}</Label>
+              <Label htmlFor="reference">
+                {currentTaxCategory === "importation"
+                  ? t("reference_it_ic")
+                  : t("reference")}
+              </Label>
               <Input
                 id="reference"
                 name="reference"
                 type="text"
                 value={formData.reference || ""}
                 onChange={(e) => handleInputChange("reference", e.target.value)}
-                placeholder={t("add_reference")}
+                placeholder={
+                  currentTaxCategory === "importation"
+                    ? t("add_it_ic_reference")
+                    : t("add_reference")
+                }
                 className="!bg-white"
               />
             </div>

@@ -110,7 +110,7 @@ const RequestDetailModal = ({
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
+                  currency={(requestDetails?.contract_currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
                   variant="green"
                   width={36}
                   height={36}
@@ -122,7 +122,7 @@ const RequestDetailModal = ({
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
+                  currency={(requestDetails?.contract_currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
                   variant="violet"
                   width={36}
                   height={36}
@@ -134,7 +134,7 @@ const RequestDetailModal = ({
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
+                  currency={(requestDetails?.contract_currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
                   variant="orange"
                   width={36}
                   height={36}
@@ -146,7 +146,7 @@ const RequestDetailModal = ({
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
+                  currency={(requestDetails?.contract_currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
                   variant="green"
                   width={36}
                   height={36}
@@ -158,7 +158,7 @@ const RequestDetailModal = ({
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(requestDetails?.contract_currency as "USD" | "CDF") || "USD"}
+                  currency={(requestDetails?.contract_currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
                   variant="violet"
                   width={36}
                   height={36}

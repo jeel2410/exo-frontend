@@ -6,6 +6,8 @@ import {
   PlusIcon,
   USFlag,
   CDFFlag,
+  EURFlag,
+  GBPFlag,
 } from "../../icons";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -284,11 +286,10 @@ const ContractListTable = ({
             {contract.contractName}
           </p>
           <div className="flex items-center space-x-2 mb-2 flex-wrap">
-            {contract.currency === "USD" ? (
-              <USFlag width={16} height={10} />
-            ) : contract.currency === "CDF" ? (
-              <CDFFlag width={16} height={10} />
-            ) : null}
+            {contract.currency === "USD" && <USFlag width={16} height={10} />}
+            {contract.currency === "CDF" && <CDFFlag width={16} height={10} />}
+            {contract.currency === "EUR" && <EURFlag width={16} height={10} />}
+            {contract.currency === "GBP" && <GBPFlag width={16} height={10} />}
             <span className="text-xs text-gray-600">{contract.currency}</span>
             <span className="font-medium text-secondary-100 text-sm">
               {formatAmount(contract.amountOfContract)}
@@ -548,11 +549,10 @@ const ContractListTable = ({
                       </TableCell>
                       <TableCell className="px-5 py-4 sm:px-6 min-w-[140px]">
                         <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
-                          {data.currency === "USD" ? (
-                            <USFlag width={20} height={12} />
-                          ) : data.currency === "CDF" ? (
-                            <CDFFlag width={20} height={12} />
-                          ) : null}
+                          {data.currency === "USD" && <USFlag width={20} height={12} />}
+                          {data.currency === "CDF" && <CDFFlag width={20} height={12} />}
+                          {data.currency === "EUR" && <EURFlag width={20} height={12} />}
+                          {data.currency === "GBP" && <GBPFlag width={20} height={12} />}
                           <span className="text-gray-600 text-xs">
                             {data.currency}
                           </span>

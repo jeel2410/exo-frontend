@@ -6,7 +6,7 @@ import Label from "../../../lib/components/atoms/Label";
 import Input from "../../../lib/components/atoms/Input";
 import CurrencyInput from "../../../lib/components/atoms/CurrencyInput";
 import DatePicker from "../../../lib/components/atoms/DatePicker";
-import { ArrowRightIconButton, CDFFlag, USFlag } from "../../../icons";
+import { ArrowRightIconButton, CDFFlag, USFlag, EURFlag, GBPFlag } from "../../../icons";
 import Button from "../../../lib/components/atoms/Button";
 import Typography from "../../../lib/components/atoms/Typography";
 import moment from "moment";
@@ -94,6 +94,16 @@ const ContractInfoForm = ({
       value: "CDF",
       label: "CDF",
       flag: <CDFFlag className="w-5 h-4" />,
+    },
+    {
+      value: "EUR",
+      label: "EUR",
+      flag: <EURFlag className="w-5 h-4" />,
+    },
+    {
+      value: "GBP",
+      label: "GBP",
+      flag: <GBPFlag className="w-5 h-4" />,
     },
   ];
 

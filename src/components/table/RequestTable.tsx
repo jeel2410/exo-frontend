@@ -7,7 +7,7 @@ import {
   TableRow,
   TableHeader as TableHeaderType,
 } from "./CreateRequestTable.tsx.tsx";
-import { CrossRedIcon, RightGreenIcon, USFlag, CDFFlag } from "../../icons";
+import { CrossRedIcon, RightGreenIcon, USFlag, CDFFlag, EURFlag, GBPFlag } from "../../icons";
 import Typography from "../../lib/components/atoms/Typography.tsx";
 import { useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
@@ -399,11 +399,10 @@ const RequestTable = ({
                         </div>
                       ) : (
                         <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
-                          {data.currency === "USD" ? (
-                            <USFlag width={24} height={14} />
-                          ) : data.currency === "CDF" ? (
-                            <CDFFlag width={24} height={14} />
-                          ) : null}
+                          {data.currency === "USD" && <USFlag width={24} height={14} />}
+                          {data.currency === "CDF" && <CDFFlag width={24} height={14} />}
+                          {data.currency === "EUR" && <EURFlag width={24} height={14} />}
+                          {data.currency === "GBP" && <GBPFlag width={24} height={14} />}
                           <span className="text-gray-600">
                             {data.currency || "USD"}
                           </span>

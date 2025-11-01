@@ -20,7 +20,7 @@ export interface ProjectProps {
   name: string;
   funded_by: string;
   reference: string;
-  currency: "USD" | "CDF";
+  currency: "USD" | "CDF" | "EUR" | "GBP";
   amount: string;
   begin_date: string;
   end_date: string;

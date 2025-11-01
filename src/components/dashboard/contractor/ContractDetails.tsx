@@ -335,7 +335,7 @@ const ContractDetails = () => {
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(contractData?.currency as "USD" | "CDF") || "CDF"}
+                  currency={(contractData?.currency as "USD" | "CDF" | "EUR" | "GBP") || "CDF"}
                   variant="violet"
                   width={32}
                   height={32}

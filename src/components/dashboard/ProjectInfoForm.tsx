@@ -14,13 +14,14 @@ import {
   TrashIcon,
   WhitePlusIcon,
 } from "../../icons";
-import { USFlag, CDFFlag } from "../../icons";
+import { USFlag, CDFFlag, EURFlag, GBPFlag } from "../../icons";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import projectService from "../../services/project.service";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../../lib/components/atoms/Button";
 import CustomDropdown from "../../lib/components/atoms/CustomDropdown";
+import MultiSelectDropdown from "../../lib/components/atoms/MultiSelectDropdown";
 import fundedByOptionsService from "../../services/fundedByOptions.service";
 
 interface ProjectInfoFormProps {
@@ -42,7 +43,7 @@ interface Address {
 
 interface ProjectFormValues {
   projectName: string;
-  fundedBy: string;
+  fundedBy: string[]; // Changed to array for multiple selection
   projectReference: string;
   amount: string;
   currency: string;
@@ -276,6 +277,16 @@ ProjectInfoFormProps) => {
       label: "CDF",
       flag: <CDFFlag className="w-5 h-4" />,
     },
+    {
+      value: "EUR",
+      label: "EUR",
+      flag: <EURFlag className="w-5 h-4" />,
+    },
+    {
+      value: "GBP",
+      label: "GBP",
+      flag: <GBPFlag className="w-5 h-4" />,
+    },
   ];
 
   // API-driven Funded By options state
@@ -336,7 +347,7 @@ ProjectInfoFormProps) => {
 
   const defaultInitialValues: ProjectFormValues = {
     projectName: "",
-    fundedBy: "",
+    fundedBy: [], // Changed to empty array
     projectReference: "",
     amount: "",
     currency: "USD",
@@ -353,9 +364,9 @@ ProjectInfoFormProps) => {
     projectName: Yup.string()
       .required(t("project_name_is_required"))
       .min(3, t("project_name_must_be_at_least_3_characters")),
-    fundedBy: Yup.string()
-      .required(t("finance_by_is_required"))
-      .min(2, t("funded_by_must_be_at_least_2_characters")),
+    fundedBy: Yup.array()
+      .of(Yup.string())
+      .min(1, t("finance_by_is_required")),
     projectReference: Yup.string().required(t("project_reference_is_required")),
     amount: Yup.string()
       .required(t("amount_is_required"))
@@ -384,9 +395,9 @@ ProjectInfoFormProps) => {
     addresses: Yup.array().of(
       Yup.object().shape({
         country: Yup.string().required(t("country_is_required")),
-        province: Yup.string().required(t("province_is_required")),
-        city: Yup.string().required(t("city_is_required")),
-        municipality: Yup.string().required(t("municipality_is_required")),
+        province: Yup.string(), // Optional
+        city: Yup.string(), // Optional
+        municipality: Yup.string(), // Optional
       })
     ),
   });
@@ -419,6 +430,7 @@ ProjectInfoFormProps) => {
     };
     const updatedAddresses = [...addresses, newAddress];
     setFieldValue("addresses", updatedAddresses);
+    // Auto-open country dropdown by default
     setEditingState({ addressId: newAddress.id, field: "country" });
   };
 
@@ -648,7 +660,7 @@ ProjectInfoFormProps) => {
         const hasMinimumContent = () => {
           return (
             values.projectName.trim() !== "" ||
-            values.fundedBy.trim() !== "" ||
+            values.fundedBy.length > 0 ||
             values.projectReference.trim() !== "" ||
             values.amount.trim() !== "" ||
             (typeof values.beginDate === 'string' ? values.beginDate.trim() !== "" : !!values.beginDate) ||
@@ -664,21 +676,18 @@ ProjectInfoFormProps) => {
           // Check core required fields
           const coreFieldsValid = 
             values.projectName.trim() !== "" &&
-            values.fundedBy.trim() !== "" &&
+            values.fundedBy.length > 0 &&
             values.projectReference.trim() !== "" &&
             values.amount.trim() !== "" &&
             (typeof values.beginDate === 'string' ? values.beginDate.trim() !== "" : !!values.beginDate) &&
             (typeof values.endDate === 'string' ? values.endDate.trim() !== "" : !!values.endDate);
           
-          // Check if at least one complete address is added
-          const hasValidAddress = values.addresses.some(addr => 
-            addr.country && addr.province && addr.city && addr.municipality
-          );
+          // Address is now optional - no validation needed
           
           // Check if at least one document is uploaded
           const hasRequiredDocuments = values.files.length > 0;
           
-          return coreFieldsValid && hasValidAddress && hasRequiredDocuments && isValid;
+          return coreFieldsValid && hasRequiredDocuments && isValid;
         };
 
         return (
@@ -724,18 +733,12 @@ ProjectInfoFormProps) => {
                   <Label htmlFor="fundedBy">
                     {t("finance_by")} <span className="text-red-500">*</span>
                   </Label>
-                  <CustomDropdown
+                  <MultiSelectDropdown
                     id="fundedBy"
                     name="fundedBy"
-                    options={(function(){
-                      // Ensure current value is present so label renders, even if not in the fetched page
-                      const exists = fundedByOptions.some(o => o.value === values.fundedBy);
-                      return exists || !values.fundedBy
-                        ? fundedByOptions
-                        : [{ value: values.fundedBy, label: values.fundedBy }, ...fundedByOptions];
-                    })()}
+                    options={fundedByOptions}
                     value={values.fundedBy}
-                    onChange={(value) => setFieldValue("fundedBy", value)}
+                    onChange={(values) => setFieldValue("fundedBy", values)}
                     onBlur={() => handleBlur("fundedBy")}
                     placeholder={t("select_finance_by")}
                     error={touched.fundedBy && !!errors.fundedBy}
@@ -969,10 +972,7 @@ ProjectInfoFormProps) => {
                                       "country",
                                       value
                                     );
-                                    // Auto-open next dropdown (province)
-                                    setTimeout(() => {
-                                      startEditing(address.id, "province");
-                                    }, 100);
+                                    stopEditing();
                                   }}
                                   onBlur={stopEditing}
                                   placeholder={t("select_country")}
@@ -1008,10 +1008,7 @@ ProjectInfoFormProps) => {
                                       "province",
                                       value
                                     );
-                                    // Auto-open next dropdown (city)
-                                    setTimeout(() => {
-                                      startEditing(address.id, "city");
-                                    }, 100);
+                                    stopEditing();
                                   }}
                                   onBlur={stopEditing}
                                   placeholder={t("select_province")}
@@ -1054,10 +1051,7 @@ ProjectInfoFormProps) => {
                                       "city",
                                       value
                                     );
-                                    // Auto-open next dropdown (municipality)
-                                    setTimeout(() => {
-                                      startEditing(address.id, "municipality");
-                                    }, 100);
+                                    stopEditing();
                                   }}
                                   onBlur={stopEditing}
                                   placeholder={t("select_city")}

@@ -384,6 +384,17 @@ const UploadFile: React.FC<FileUploadProps> = ({
     setAdditionalDocs((prev) => [...prev, newRow]);
   };
 
+  const addMoreMandatoryRow = () => {
+    const newRow: DocumentRow = {
+      id: `mandatory_${Date.now()}`,
+      name: "",
+      isUploaded: false,
+      isMandatory: true,
+      isNameEditable: true,
+    };
+    setMandatoryDocs((prev) => [...prev, newRow]);
+  };
+
   const removeRow = async (rowId: string) => {
     const mandatoryRow = mandatoryDocs.find((r) => r.id === rowId);
     const additionalRow = additionalDocs.find((r) => r.id === rowId);
@@ -393,8 +404,35 @@ const UploadFile: React.FC<FileUploadProps> = ({
 
     // Allow deletion of mandatory documents for replacement - just reset the row instead of preventing deletion
     if (row.isMandatory && row.isUploaded) {
-      // Reset the mandatory document row instead of deleting it
-      if (row.uploadedFile && onDeleteFile) {
+      // For custom added mandatory rows (editable name), allow full deletion
+      if (row.isNameEditable && row.uploadedFile && onDeleteFile) {
+        setRemovingFile(true);
+        try {
+          const response = await onDeleteFile(row.uploadedFile.id);
+          if (response?.status) {
+            // Remove the row entirely for custom mandatory docs
+            setMandatoryDocs((prev) => prev.filter((r) => r.id !== rowId));
+
+            // Update parent component
+            const remainingFiles = [...mandatoryDocs, ...additionalDocs]
+              .filter((r) => r.id !== rowId && r.isUploaded && r.uploadedFile)
+              .map((r) => r.uploadedFile!)
+              .filter((file): file is UploadedFile => Boolean(file));
+
+            onFilesSelect?.(remainingFiles);
+            setError("");
+          }
+        } catch (error) {
+          console.error("Error removing file:", error);
+          setError("Failed to remove file. Please try again.");
+        } finally {
+          setRemovingFile(false);
+        }
+      } else if (row.isNameEditable && !row.uploadedFile) {
+        // Just remove the row if no file uploaded and it's a custom mandatory doc
+        setMandatoryDocs((prev) => prev.filter((r) => r.id !== rowId));
+      } else if (row.uploadedFile && onDeleteFile) {
+        // For preset mandatory documents (non-editable name), reset instead of delete
         setRemovingFile(true);
         try {
           const response = await onDeleteFile(row.uploadedFile.id);
@@ -869,6 +907,39 @@ const UploadFile: React.FC<FileUploadProps> = ({
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Add More Button for Mandatory Documents */}
+            <div className="mt-4">
+              <button
+                onClick={addMoreMandatoryRow}
+                type="button"
+                className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 5V19"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M5 12H19"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="font-medium">{t("add_more")}</span>
+              </button>
             </div>
           </div>
         </div>

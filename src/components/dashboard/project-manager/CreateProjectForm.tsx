@@ -15,7 +15,7 @@ import { useLoading } from "../../../context/LoaderProvider";
 
 interface ProjectFormValues {
   projectName: string;
-  fundedBy: string;
+  fundedBy: string[]; // Changed to array for multiple selection
   projectReference: string;
   amount: string;
   currency: string;
@@ -35,7 +35,7 @@ interface ProjectFormValues {
 
 const initialValues: ProjectFormValues = {
   projectName: "",
-  fundedBy: "",
+  fundedBy: [], // Changed to empty array
   projectReference: "",
   amount: "",
   currency: "USD",
@@ -96,7 +96,7 @@ const CreateProjectForm = () => {
 
     const payload = {
       name: values.projectName,
-      funded_by: values.fundedBy,
+      funded_by: values.fundedBy.join(','), // Convert array to comma-separated string
       reference: values.projectReference,
       currency: values.currency,
       amount: values.amount,
@@ -150,7 +150,7 @@ const CreateProjectForm = () => {
 
       const newData = {
         projectName: projectData.name,
-        fundedBy: projectData.funded_by,
+        fundedBy: projectData.funded_by ? projectData.funded_by.split(',').map((s: string) => s.trim()) : [], // Convert comma-separated string to array
         projectReference: projectData.reference,
         amount: projectData.amount.toString(),
         currency: projectData.currency,

@@ -41,6 +41,12 @@ import { ReactComponent as CongratulationIcon } from "./congratulation-icon.svg?
 import { ReactComponent as UsdGreenIcon } from "./usd-green.svg?react";
 import { ReactComponent as UsdOrangeIcon } from "./usd-orange.svg?react";
 import { ReactComponent as UsdVioletIcon } from "./usd-violet.svg?react";
+import { ReactComponent as EurGreenIcon } from "./eur-green.svg?react";
+import { ReactComponent as EurOrangeIcon } from "./eur-orange.svg?react";
+import { ReactComponent as EurVioletIcon } from "./eur-violet.svg?react";
+import { ReactComponent as GbpGreenIcon } from "./gbp-green.svg?react";
+import { ReactComponent as GbpOrangeIcon } from "./gbp-orange.svg?react";
+import { ReactComponent as GbpVioletIcon } from "./gbp-violet.svg?react";
 import { ReactComponent as Table1Icon } from "./table-1.svg?react";
 import { ReactComponent as Table2Icon } from "./table-2.svg?react";
 import { ReactComponent as Table2IconFrench } from "./table-2_french.svg?react";
@@ -96,6 +102,8 @@ import { ReactComponent as RightGrayIcon } from "./right-icon.svg?react";
 
 import USFlag from "./USFlag";
 import CDFFlag from "./CDFFlag";
+import EURFlag from "./EURFlag";
+import GBPFlag from "./GBPFlag";
 import UploadIcon from "./UploadIcon";
 
 export {
@@ -140,6 +148,12 @@ export {
   Table4Icon,
   UsdOrangeIcon,
   UsdGreenIcon,
+  EurGreenIcon,
+  EurOrangeIcon,
+  EurVioletIcon,
+  GbpGreenIcon,
+  GbpOrangeIcon,
+  GbpVioletIcon,
   Logo,
   EyeIcon,
   EyeCloseIcon,
@@ -179,6 +193,8 @@ export {
   SaveDraftIcon,
   USFlag,
   CDFFlag,
+  EURFlag,
+  GBPFlag,
   CreateRequestIcon,
   WhitePlusIcon,
   CongratulationIcon,

@@ -5,10 +5,16 @@ import {
   UsdGreenIcon,
   UsdOrangeIcon,
   UsdVioletIcon,
+  EurGreenIcon,
+  EurOrangeIcon,
+  EurVioletIcon,
+  GbpGreenIcon,
+  GbpOrangeIcon,
+  GbpVioletIcon,
 } from "../../icons";
 
 interface CurrencyBadgeProps extends React.SVGProps<SVGSVGElement> {
-  currency: "USD" | "CDF";
+  currency: "USD" | "CDF" | "EUR" | "GBP";
   variant: "violet" | "green" | "orange";
   className?: string;
   width?: number;
@@ -30,6 +36,12 @@ const CurrencyBadge = ({
     "USD:green": UsdGreenIcon,
     "USD:orange": UsdOrangeIcon,
     "USD:violet": UsdVioletIcon,
+    "EUR:green": EurGreenIcon,
+    "EUR:orange": EurOrangeIcon,
+    "EUR:violet": EurVioletIcon,
+    "GBP:green": GbpGreenIcon,
+    "GBP:orange": GbpOrangeIcon,
+    "GBP:violet": GbpVioletIcon,
   };
 
   const key = `${currency}:${variant}`;

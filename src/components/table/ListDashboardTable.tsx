@@ -12,6 +12,10 @@ import {
   EyeDarkIcon,
   PencilIcon,
   RightGreenIcon,
+  USFlag,
+  CDFFlag,
+  EURFlag,
+  GBPFlag,
 } from "../../icons";
 import { useNavigate } from "react-router-dom";
 import StatusBadge, { StatusCode } from "../common/StatusBadge.tsx";
@@ -403,15 +407,16 @@ const ListDashBoardTable = ({
                           >
                             <option value="USD">USD</option>
                             <option value="CDF">CDF</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
                           </select>
                         </div>
                       ) : (
                         <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
-                          {/* {data.currency === "USD" ? (
-                            <EnglishFlag width={24} height={14} />
-                          ) : (
-                            <FrenchFlagIcon width={24} height={14} />
-                          )} */}
+                          {data.currency === "USD" && <USFlag width={24} height={14} />}
+                          {data.currency === "CDF" && <CDFFlag width={24} height={14} />}
+                          {data.currency === "EUR" && <EURFlag width={24} height={14} />}
+                          {data.currency === "GBP" && <GBPFlag width={24} height={14} />}
                           <span className="text-gray-500">{data.currency}</span>
                           <span className="block font-medium text-secondary-100 text-sm">
                             {formatAmount(data.amount)}
