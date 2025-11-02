@@ -494,7 +494,7 @@
   "travaux_immobiliers": "Travaux immobiliers",
   "cif": "CIF",
   "total_cif": "Total CIF",
-  "tarrif_position": "Position Tarifaire",
+  "tarrif_position": "Poids de la marchandise",
   "droit": "Droit",
   "ttc": "TTC",
   "select_all": "Tout sélectionner",
@@ -508,8 +508,8 @@
   "add_it_ic_reference": "Ajouter le numéro IT/IC",
   "issue_date_required": "Date d'émission *",
   "select_issue_date": "Sélectionner la date d'émission",
-  "tariff_position": "Position tarifaire",
-  "add_tariff_position": "Ajouter la position tarifaire",
+  "tariff_position": "Poids de la marchandise",
+  "add_tariff_position": "Ajouter Poids de la marchandise",
   "custom_duties_required": "Type de droit *",
   "select_custom_duties_required": "Sélectionner les droits de douane *",
   "add_nature_marchandise_required": "Ajouter Nature Marchandise *",
@@ -560,5 +560,8 @@
   "rate": "Taux",
   "no_entities_added_yet_click_add_entity_to_get_started": "Aucune entité ajoutée pour le moment. Cliquez sur \"Ajouter une entité\" pour commencer.",
   "contract_document_required": "Au moins un document contractuel est requis",
-  "project_files_required": "Au moins un fichier de projet est requis"
+  "project_files_required": "Au moins un fichier de projet est requis",
+  "project_document": "Document de projet",
+  "financing_agreement": "Accord de financement",
+  "excise_duty": "Droit d'accise"
 }

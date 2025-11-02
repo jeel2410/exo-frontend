@@ -506,8 +506,8 @@
   "add_it_ic_reference": "Add IT/IC No.",
   "issue_date_required": "Issue Date *",
   "select_issue_date": "Select issue date",
-  "tariff_position": "Tariff Position",
-  "add_tariff_position": "Add tariff position",
+  "tariff_position": "Weight of the goods",
+  "add_tariff_position": "Add Weight of the goods",
   "custom_duties_required": "Custom Duties *",
   "select_custom_duties_required": "Select custom duties *",
   "add_nature_marchandise_required": "Add Nature Marchandise *",
@@ -534,7 +534,7 @@
   "rate_range": "{{min}}%-{{max}}%",
   "percent_or": "% or ",
   "total_with_tax": "Total with Tax",
-  "vat": "VAT",
+  "vat": "TVA",
   "import_vat": "Import VAT",
   "import_dgrad_taxes": "Import DGRAD Taxes",
   "entry_duties": "Entry Duties",
@@ -558,5 +558,8 @@
   "rate": "Rate",
   "no_entities_added_yet_click_add_entity_to_get_started": "No entities added yet. Click \"Add Entity\" to get started.",
   "contract_document_required": "At least one contract document is required",
-  "project_files_required": "At least one project file is required"
+  "project_files_required": "At least one project file is required",
+  "project_document": "Project Document",
+  "financing_agreement": "Financing Agreement",
+  "excise_duty": "Excise Duty"
 }

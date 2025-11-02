@@ -858,6 +858,16 @@ const UploadFile: React.FC<FileUploadProps> = ({
   const showMandatoryDocs = context === "create-request";
   // Show additional docs based on prop
   const shouldShowAdditionalDocs = Boolean(showAdditionalDocs);
+  
+  // Get context-specific file upload header text
+  const getFileUploadHeaderText = () => {
+    if (context === "create-project") {
+      return t("project_document");
+    } else if (context === "create-contract") {
+      return t("financing_agreement");
+    }
+    return t("file_upload");
+  };
 
   console.log("UploadFile render check:", {
     context,
@@ -894,7 +904,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
                       {t("name")}
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">
-                      {t("file_upload")}
+                      {getFileUploadHeaderText()}
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700 w-20">
                       {t("action")}
@@ -963,7 +973,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
                       {t("name")}
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">
-                      {t("file_upload")}
+                      {getFileUploadHeaderText()}
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700 w-20">
                       {t("action")}

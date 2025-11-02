@@ -36,7 +36,8 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
   // Format quantity display value - similar to CurrencyInput getDisplayValue
   const getQuantityDisplayValue = (rawValue: number | string | undefined) => {
     if (!rawValue || rawValue === "") return "";
-    const numValue = typeof rawValue === "string" ? parseFloat(rawValue) : rawValue;
+    const numValue =
+      typeof rawValue === "string" ? parseFloat(rawValue) : rawValue;
     if (isNaN(numValue)) return "";
 
     // If the input contains a decimal point, preserve it in formatting
@@ -62,7 +63,8 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
   // Format price display value - similar to CurrencyInput getDisplayValue
   const getPriceDisplayValue = (rawValue: number | string | undefined) => {
     if (!rawValue || rawValue === "") return "";
-    const numValue = typeof rawValue === "string" ? parseFloat(rawValue) : rawValue;
+    const numValue =
+      typeof rawValue === "string" ? parseFloat(rawValue) : rawValue;
     if (isNaN(numValue)) return "";
 
     // If the input contains a decimal point, preserve it in formatting
@@ -111,16 +113,16 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
       if (quantity) {
         setQuantityDisplay(getQuantityDisplayValue(quantity));
       } else {
-        setQuantityDisplay('');
+        setQuantityDisplay("");
       }
       setIsQuantityTyping(false);
-      
+
       // Update price display when form resets
       const price = initialData?.unitPrice || initialData?.cif;
       if (price) {
         setPriceDisplay(getPriceDisplayValue(price));
       } else {
-        setPriceDisplay('');
+        setPriceDisplay("");
       }
       setIsPriceTyping(false);
     }
@@ -131,7 +133,7 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
     if (!isQuantityTyping && formData.quantity) {
       setQuantityDisplay(getQuantityDisplayValue(formData.quantity));
     } else if (!formData.quantity) {
-      setQuantityDisplay('');
+      setQuantityDisplay("");
     }
   }, [formData.quantity, isQuantityTyping]);
 
@@ -142,7 +144,7 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
       if (price) {
         setPriceDisplay(getPriceDisplayValue(price));
       } else {
-        setPriceDisplay('');
+        setPriceDisplay("");
       }
     }
   }, [formData.unitPrice, formData.cif, isPriceTyping]);
@@ -165,7 +167,10 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
   // Custom duty options based on tax category
   const getCustomDutyOptions = () => {
     if (currentTaxCategory === "location_acquisition") {
-      return [{ value: "TVA", label: t("vat") }];
+      return [
+        { value: "TVA", label: t("vat") },
+        { value: "excise duty", label: t("excise_duty") },
+      ];
     } else if (currentTaxCategory === "importation") {
       return [
         { value: "TVA à l'importation", label: t("import_vat") },
@@ -181,14 +186,18 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
   };
 
   // Tax rate constraints
-  const getTaxRateConstraints = (customDuty: string | undefined, itIcValue?: string) => {
+  const getTaxRateConstraints = (
+    customDuty: string | undefined,
+    itIcValue?: string
+  ) => {
     // If IT is selected for importation, allow 0 tax rate (override normal constraints)
     const isItSelected =
-      currentTaxCategory === "importation" && (itIcValue || formData.itIc) === "IT";
+      currentTaxCategory === "importation" &&
+      (itIcValue || formData.itIc) === "IT";
     if (isItSelected) {
       return { min: 0, max: 0, fixed: 0, allowedValues: null };
     }
-    
+
     if (!customDuty)
       return { min: 1, max: 100, fixed: null, allowedValues: null };
 
@@ -213,7 +222,7 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
     if (isItSelected && taxRate === 0) {
       return true;
     }
-    
+
     const constraints = getTaxRateConstraints(customDuty);
     if (constraints.fixed !== null) {
       return taxRate === constraints.fixed;
@@ -254,10 +263,7 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
       const updated = { ...prev, [field]: parsedValue };
 
       // Handle IT/IC selection for importation
-      if (
-        field === "itIc" &&
-        currentTaxCategory === "importation"
-      ) {
+      if (field === "itIc" && currentTaxCategory === "importation") {
         if (parsedValue === "IT") {
           // IT selected: set tax rate to 0
           updated.taxRate = 0;
@@ -265,14 +271,21 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
           // IC selected: ensure a valid non-zero tax rate is applied based on custom duty
           const constraints = updated.customDuty
             ? getTaxRateConstraints(updated.customDuty as string, "IC")
-            : { min: 1, max: 100, fixed: null as number | null, allowedValues: null as number[] | null };
+            : {
+                min: 1,
+                max: 100,
+                fixed: null as number | null,
+                allowedValues: null as number[] | null,
+              };
 
           if (constraints.fixed !== null) {
             updated.taxRate = constraints.fixed;
           } else {
             // If current taxRate is 0 or undefined (likely after switching from IT), set to minimum allowed
-            const current = typeof updated.taxRate === "number" ? updated.taxRate : undefined;
-            updated.taxRate = current && current > 0 ? current : (constraints.min ?? 1);
+            const current =
+              typeof updated.taxRate === "number" ? updated.taxRate : undefined;
+            updated.taxRate =
+              current && current > 0 ? current : constraints.min ?? 1;
           }
         }
       }
@@ -321,7 +334,10 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
     // Do not auto-stop typing; we'll stop on blur so trailing decimals like "10." are preserved while focused
   };
 
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: "unitPrice" | "cif") => {
+  const handlePriceChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    fieldName: "unitPrice" | "cif"
+  ) => {
     const inputValue = e.target.value;
     setIsPriceTyping(true);
 
@@ -359,18 +375,22 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
         ...prev,
         customDuty: newCustomDuty,
       };
-      
+
       // Get constraints after updating custom duty
       const constraints = getTaxRateConstraints(newCustomDuty, updated.itIc);
-      
+
       // Auto-set tax rate if fixed (including IT case which sets to 0)
       if (constraints.fixed !== null) {
         updated.taxRate = constraints.fixed;
       } else {
         // If IC (not IT) and taxRate is 0/undefined (possibly after switching from IT), set to minimum allowed
-        const isIC = currentTaxCategory === "importation" && updated.itIc === "IC";
+        const isIC =
+          currentTaxCategory === "importation" && updated.itIc === "IC";
         if (isIC && (!updated.taxRate || updated.taxRate === 0)) {
-          if (constraints.allowedValues && constraints.allowedValues.length > 0) {
+          if (
+            constraints.allowedValues &&
+            constraints.allowedValues.length > 0
+          ) {
             updated.taxRate = constraints.allowedValues[0];
           } else if (typeof constraints.min === "number") {
             updated.taxRate = constraints.min;
@@ -381,7 +401,10 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
       }
 
       // Recalculate if tax rate was auto-set or adjusted
-      if (constraints.fixed !== null || (updated.itIc === "IC" && (updated.taxRate ?? 0) > 0)) {
+      if (
+        constraints.fixed !== null ||
+        (updated.itIc === "IC" && (updated.taxRate ?? 0) > 0)
+      ) {
         const { total, taxAmount, vatIncluded } = calculateTaxAndVat(updated);
         updated.total = total;
         updated.taxAmount = taxAmount;
@@ -435,7 +458,10 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
       return;
     }
     if (!isTaxRateValid) {
-      const constraints = getTaxRateConstraints(formData.customDuty, formData.itIc);
+      const constraints = getTaxRateConstraints(
+        formData.customDuty,
+        formData.itIc
+      );
       const constraintText =
         constraints.fixed !== null
           ? t("exactly_percent", { rate: constraints.fixed })
@@ -657,7 +683,11 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
                 id="quantity"
                 name="quantity"
                 type="text"
-                value={isQuantityTyping ? quantityDisplay : getQuantityDisplayValue(formData.quantity)}
+                value={
+                  isQuantityTyping
+                    ? quantityDisplay
+                    : getQuantityDisplayValue(formData.quantity)
+                }
                 onChange={handleQuantityChange}
                 onFocus={() => setIsQuantityTyping(true)}
                 onBlur={() => setIsQuantityTyping(false)}
@@ -701,13 +731,18 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
                 }
                 type="text"
                 value={
-                  isPriceTyping 
-                    ? priceDisplay 
+                  isPriceTyping
+                    ? priceDisplay
                     : currentTaxCategory === "importation"
                     ? getPriceDisplayValue(formData.cif)
                     : getPriceDisplayValue(formData.unitPrice)
                 }
-                onChange={(e) => handlePriceChange(e, currentTaxCategory === "importation" ? "cif" : "unitPrice")}
+                onChange={(e) =>
+                  handlePriceChange(
+                    e,
+                    currentTaxCategory === "importation" ? "cif" : "unitPrice"
+                  )
+                }
                 onFocus={() => setIsPriceTyping(true)}
                 onBlur={() => setIsPriceTyping(false)}
                 placeholder={t("enter_price", {
@@ -783,7 +818,8 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
                   step={0.01}
                   className={
                     !formData.customDuty ||
-                    (currentTaxCategory === "importation" && formData.itIc === "IT")
+                    (currentTaxCategory === "importation" &&
+                      formData.itIc === "IT")
                       ? "bg-gray-50 text-gray-600"
                       : "!bg-white"
                   }
@@ -797,7 +833,11 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
               <Input
                 id="total-amount"
                 type="text"
-                value={formData.total ? formatAmount(formData.total) : formatAmount(0)}
+                value={
+                  formData.total
+                    ? formatAmount(formData.total)
+                    : formatAmount(0)
+                }
                 disabled
                 className="bg-gray-50 text-gray-600"
               />
@@ -808,7 +848,11 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
               <Input
                 id="tax-amount"
                 type="text"
-                value={formData.taxAmount ? formatAmount(formData.taxAmount) : formatAmount(0)}
+                value={
+                  formData.taxAmount
+                    ? formatAmount(formData.taxAmount)
+                    : formatAmount(0)
+                }
                 disabled
                 className="bg-gray-50 text-gray-600"
               />
@@ -819,7 +863,11 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
               <Input
                 id="total-with-tax"
                 type="text"
-                value={formData.vatIncluded ? formatAmount(formData.vatIncluded) : formatAmount(0)}
+                value={
+                  formData.vatIncluded
+                    ? formatAmount(formData.vatIncluded)
+                    : formatAmount(0)
+                }
                 disabled
                 className="bg-gray-50 text-gray-600"
               />
