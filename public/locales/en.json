@@ -293,6 +293,7 @@
   "place_required": "Place is required",
   "date_required": "Date is required",
   "contract_amount_exceeds_project": "Contract amount cannot exceed the project amount.",
+  "contract_amount_exceeds_remaining": "Contract amount cannot exceed the remaining amount available in the project.",
   "amount_by_contract": "Amount by Contract",
   "date_created": "Date Created",
   "no_of_request": "No of Request",
@@ -561,5 +562,9 @@
   "project_files_required": "At least one project file is required",
   "project_document": "Project Document",
   "financing_agreement": "Financing Agreement",
-  "excise_duty": "Excise Duty"
+  "excise_duty": "Excise Duty",
+  "equivalent_cdf_amount": "Equivalent CDF Amount",
+  "exchange_rate": "Exchange Rate",
+  "equivalent_in_cdf": " Equivalent in CDF",
+  "original_rate": "Original Rate"
 }

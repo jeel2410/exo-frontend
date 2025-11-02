@@ -38,6 +38,8 @@ interface ContractProps {
   requests_data?: any[];
   currency: string; // Changed from "USD" | "CDF" to string for flexibility
   amount?: string | number;
+  amount_cdf?: string | number;
+  exchange_rate_used?: string | number;
   reference?: string;
   name?: string;
   summary?: any; // For backward compatibility
@@ -440,15 +442,26 @@ const ContractDetails = () => {
                         >
                           {t("contract_amount")}:
                         </Typography>
-                        <Typography
-                          className="text-gray-900 text-sm font-medium text-right ml-2"
-                          weight="semibold"
-                        >
-                          {contractData?.currency}{" "}
-                          {contractData?.amount
-                            ? formatAmount(contractData.amount)
-                            : "0"}
-                        </Typography>
+                        <div className="flex flex-col items-end gap-1 ml-2">
+                          <Typography
+                            className="text-gray-900 text-sm font-medium text-right"
+                            weight="semibold"
+                          >
+                            {contractData?.currency}{" "}
+                            {contractData?.amount
+                              ? formatAmount(contractData.amount)
+                              : "0"}
+                          </Typography>
+                          {contractData?.currency !== "CDF" && contractData?.amount_cdf && contractData?.exchange_rate_used && (
+                            <div className="text-xs text-secondary-60">
+                              ≈ CDF {formatAmount(contractData.amount_cdf)}
+                              {" "}
+                              <span className="text-[10px]">
+                                (Rate: 1 {contractData.currency} = {parseFloat(contractData.exchange_rate_used).toFixed(2)} CDF)
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="space-y-1">
                         <Typography

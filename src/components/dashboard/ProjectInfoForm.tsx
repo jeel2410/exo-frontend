@@ -31,6 +31,8 @@ interface ProjectInfoFormProps {
   loading?: boolean;
   referenceError?: string | null;
   onClearReferenceError?: () => void;
+  exchangeRates?: { [key: string]: number };
+  existingExchangeRate?: number | null;
 }
 
 interface Address {
@@ -80,6 +82,8 @@ const ProjectInfoForm = ({
   loading,
   referenceError,
   onClearReferenceError,
+  exchangeRates = {},
+  existingExchangeRate = null,
 }: // children,
 ProjectInfoFormProps) => {
   const { t } = useTranslation();
@@ -290,7 +294,9 @@ ProjectInfoFormProps) => {
   ];
 
   // API-driven Funded By options state
-  const [fundedByOptions, setFundedByOptions] = useState<{ value: string; label: string }[]>([]);
+  const [fundedByOptions, setFundedByOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
   const [fundedBySearch, setFundedBySearch] = useState("");
   const [fundedByTotal, setFundedByTotal] = useState(0);
   const [fundedByLimit] = useState(15);
@@ -310,15 +316,23 @@ ProjectInfoFormProps) => {
         limit: fundedByLimit,
         offset: nextOffset,
       });
-      const list = (res.data || []).map((it: any) => ({ value: it.name, label: it.name }));
+      const list = (res.data || []).map((it: any) => ({
+        value: it.name,
+        label: it.name,
+      }));
       setFundedByTotal(res.total ?? list.length);
 
-      setFundedByOptions(prev => {
+      setFundedByOptions((prev) => {
         const base = reset ? [] : prev;
         // avoid duplicates by value
-        const seen = new Set(base.map(o => o.value));
+        const seen = new Set(base.map((o) => o.value));
         const merged = [...base];
-        list.forEach(o => { if (!seen.has(o.value)) { merged.push(o); seen.add(o.value); } });
+        list.forEach((o) => {
+          if (!seen.has(o.value)) {
+            merged.push(o);
+            seen.add(o.value);
+          }
+        });
         return merged;
       });
       setFundedByOffset(nextOffset + (res.limit ?? fundedByLimit));
@@ -342,7 +356,7 @@ ProjectInfoFormProps) => {
   // Prefetch on mount
   useEffect(() => {
     loadFundedBy({ reset: true });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const defaultInitialValues: ProjectFormValues = {
@@ -364,9 +378,7 @@ ProjectInfoFormProps) => {
     projectName: Yup.string()
       .required(t("project_name_is_required"))
       .min(3, t("project_name_must_be_at_least_3_characters")),
-    fundedBy: Yup.array()
-      .of(Yup.string())
-      .min(1, t("finance_by_is_required")),
+    fundedBy: Yup.array().of(Yup.string()).min(1, t("finance_by_is_required")),
     projectReference: Yup.string().required(t("project_reference_is_required")),
     amount: Yup.string()
       .required(t("amount_is_required"))
@@ -663,8 +675,12 @@ ProjectInfoFormProps) => {
             values.fundedBy.length > 0 ||
             values.projectReference.trim() !== "" ||
             values.amount.trim() !== "" ||
-            (typeof values.beginDate === 'string' ? values.beginDate.trim() !== "" : !!values.beginDate) ||
-            (typeof values.endDate === 'string' ? values.endDate.trim() !== "" : !!values.endDate) ||
+            (typeof values.beginDate === "string"
+              ? values.beginDate.trim() !== ""
+              : !!values.beginDate) ||
+            (typeof values.endDate === "string"
+              ? values.endDate.trim() !== ""
+              : !!values.endDate) ||
             (values.description && values.description.trim() !== "") ||
             values.addresses.length > 0 ||
             values.files.length > 0
@@ -674,19 +690,23 @@ ProjectInfoFormProps) => {
         // Helper function to check if all required fields are filled (for Submit)
         const hasAllRequiredFields = () => {
           // Check core required fields
-          const coreFieldsValid = 
+          const coreFieldsValid =
             values.projectName.trim() !== "" &&
             values.fundedBy.length > 0 &&
             values.projectReference.trim() !== "" &&
             values.amount.trim() !== "" &&
-            (typeof values.beginDate === 'string' ? values.beginDate.trim() !== "" : !!values.beginDate) &&
-            (typeof values.endDate === 'string' ? values.endDate.trim() !== "" : !!values.endDate);
-          
+            (typeof values.beginDate === "string"
+              ? values.beginDate.trim() !== ""
+              : !!values.beginDate) &&
+            (typeof values.endDate === "string"
+              ? values.endDate.trim() !== ""
+              : !!values.endDate);
+
           // Address is now optional - no validation needed
-          
+
           // Check if at least one document is uploaded
           const hasRequiredDocuments = values.files.length > 0;
-          
+
           return coreFieldsValid && hasRequiredDocuments && isValid;
         };
 
@@ -753,7 +773,10 @@ ProjectInfoFormProps) => {
                       }
                     }}
                     onLoadMore={() => {
-                      if (!fundedByLoadingMore && (fundedByOptions.length < fundedByTotal)) {
+                      if (
+                        !fundedByLoadingMore &&
+                        fundedByOptions.length < fundedByTotal
+                      ) {
                         loadFundedBy();
                       }
                     }}
@@ -767,7 +790,7 @@ ProjectInfoFormProps) => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
                   <div>
                     <Label htmlFor="projectReference">
                       {t("project_reference")}{" "}
@@ -802,28 +825,91 @@ ProjectInfoFormProps) => {
                       </p>
                     )}
                   </div>
+                </div>
 
-                  <div>
-                    <Label htmlFor="amount">
-                      {t("amount")} <span className="text-red-500">*</span>
-                    </Label>
-                    <CurrencyInput
-                      id="amount"
-                      value={values.amount}
-                      currency={values.currency}
-                      options={currencyOptions}
-                      onChange={(value: string, currency: string) => {
-                        setFieldValue("amount", value);
-                        setFieldValue("currency", currency);
-                      }}
-                      onBlur={() => handleBlur("amount")}
-                      error={touched.amount && !!errors.amount}
-                    />
-                    <ErrorMessage
-                      name="amount"
-                      component="p"
-                      className="mt-1 text-sm text-red-500"
-                    />
+                <div>
+                  <Label htmlFor="amount">
+                    {t("amount")} <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="bg-secondary-5 rounded-lg border border-secondary-30 p-4">
+                    {/* Amount Input */}
+                    <div className="mb-3">
+                      <CurrencyInput
+                        id="amount"
+                        value={values.amount}
+                        currency={values.currency}
+                        options={currencyOptions}
+                        onChange={(value: string, currency: string) => {
+                          setFieldValue("amount", value);
+                          setFieldValue("currency", currency);
+                        }}
+                        onBlur={() => handleBlur("amount")}
+                        error={touched.amount && !!errors.amount}
+                      />
+                      <ErrorMessage
+                        name="amount"
+                        component="p"
+                        className="mt-1.5 text-sm text-red-500"
+                      />
+                    </div>
+
+                    {/* Exchange Rate Display - Only for non-CDF currencies */}
+                    {values.currency !== "CDF" &&
+                      values.amount &&
+                      (() => {
+                        const amount = parseFloat(
+                          values.amount.replace(/,/g, "")
+                        );
+                        if (isNaN(amount) || amount <= 0) return null;
+
+                        const exchangeRate =
+                          existingExchangeRate ||
+                          exchangeRates[values.currency];
+                        if (!exchangeRate) return null;
+
+                        const cdfAmount = amount * exchangeRate;
+                        const formattedCdfAmount = cdfAmount
+                          .toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })
+                          .replace(/,/g, " ");
+
+                        return (
+                          <div className="mt-3 pt-3 border-t border-secondary-30">
+                            {/* CDF Equivalent */}
+                            <div className="bg-white rounded-lg border border-primary-150 p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <Typography
+                                  size="xs"
+                                  weight="semibold"
+                                  className="text-secondary-60 uppercase"
+                                >
+                                  {t("equivalent_in_cdf")}
+                                </Typography>
+                                {existingExchangeRate && (
+                                  <span className="px-2 py-0.5 text-xs font-medium text-primary-150 bg-primary-150 bg-opacity-10 rounded">
+                                    {t("original_rate")}
+                                  </span>
+                                )}
+                              </div>
+                              <Typography
+                                size="xl"
+                                weight="bold"
+                                className="text-primary-150 mb-2"
+                              >
+                                CDF {formattedCdfAmount}
+                              </Typography>
+                              <div className="flex items-center justify-between text-secondary-60">
+                                <Typography size="xs">
+                                  {t("exchange_rate")}: 1 {values.currency} ={" "}
+                                  {exchangeRate.toFixed(2)} CDF
+                                </Typography>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
                   </div>
                 </div>
 
@@ -1195,7 +1281,9 @@ ProjectInfoFormProps) => {
                 disabled={!dirty || !hasMinimumContent()}
                 loading={loading && values.status === "draft"}
                 className={`px-6 py-3 bg-white rounded-lg text-primary-150 font-medium flex items-center justify-center gap-2 shadow-md hover:bg-gray-50 w-full md:w-auto ${
-                  (!dirty || !hasMinimumContent()) ? 'opacity-50 cursor-not-allowed' : ''
+                  !dirty || !hasMinimumContent()
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
                 }`}
               >
                 <SaveDraftIcon
@@ -1216,7 +1304,9 @@ ProjectInfoFormProps) => {
                 disabled={!dirty || !hasAllRequiredFields()}
                 loading={loading && values.status === "publish"}
                 className={`px-6 py-3 bg-primary-150 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary-200 w-full md:w-auto ${
-                  (!dirty || !hasAllRequiredFields()) ? 'opacity-50 cursor-not-allowed' : ''
+                  !dirty || !hasAllRequiredFields()
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
                 }`}
               >
                 {t("submit")}

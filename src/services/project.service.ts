@@ -67,6 +67,10 @@ class ProjectService extends ApiBaseService {
       project_id: projectId,
     });
   }
+
+  async getExchangeRates() {
+    return await this.authorizedRequest.get(ApiRoutes.EXCHANGE_RATES);
+  }
 }
 
 const projectService = new ProjectService();

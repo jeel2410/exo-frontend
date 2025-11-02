@@ -288,6 +288,7 @@
   "place_required": "Le champ 'Lieu' est requis",
   "date_required": "La date est requise",
   "contract_amount_exceeds_project": "Le montant du contrat ne peut pas dépasser le montant du projet.",
+  "contract_amount_exceeds_remaining": "Le montant du contrat ne peut pas dépasser le montant restant disponible dans le projet.",
   "amount_by_contract": "Montant par contrat",
   "date_created": "Date de création",
   "no_of_request": "Nombre de demandes",
@@ -563,5 +564,9 @@
   "project_files_required": "Au moins un fichier de projet est requis",
   "project_document": "Document de projet",
   "financing_agreement": "Accord de financement",
-  "excise_duty": "Droit d'accise"
+  "excise_duty": "Droit d'accise",
+  "equivalent_cdf_amount": "Montant équivalent du CDF",
+  "exchange_rate": "Taux de change",
+  "equivalent_in_cdf": "Équivalent en CDF",
+  "original_rate": "Tarif initial"
 }

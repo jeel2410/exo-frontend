@@ -14,9 +14,13 @@ interface Address {
 
 interface ReviewFormProps {
   projectData: ContractReviewData;
+  projectExchangeRate?: number;
 }
 
-const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
+const ContractReviewForm = ({
+  projectData,
+  projectExchangeRate,
+}: ReviewFormProps) => {
   const { t } = useTranslation();
   const formatAmount = (amount: string) => {
     if (!amount) return "";
@@ -78,7 +82,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
                 </svg>
               </div>
               <span className="text-xs text-secondary-100">
-{file.original_name || file.file.name}
+                {file.original_name || file.file.name}
               </span>
             </div>
           </div>
@@ -246,7 +250,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
               >
                 {t("basic_contract_info")}
               </Typography>
-              
+
               <div className="space-y-4">
                 <div className="flex">
                   <div className="w-1/3 text-secondary-60">
@@ -256,7 +260,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
                     {projectData.contractName || "-"}
                   </div>
                 </div>
-                
+
                 <div className="flex">
                   <div className="w-1/3 text-secondary-60">
                     <Label>{t("contract_reference")}</Label>
@@ -265,17 +269,70 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
                     {projectData.contractReference || "-"}
                   </div>
                 </div>
-                
-                <div className="flex">
-                  <div className="w-1/3 text-secondary-60">
-                    <Label>{t("contract_amount")}</Label>
+
+                <div className="flex flex-col">
+                  <div className="flex">
+                    <div className="w-1/3 text-secondary-60">
+                      <Label>{t("contract_amount")}</Label>
+                    </div>
+                    <div className="w-2/3 text-secondary-100">
+                      <span className="text-gray-400">
+                        {projectData.currency || "USD"}{" "}
+                      </span>
+                      {formatAmount(projectData.amount) || "-"}
+                    </div>
                   </div>
-                  <div className="w-2/3 text-secondary-100">
-                    <span className="text-gray-400">
-                      {projectData.currency || "USD"}{" "}
-                    </span>
-                    {formatAmount(projectData.amount) || "-"}
-                  </div>
+                  {/* Display CDF equivalent if currency is not CDF */}
+                  {projectData.currency !== "CDF" &&
+                    projectData.amount &&
+                    projectExchangeRate &&
+                    (() => {
+                      const amount = parseFloat(
+                        projectData.amount.replace(/,/g, "")
+                      );
+                      if (isNaN(amount) || amount <= 0) return null;
+
+                      const cdfAmount = amount * projectExchangeRate;
+                      const formattedCdfAmount = cdfAmount
+                        .toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })
+                        .replace(/,/g, " ");
+
+                      return (
+                        <div className="flex mt-2">
+                          <div className="w-1/3"></div>
+                          <div className="w-2/3">
+                            <div className="bg-white rounded-lg border border-primary-150 p-3">
+                              <div className="flex items-center justify-between mb-1">
+                                <Typography
+                                  size="xs"
+                                  weight="semibold"
+                                  className="text-secondary-60 uppercase"
+                                >
+                                  {t("equivalent_in_cdf")}
+                                </Typography>
+                              </div>
+                              <Typography
+                                size="lg"
+                                weight="bold"
+                                className="text-primary-150 mb-1"
+                              >
+                                CDF {formattedCdfAmount}
+                              </Typography>
+                              <div className="flex items-center justify-between text-secondary-60">
+                                <Typography size="xs">
+                                  {t("exchange_rate")}: 1{" "}
+                                  {projectData.currency || "USD"} ={" "}
+                                  {projectExchangeRate.toFixed(2)} CDF
+                                </Typography>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                 </div>
               </div>
             </div>
@@ -291,7 +348,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
               >
                 {t("contracting_executing_agency")}
               </Typography>
-              
+
               <div className="space-y-3">
                 <div className="flex">
                   <div className="w-1/3 text-secondary-60">
@@ -301,7 +358,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
                     {projectData.contractingAgencyName || "-"}
                   </div>
                 </div>
-                
+
                 <div className="flex">
                   <div className="w-1/3 text-secondary-60">
                     <Label>{t("authorized_person_name")}</Label>
@@ -310,7 +367,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
                     {projectData.contractingAuthorizedPersonName || "-"}
                   </div>
                 </div>
-                
+
                 <div className="flex">
                   <div className="w-1/3 text-secondary-60">
                     <Label>{t("authorized_person_title")}</Label>
@@ -333,7 +390,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
               >
                 {t("rewarded_company")}
               </Typography>
-              
+
               <div className="space-y-3">
                 <div className="flex">
                   <div className="w-1/3 text-secondary-60">
@@ -343,7 +400,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
                     {projectData.rewardedCompanyName || "-"}
                   </div>
                 </div>
-                
+
                 <div className="flex">
                   <div className="w-1/3 text-secondary-60">
                     <Label>{t("authorized_person_name")}</Label>
@@ -352,7 +409,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
                     {projectData.rewardedAuthorizedPersonName || "-"}
                   </div>
                 </div>
-                
+
                 <div className="flex">
                   <div className="w-1/3 text-secondary-60">
                     <Label>{t("authorized_person_title")}</Label>
@@ -375,7 +432,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
               >
                 {t("signing_details")}
               </Typography>
-              
+
               <div className="space-y-3">
                 <div className="flex">
                   <div className="w-1/3 text-secondary-60">
@@ -385,7 +442,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
                     {formatDate(projectData.dateOfSigning)}
                   </div>
                 </div>
-                
+
                 <div className="flex">
                   <div className="w-1/3 text-secondary-60">
                     <Label>{t("place_of_signing")}</Label>
@@ -408,7 +465,7 @@ const ContractReviewForm = ({ projectData }: ReviewFormProps) => {
               >
                 {t("contract_documents")}
               </Typography>
-              
+
               <div className="flex">
                 <div className="w-1/3 text-secondary-60">
                   <Label>{t("upload_contract_files")}</Label>

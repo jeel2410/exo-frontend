@@ -6,7 +6,13 @@ import Label from "../../../lib/components/atoms/Label";
 import Input from "../../../lib/components/atoms/Input";
 import CurrencyInput from "../../../lib/components/atoms/CurrencyInput";
 import DatePicker from "../../../lib/components/atoms/DatePicker";
-import { ArrowRightIconButton, CDFFlag, USFlag, EURFlag, GBPFlag } from "../../../icons";
+import {
+  ArrowRightIconButton,
+  CDFFlag,
+  USFlag,
+  EURFlag,
+  GBPFlag,
+} from "../../../icons";
 import Button from "../../../lib/components/atoms/Button";
 import Typography from "../../../lib/components/atoms/Typography";
 import moment from "moment";
@@ -19,22 +25,22 @@ interface ContractFormValues {
   reference: string;
   amount: string;
   currency: string;
-  
+
   // Contracting/Executing Agency
   contractingAgencyName: string;
   contractingAuthorizedPersonName: string;
   contractingAuthorizedPersonPosition: string;
-  
+
   // Rewarded Company
   rewardedCompanyName: string;
   rewardedAuthorizedPersonName: string;
   rewardedAuthorizedPersonPosition: string;
-  
+
   // Signing details
   dateOfSigning: string;
   place: string;
   contractFiles: UploadedFile[];
-  
+
   // Legacy fields for backward compatibility (can be removed later)
   signedBy?: string;
   position?: string;
@@ -46,6 +52,9 @@ interface StepProps {
   onSubmit: (values: ContractFormValues) => void;
   isProjectSelected?: boolean;
   projectAmount?: string;
+  projectCurrency?: string;
+  projectExchangeRate?: number;
+  remainingAmount?: string;
 }
 
 const ContractInfoForm = ({
@@ -53,6 +62,9 @@ const ContractInfoForm = ({
   onSubmit,
   isProjectSelected = false,
   projectAmount,
+  projectCurrency,
+  projectExchangeRate,
+  remainingAmount,
 }: StepProps) => {
   const { t } = useTranslation();
 
@@ -62,22 +74,22 @@ const ContractInfoForm = ({
     reference: "",
     amount: "",
     currency: "USD",
-    
+
     // Contracting/Executing Agency
     contractingAgencyName: "",
     contractingAuthorizedPersonName: "",
     contractingAuthorizedPersonPosition: "",
-    
+
     // Rewarded Company
     rewardedCompanyName: "",
     rewardedAuthorizedPersonName: "",
     rewardedAuthorizedPersonPosition: "",
-    
+
     // Signing details
     dateOfSigning: "",
     place: "",
     contractFiles: [],
-    
+
     // Legacy fields
     signedBy: "",
     position: "",
@@ -120,32 +132,115 @@ const ContractInfoForm = ({
         return !isNaN(num) && num > 0;
       })
       .test(
-        "amount-less-than-project",
-        t("contract_amount_exceeds_project"),
-        (value) => {
-          if (!projectAmount || !value) return true;
-          // Value is now raw digits only 
-          const contractAmount = parseFloat(value);
+        "amount-less-than-remaining",
+        t("contract_amount_exceeds_remaining"),
+        function (value) {
+          // If remainingAmount is available, validate against it instead of project amount
+          if (remainingAmount && value && projectCurrency) {
+            // Remove all commas and parse both values
+            const contractAmountRaw = parseFloat(value.replace(/,/g, ""));
+            // Remaining amount might still come formatted, so clean it
+            const remainingAmountRaw = parseFloat(
+              remainingAmount.replace(/[^0-9.]/g, "")
+            );
+
+            if (isNaN(contractAmountRaw) || isNaN(remainingAmountRaw)) {
+              return true; // Let other validation handle invalid numbers
+            }
+
+            // Get the contract currency from form values
+            const contractCurrency = this.parent.currency;
+
+            // Convert both amounts to CDF for comparison
+            let contractAmountCdf: number;
+            let remainingAmountCdf: number;
+
+            // Convert contract amount to CDF
+            if (contractCurrency === "CDF") {
+              contractAmountCdf = contractAmountRaw;
+            } else {
+              // Use project exchange rate to convert contract amount to CDF
+              const exchangeRate = projectExchangeRate || 1;
+              contractAmountCdf = contractAmountRaw * exchangeRate;
+            }
+
+            // Convert remaining amount to CDF (remaining amount should be in project currency)
+            if (projectCurrency === "CDF") {
+              remainingAmountCdf = remainingAmountRaw;
+            } else {
+              // Use project exchange rate to convert remaining amount to CDF
+              const exchangeRate = projectExchangeRate || 1;
+              remainingAmountCdf = remainingAmountRaw * exchangeRate;
+            }
+
+            return contractAmountCdf <= remainingAmountCdf;
+          }
+
+          // Fallback to project amount validation if remainingAmount is not available
+          if (!projectAmount || !value || !projectCurrency) return true;
+
+          // Remove all commas and parse both values
+          const contractAmountRaw = parseFloat(value.replace(/,/g, ""));
           // Project amount might still come formatted, so clean it
-          const projAmount = parseFloat(projectAmount.replace(/[^0-9.]/g, ""));
-          return (
-            !isNaN(contractAmount) &&
-            !isNaN(projAmount) &&
-            contractAmount <= projAmount
+          const projAmountRaw = parseFloat(
+            projectAmount.replace(/[^0-9.]/g, "")
           );
+
+          if (isNaN(contractAmountRaw) || isNaN(projAmountRaw)) {
+            return true; // Let other validation handle invalid numbers
+          }
+
+          // Get the contract currency from form values
+          const contractCurrency = this.parent.currency;
+
+          // Convert both amounts to CDF for comparison
+          let contractAmountCdf: number;
+          let projectAmountCdf: number;
+
+          // Convert contract amount to CDF
+          if (contractCurrency === "CDF") {
+            contractAmountCdf = contractAmountRaw;
+          } else {
+            // Use project exchange rate to convert contract amount to CDF
+            const exchangeRate = projectExchangeRate || 1;
+            contractAmountCdf = contractAmountRaw * exchangeRate;
+          }
+
+          // Convert project amount to CDF
+          if (projectCurrency === "CDF") {
+            projectAmountCdf = projAmountRaw;
+          } else {
+            // Use project exchange rate to convert project amount to CDF
+            const exchangeRate = projectExchangeRate || 1;
+            projectAmountCdf = projAmountRaw * exchangeRate;
+          }
+
+          return contractAmountCdf <= projectAmountCdf;
         }
       ),
-    
+
     // Contracting/Executing Agency
-    contractingAgencyName: Yup.string().required(t("contracting_agency_name_required")),
-    contractingAuthorizedPersonName: Yup.string().required(t("contracting_authorized_person_name_required")),
-    contractingAuthorizedPersonPosition: Yup.string().required(t("contracting_authorized_person_position_required")),
-    
+    contractingAgencyName: Yup.string().required(
+      t("contracting_agency_name_required")
+    ),
+    contractingAuthorizedPersonName: Yup.string().required(
+      t("contracting_authorized_person_name_required")
+    ),
+    contractingAuthorizedPersonPosition: Yup.string().required(
+      t("contracting_authorized_person_position_required")
+    ),
+
     // Rewarded Company
-    rewardedCompanyName: Yup.string().required(t("rewarded_company_name_required")),
-    rewardedAuthorizedPersonName: Yup.string().required(t("rewarded_authorized_person_name_required")),
-    rewardedAuthorizedPersonPosition: Yup.string().required(t("rewarded_authorized_person_position_required")),
-    
+    rewardedCompanyName: Yup.string().required(
+      t("rewarded_company_name_required")
+    ),
+    rewardedAuthorizedPersonName: Yup.string().required(
+      t("rewarded_authorized_person_name_required")
+    ),
+    rewardedAuthorizedPersonPosition: Yup.string().required(
+      t("rewarded_authorized_person_position_required")
+    ),
+
     // Signing details
     dateOfSigning: Yup.string().required(t("date_required")),
     place: Yup.string().required(t("place_required")),
@@ -271,7 +366,16 @@ const ContractInfoForm = ({
       validationSchema={validationSchema}
       onSubmit={onSubmit}
     >
-      {({ values, setFieldValue, touched, errors, validateField, isValid, dirty }) => (
+      {({
+        values,
+        setFieldValue,
+        setFieldTouched,
+        touched,
+        errors,
+        validateField,
+        isValid,
+        dirty,
+      }) => (
         <Form className="space-y-6">
           <div className="mb-6">
             <Typography
@@ -292,10 +396,14 @@ const ContractInfoForm = ({
 
           {/* Contract Basic Information */}
           <div className="bg-gray-50 p-4 rounded-lg border">
-            <Typography size="lg" weight="semibold" className="text-secondary-100 mb-4">
+            <Typography
+              size="lg"
+              weight="semibold"
+              className="text-secondary-100 mb-4"
+            >
               {t("basic_contract_info")}
             </Typography>
-            
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="name">
@@ -314,7 +422,7 @@ const ContractInfoForm = ({
                   className="text-red-500 text-sm mt-1"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="reference">
                   {t("contract_reference")}
@@ -332,46 +440,108 @@ const ContractInfoForm = ({
                   className="text-red-500 text-sm mt-1"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="amount">
                   {t("contract_amount")}
                   <span className="text-red-500">*</span>
                 </Label>
-                <CurrencyInput
-                  id="amount"
-                  options={currencyOptions}
-                  value={values.amount}
-                  currency={values.currency}
-                  currencyDisabled={isProjectSelected}
-                  onChange={(amount: string, currency: string) => {
-                    setFieldValue("amount", amount);
-                    if (!isProjectSelected) {
-                      setFieldValue("currency", currency);
-                    }
-                    validateField("amount");
-                  }}
-                />
-                {isProjectSelected && (
-                  <Typography size="sm" className="text-secondary-60 mt-1">
-                    {t("currency_fixed_based_on_project")}
-                  </Typography>
-                )}
-                <ErrorMessage
-                  name="amount"
-                  component="div"
-                  className="text-red-500 text-sm mt-1"
-                />
+                <div className="bg-secondary-5 rounded-lg border border-secondary-30 p-4">
+                  {/* Amount Input */}
+                  <div className="mb-3">
+                    <CurrencyInput
+                      id="amount"
+                      options={currencyOptions}
+                      value={values.amount}
+                      currency={values.currency}
+                      currencyDisabled={isProjectSelected}
+                      onChange={(amount: string, currency: string) => {
+                        setFieldValue("amount", amount);
+                        if (!isProjectSelected) {
+                          setFieldValue("currency", currency);
+                        }
+                        // Mark field as touched and trigger validation immediately
+                        setFieldTouched("amount", true, false);
+                        setTimeout(() => validateField("amount"), 0);
+                      }}
+                      onBlur={() => validateField("amount")}
+                      error={touched.amount && !!errors.amount}
+                    />
+                    {isProjectSelected && (
+                      <Typography size="sm" className="text-secondary-60 mt-1">
+                        {t("currency_fixed_based_on_project")}
+                      </Typography>
+                    )}
+                    <ErrorMessage
+                      name="amount"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                  </div>
+
+                  {/* Exchange Rate Display - Only for non-CDF currencies */}
+                  {values.currency !== "CDF" &&
+                    values.amount &&
+                    projectExchangeRate &&
+                    (() => {
+                      const amount = parseFloat(
+                        values.amount.replace(/,/g, "")
+                      );
+                      if (isNaN(amount) || amount <= 0) return null;
+
+                      const cdfAmount = amount * projectExchangeRate;
+                      const formattedCdfAmount = cdfAmount
+                        .toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })
+                        .replace(/,/g, " ");
+
+                      return (
+                        <div className="mt-3 pt-3 border-t border-secondary-30">
+                          {/* CDF Equivalent */}
+                          <div className="bg-white rounded-lg border border-primary-150 p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <Typography
+                                size="xs"
+                                weight="semibold"
+                                className="text-secondary-60 uppercase"
+                              >
+                                {t("equivalent_in_cdf")}
+                              </Typography>
+                            </div>
+                            <Typography
+                              size="xl"
+                              weight="bold"
+                              className="text-primary-150 mb-2"
+                            >
+                              CDF {formattedCdfAmount}
+                            </Typography>
+                            <div className="flex items-center justify-between text-secondary-60">
+                              <Typography size="xs">
+                                {t("exchange_rate")}: 1 {values.currency} ={" "}
+                                {projectExchangeRate.toFixed(2)} CDF
+                              </Typography>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Contracting/Executing Agency Information */}
           <div className="bg-blue-50 p-4 rounded-lg border">
-            <Typography size="lg" weight="semibold" className="text-secondary-100 mb-4">
+            <Typography
+              size="lg"
+              weight="semibold"
+              className="text-secondary-100 mb-4"
+            >
               {t("contracting_executing_agency")}
             </Typography>
-            
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="contractingAgencyName">
@@ -390,7 +560,7 @@ const ContractInfoForm = ({
                   className="text-red-500 text-sm mt-1"
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="contractingAuthorizedPersonName">
@@ -409,7 +579,7 @@ const ContractInfoForm = ({
                     className="text-red-500 text-sm mt-1"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="contractingAuthorizedPersonPosition">
                     {t("authorized_person_title")}
@@ -433,10 +603,14 @@ const ContractInfoForm = ({
 
           {/* Rewarded Company Information */}
           <div className="bg-green-50 p-4 rounded-lg border">
-            <Typography size="lg" weight="semibold" className="text-secondary-100 mb-4">
+            <Typography
+              size="lg"
+              weight="semibold"
+              className="text-secondary-100 mb-4"
+            >
               {t("rewarded_company")}
             </Typography>
-            
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="rewardedCompanyName">
@@ -455,7 +629,7 @@ const ContractInfoForm = ({
                   className="text-red-500 text-sm mt-1"
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="rewardedAuthorizedPersonName">
@@ -474,7 +648,7 @@ const ContractInfoForm = ({
                     className="text-red-500 text-sm mt-1"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="rewardedAuthorizedPersonPosition">
                     {t("authorized_person_title")}
@@ -498,10 +672,14 @@ const ContractInfoForm = ({
 
           {/* Signing Details */}
           <div className="bg-yellow-50 p-4 rounded-lg border">
-            <Typography size="lg" weight="semibold" className="text-secondary-100 mb-4">
+            <Typography
+              size="lg"
+              weight="semibold"
+              className="text-secondary-100 mb-4"
+            >
               {t("signing_details")}
             </Typography>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="dateOfSigning">
@@ -546,7 +724,7 @@ const ContractInfoForm = ({
                   className="text-red-500 text-sm mt-1"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="place">
                   {t("place_of_signing")}
@@ -569,10 +747,14 @@ const ContractInfoForm = ({
 
           {/* Document Upload Section */}
           <div className="bg-gray-50 p-4 rounded-lg border">
-            <Typography size="lg" weight="semibold" className="text-secondary-100 mb-4">
+            <Typography
+              size="lg"
+              weight="semibold"
+              className="text-secondary-100 mb-4"
+            >
               {t("contract_documents")}
             </Typography>
-            
+
             <div>
               <Label>
                 {t("upload_contract_files")}
@@ -619,7 +801,9 @@ const ContractInfoForm = ({
               type="submit"
               disabled={!isValid || !dirty || values.contractFiles.length === 0}
               className={`px-6 py-3 bg-primary-150 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-primary-200 w-full md:w-auto ${
-                (!isValid || !dirty || values.contractFiles.length === 0) ? 'opacity-50 cursor-not-allowed' : ''
+                !isValid || !dirty || values.contractFiles.length === 0
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
               }`}
             >
               {t("next")}

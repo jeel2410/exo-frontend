@@ -38,28 +38,28 @@ export interface ContractReviewData {
   description: string;
   projectFiles: UploadedFile[];
   address: Address[];
-  
+
   // Contract basic info
   contractName: string;
   contractReference: string;
   amount: string;
   currency: string;
-  
+
   // Contracting/Executing Agency
   contractingAgencyName: string;
   contractingAuthorizedPersonName: string;
   contractingAuthorizedPersonPosition: string;
-  
+
   // Rewarded Company
   rewardedCompanyName: string;
   rewardedAuthorizedPersonName: string;
   rewardedAuthorizedPersonPosition: string;
-  
+
   // Signing details
   dateOfSigning: string;
   place: string;
   contractFiles: UploadedFile[];
-  
+
   // Legacy fields for backward compatibility
   signedBy?: string;
   position?: string;
@@ -77,28 +77,28 @@ const ContractReviewInitialValue = {
   description: "",
   projectFiles: [],
   address: [],
-  
+
   // Contract basic info
   contractName: "",
   contractReference: "",
   amount: "",
   currency: "",
-  
+
   // Contracting/Executing Agency
   contractingAgencyName: "",
   contractingAuthorizedPersonName: "",
   contractingAuthorizedPersonPosition: "",
-  
+
   // Rewarded Company
   rewardedCompanyName: "",
   rewardedAuthorizedPersonName: "",
   rewardedAuthorizedPersonPosition: "",
-  
+
   // Signing details
   dateOfSigning: "",
   place: "",
   contractFiles: [],
-  
+
   // Legacy fields
   signedBy: "",
   position: "",
@@ -111,22 +111,22 @@ interface FormDataProps {
   reference: string;
   amount: string;
   currency: string;
-  
+
   // Contracting/Executing Agency
   contractingAgencyName: string;
   contractingAuthorizedPersonName: string;
   contractingAuthorizedPersonPosition: string;
-  
+
   // Rewarded Company
   rewardedCompanyName: string;
   rewardedAuthorizedPersonName: string;
   rewardedAuthorizedPersonPosition: string;
-  
+
   // Signing details
   dateOfSigning: string;
   place: string;
   contractFiles: UploadedFile[];
-  
+
   // Legacy fields for backward compatibility
   signedBy?: string;
   position?: string;
@@ -139,22 +139,22 @@ const initialValue = {
   reference: "",
   amount: "",
   currency: "USD",
-  
+
   // Contracting/Executing Agency
   contractingAgencyName: "",
   contractingAuthorizedPersonName: "",
   contractingAuthorizedPersonPosition: "",
-  
+
   // Rewarded Company
   rewardedCompanyName: "",
   rewardedAuthorizedPersonName: "",
   rewardedAuthorizedPersonPosition: "",
-  
+
   // Signing details
   dateOfSigning: "",
   place: "",
   contractFiles: [],
-  
+
   // Legacy fields
   signedBy: "",
   position: "",
@@ -162,15 +162,38 @@ const initialValue = {
 };
 
 // Helper function to create contract API payload
-const createContractPayload = (data: FormDataProps, projectId?: string, contractId?: string, editProjectId?: string): FormData => {
+const createContractPayload = (
+  data: FormDataProps,
+  projectId?: string,
+  contractId?: string,
+  editProjectId?: string,
+  projectExchangeRate?: number
+): FormData => {
   const files = data.contractFiles;
   const filesData = Array.isArray(files) ? files : files ? [files] : [];
 
   const payload = new FormData();
-  
+
+  // Calculate CDF amount and exchange rate
+  const amount = parseFloat(data.amount.replace(/,/g, ""));
+  let amountCdf: number;
+  let exchangeRateUsed: number;
+
+  if (data.currency === "CDF") {
+    // For CDF currency
+    amountCdf = amount;
+    exchangeRateUsed = 1.0;
+  } else {
+    // For non-CDF currency, use project's exchange rate
+    exchangeRateUsed = projectExchangeRate || 1.0;
+    amountCdf = amount * exchangeRateUsed;
+  }
+
   // Map new form fields to API fields
   payload.append("currency", data.currency);
   payload.append("amount", data.amount);
+  payload.append("amount_cdf", amountCdf.toString());
+  payload.append("exchange_rate_used", exchangeRateUsed.toString());
   payload.append("place", data.place);
   payload.append(
     "date_of_signing",
@@ -178,27 +201,39 @@ const createContractPayload = (data: FormDataProps, projectId?: string, contract
       "YYYY-MM-DD"
     )
   );
-  
+
   // Contracting/Executing Agency fields
   payload.append("contracting_agency_name", data.contractingAgencyName || "");
-  payload.append("contracting_agency_person_name", data.contractingAuthorizedPersonName || "");
-  payload.append("contracting_agency_person_position", data.contractingAuthorizedPersonPosition || "");
-  
+  payload.append(
+    "contracting_agency_person_name",
+    data.contractingAuthorizedPersonName || ""
+  );
+  payload.append(
+    "contracting_agency_person_position",
+    data.contractingAuthorizedPersonPosition || ""
+  );
+
   // Awarded Company fields
   payload.append("awarded_company_name", data.rewardedCompanyName || "");
-  payload.append("awarded_company_person_name", data.rewardedAuthorizedPersonName || "");
-  payload.append("awarded_company_person_position", data.rewardedAuthorizedPersonPosition || "");
-  
+  payload.append(
+    "awarded_company_person_name",
+    data.rewardedAuthorizedPersonName || ""
+  );
+  payload.append(
+    "awarded_company_person_position",
+    data.rewardedAuthorizedPersonPosition || ""
+  );
+
   // Document files
   payload.append(
     "document_ids",
     filesData.map((file: any) => file.id).join(",")
   );
-  
+
   // Contract basic info (keeping for backward compatibility)
   payload.append("reference", data.reference);
   payload.append("name", data.name);
-  
+
   // Project ID
   if (projectId) {
     payload.append("project_id", projectId);
@@ -207,7 +242,7 @@ const createContractPayload = (data: FormDataProps, projectId?: string, contract
     payload.append("project_id", editProjectId);
     payload.append("contract_id", contractId);
   }
-  
+
   return payload;
 };
 
@@ -305,6 +340,10 @@ const ContractCreatePage = () => {
     };
   }, []);
   const [editProjectId, setEditProjectId] = useState("");
+  const [projectExchangeRate, setProjectExchangeRate] = useState<
+    number | undefined
+  >();
+  const [remainingAmount, setRemainingAmount] = useState<string | undefined>();
 
   const { projectId, contractId } = useParams();
   const [newContractId, setNewContractId] = useState<string>();
@@ -329,22 +368,23 @@ const ContractCreatePage = () => {
       contractReference: values.reference,
       amount: values.amount,
       currency: values.currency,
-      
+
       // Contracting/Executing Agency
       contractingAgencyName: values.contractingAgencyName,
       contractingAuthorizedPersonName: values.contractingAuthorizedPersonName,
-      contractingAuthorizedPersonPosition: values.contractingAuthorizedPersonPosition,
-      
+      contractingAuthorizedPersonPosition:
+        values.contractingAuthorizedPersonPosition,
+
       // Rewarded Company
       rewardedCompanyName: values.rewardedCompanyName,
       rewardedAuthorizedPersonName: values.rewardedAuthorizedPersonName,
       rewardedAuthorizedPersonPosition: values.rewardedAuthorizedPersonPosition,
-      
+
       // Signing details
       dateOfSigning: values.dateOfSigning,
       place: values.place,
       contractFiles: values.contractFiles,
-      
+
       // Legacy fields for backward compatibility
       signedBy: values.signedBy,
       position: values.position,
@@ -356,7 +396,13 @@ const ContractCreatePage = () => {
 
   const contractCreateMutation = useMutation({
     mutationFn: async (data: FormDataProps) => {
-      const payload = createContractPayload(data, projectId, contractId, editProjectId);
+      const payload = createContractPayload(
+        data,
+        projectId,
+        contractId,
+        editProjectId,
+        projectExchangeRate
+      );
       const response = await contractService.creteContract(payload);
       setNewContractId(response.data.data.id);
       return response.data;
@@ -411,6 +457,7 @@ const ContractCreatePage = () => {
       setLoading(true);
       const data = await projectService.getProjectDetails(projectId!);
       const project = data.data;
+      const summary = data.summary;
       setContractReview((preve) => ({
         ...preve,
         projectAmount: project.amount,
@@ -436,6 +483,17 @@ const ContractCreatePage = () => {
         ...prev,
         currency: project.currency,
       }));
+
+      // Store project exchange rate if available
+      if (project.exchange_rate_used) {
+        setProjectExchangeRate(parseFloat(project.exchange_rate_used));
+      }
+
+      // Store remaining amount from summary if available
+      if (summary && summary.remaining_amount !== undefined) {
+        setRemainingAmount(summary.remaining_amount.toString());
+      }
+
       return project;
     } catch (err: any) {
       console.error(err, "erro");
@@ -466,24 +524,30 @@ const ContractCreatePage = () => {
           // Contract basic info
           name: contractData.name || "",
           reference: contractData.reference || "",
-          amount: contractData.amount ? contractData.amount.toString().replace(/[^0-9]/g, '') : "",
+          amount: contractData.amount
+            ? contractData.amount.toString().replace(/[^0-9]/g, "")
+            : "",
           currency: contractData.currency,
-          
+
           // Contracting/Executing Agency
           contractingAgencyName: contractData.contracting_agency_name || "",
-          contractingAuthorizedPersonName: contractData.contracting_agency_person_name || "",
-          contractingAuthorizedPersonPosition: contractData.contracting_agency_person_position || "",
-          
+          contractingAuthorizedPersonName:
+            contractData.contracting_agency_person_name || "",
+          contractingAuthorizedPersonPosition:
+            contractData.contracting_agency_person_position || "",
+
           // Rewarded Company
           rewardedCompanyName: contractData.awarded_company_name || "",
-          rewardedAuthorizedPersonName: contractData.awarded_company_person_name || "",
-          rewardedAuthorizedPersonPosition: contractData.awarded_company_person_position || "",
-          
+          rewardedAuthorizedPersonName:
+            contractData.awarded_company_person_name || "",
+          rewardedAuthorizedPersonPosition:
+            contractData.awarded_company_person_position || "",
+
           // Signing details
           dateOfSigning: contractData.date_of_signing,
           place: contractData.place,
           contractFiles: (contractData.documents as UploadedFile[]) || [],
-          
+
           // Legacy fields for backward compatibility
           signedBy: contractData.signed_by || "",
           position: contractData.position || "",
@@ -600,7 +664,8 @@ const ContractCreatePage = () => {
                                   />
                                 </svg>
                                 <span className="font-medium">
-                                  {contractReview.projectAmount} {contractReview.projectCurrency}
+                                  {contractReview.projectAmount}{" "}
+                                  {contractReview.projectCurrency}
                                 </span>
                               </div>
                             )}
@@ -694,12 +759,18 @@ const ContractCreatePage = () => {
                   onSubmit={handleFormSubmit}
                   isProjectSelected={!!projectId || !!editProjectId}
                   projectAmount={contractReview.projectAmount}
+                  projectCurrency={contractReview.projectCurrency}
+                  projectExchangeRate={projectExchangeRate}
+                  remainingAmount={remainingAmount}
                 />
               )}
 
               {currentStep === 1 && (
                 <>
-                  <ContractReviewForm projectData={contractReview} />
+                  <ContractReviewForm
+                    projectData={contractReview}
+                    projectExchangeRate={projectExchangeRate}
+                  />
                   <div className="flex justify-end pt-4">
                     <Button
                       variant="primary"

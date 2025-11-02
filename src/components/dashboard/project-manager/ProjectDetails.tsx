@@ -370,16 +370,31 @@ const ProjectDetails = () => {
                   >
                     {t("amount")}:
                   </Typography>
-                  <Typography
-                    className="text-secondary-100 break-words"
-                    size="sm"
-                    weight="normal"
-                  >
-                    <span className="text-secondary-60">
-                      {projectData?.currency}{" "}
-                    </span>
-                    {projectData?.amount || 0}
-                  </Typography>
+                  <div className="flex flex-col gap-1">
+                    <Typography
+                      className="text-secondary-100 break-words"
+                      size="sm"
+                      weight="normal"
+                    >
+                      <span className="text-secondary-60">
+                        {projectData?.currency}{" "}
+                      </span>
+                      {projectData?.amount || 0}
+                    </Typography>
+                    {projectData?.currency !== "CDF" && projectData?.amount_cdf && projectData?.exchange_rate_used && (
+                      <Typography
+                        className="text-secondary-60"
+                        size="xs"
+                        weight="normal"
+                      >
+                        ≈ CDF {Number(projectData.amount_cdf).toLocaleString()}
+                        {" "}
+                        <span className="text-[10px]">
+                          (Rate: 1 {projectData.currency} = {parseFloat(projectData.exchange_rate_used).toFixed(2)} CDF)
+                        </span>
+                      </Typography>
+                    )}
+                  </div>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:gap-4">
                   <Typography

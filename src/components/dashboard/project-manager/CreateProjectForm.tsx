@@ -33,6 +33,10 @@ interface ProjectFormValues {
   status: "publish" | "draft";
 }
 
+interface ExchangeRates {
+  [key: string]: number;
+}
+
 const initialValues: ProjectFormValues = {
   projectName: "",
   fundedBy: [], // Changed to empty array
@@ -55,6 +59,8 @@ const CreateProjectForm = () => {
   const { projectId } = useParams();
   const { setLoading, loading } = useLoading();
   const [referenceError, setReferenceError] = useState<string | null>(null);
+  const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({});
+  const [existingExchangeRate, setExistingExchangeRate] = useState<number | null>(null);
 
   const createProjectMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -94,6 +100,22 @@ const CreateProjectForm = () => {
     // Clear any existing reference error when submitting
     setReferenceError(null);
 
+    // Calculate CDF amount and exchange rate
+    const amount = parseFloat(values.amount.replace(/,/g, ""));
+    let amountCdf: number;
+    let exchangeRateUsed: number;
+
+    if (values.currency === "CDF") {
+      // For CDF currency
+      amountCdf = amount;
+      exchangeRateUsed = 1.00;
+    } else {
+      // For non-CDF currency, use exchange rate
+      // If editing, use existing exchange rate, otherwise use current rate
+      exchangeRateUsed = existingExchangeRate || exchangeRates[values.currency] || 1.00;
+      amountCdf = amount * exchangeRateUsed;
+    }
+
     const payload = {
       name: values.projectName,
       funded_by: values.fundedBy.join(','), // Convert array to comma-separated string
@@ -121,6 +143,8 @@ const CreateProjectForm = () => {
       ),
       document_ids: values.files.map((file) => file.id).join(","),
       status: values.status,
+      amount_cdf: amountCdf,
+      exchange_rate_used: exchangeRateUsed,
       ...(projectId && { project_id: projectId }),
     };
     createProjectMutation.mutate(payload, {
@@ -147,6 +171,11 @@ const CreateProjectForm = () => {
       setLoading(true);
       const data = await projectService.getProjectDetails(projectId);
       const projectData = data.data;
+
+      // Store existing exchange rate if available
+      if (projectData.exchange_rate_used) {
+        setExistingExchangeRate(parseFloat(projectData.exchange_rate_used));
+      }
 
       const newData = {
         projectName: projectData.name,
@@ -180,9 +209,26 @@ const CreateProjectForm = () => {
     }
   };
 
+  // Fetch exchange rates on component mount (only when creating new project)
+  const fetchExchangeRates = async () => {
+    try {
+      const response = await projectService.getExchangeRates();
+      if (response.data && response.data.data) {
+        setExchangeRates(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch exchange rates:", error);
+      toast.error(t("failed_to_fetch_exchange_rates"));
+    }
+  };
+
   useEffect(() => {
     if (projectId) {
+      // When editing, fetch project details (which includes existing exchange rate)
       fetchProject(projectId);
+    } else {
+      // When creating new project, fetch current exchange rates
+      fetchExchangeRates();
     }
   }, []);
 
@@ -224,6 +270,8 @@ const CreateProjectForm = () => {
                 loading={createProjectMutation.isPending}
                 referenceError={referenceError}
                 onClearReferenceError={() => setReferenceError(null)}
+                exchangeRates={exchangeRates}
+                existingExchangeRate={existingExchangeRate}
               />
             )}
           </div>

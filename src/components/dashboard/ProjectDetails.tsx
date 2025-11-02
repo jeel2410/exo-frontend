@@ -185,12 +185,23 @@ const ProjectDetails = () => {
                   {
                     label: "Amount:",
                     value: (
-                      <>
-                        <span className="text-secondary-60">
-                          {project?.currency}
-                        </span>{" "}
-                        {formatAmount(project?.amount)}
-                      </>
+                      <div className="flex flex-col gap-1">
+                        <div>
+                          <span className="text-secondary-60">
+                            {project?.currency}
+                          </span>{" "}
+                          {formatAmount(project?.amount)}
+                        </div>
+                        {project?.currency !== "CDF" && project?.amount_cdf && project?.exchange_rate_used && (
+                          <div className="text-xs text-secondary-60">
+                            ≈ CDF {formatAmount(project.amount_cdf)}
+                            {" "}
+                            <span className="text-[10px]">
+                              (Rate: 1 {project.currency} = {parseFloat(project.exchange_rate_used).toFixed(2)} CDF)
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     ),
                   },
                   {
