@@ -119,6 +119,16 @@ const AddRequest = () => {
     currency?: string;
     name?: string;
     reference?: string;
+    amount_cdf?: string | number;
+    exchange_rate_used?: string | number;
+    summary?: {
+      remaining_amount?: string | number;
+      approved_requests?: number;
+      pending_requests?: number;
+      rejected_requests?: number;
+      requests_total?: number;
+      total_requests?: number;
+    };
   }>({});
   const [requestSubStatus, setRequestSubStatus] = useState<string>("");
   const [createdRequestId, setCreatedRequestId] = useState<string>("");
@@ -341,6 +351,9 @@ const AddRequest = () => {
           currency: data.data.currency,
           name: data.data.name,
           reference: data.data.reference,
+          amount_cdf: data.data.amount_cdf,
+          exchange_rate_used: data.data.exchange_rate_used,
+          summary: data.data.summary,
         });
       }
     },
@@ -440,9 +453,10 @@ const AddRequest = () => {
       }
     }
 
+    // Validate against contract remaining_amount in CDF
     if (
-      contractData.amount !== undefined &&
-      totals.totalAmount > Number(contractData.amount)
+      contractData.summary?.remaining_amount !== undefined &&
+      totals.totalTaxAmount > Number(contractData.summary.remaining_amount)
     ) {
       errors.contractAmount = t("contract_amount_exceeded");
     }
@@ -1153,7 +1167,7 @@ const AddRequest = () => {
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(contractData?.currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
+                  currency="CDF"
                   variant="green"
                   width={36}
                   height={36}
@@ -1167,7 +1181,7 @@ const AddRequest = () => {
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(contractData?.currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
+                  currency="CDF"
                   variant="violet"
                   width={36}
                   height={36}
@@ -1181,7 +1195,7 @@ const AddRequest = () => {
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(contractData?.currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
+                  currency="CDF"
                   variant="orange"
                   width={36}
                   height={36}
@@ -1199,7 +1213,7 @@ const AddRequest = () => {
             <CreateRequestTable
               data={data.map((item) => ({
                 ...item,
-                currency: contractData?.currency || "USD",
+                currency: "CDF",
               }))}
               onDataChange={handleTableDataChange}
               onEditComplete={handleEditComplete}

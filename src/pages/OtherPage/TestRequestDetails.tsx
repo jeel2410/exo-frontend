@@ -2,8 +2,10 @@ import { useTranslation } from "react-i18next";
 import {
   BlueCopyIcon,
   PdfIcon,
-  USFlag,
   CDFFlag,
+  USFlag,
+  EURFlag,
+  GBPFlag,
   // PdfIcon,
 } from "../../icons";
 import moment from "moment";
@@ -172,6 +174,38 @@ const TestRequestDetails = () => {
   const navigate = useNavigate();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const { getRoute } = useRoleRoute();
+
+  // Helper function to render currency flag and text
+  const renderCurrencyDisplay = (currency?: string) => {
+    const currencyType = currency || "USD";
+    let FlagComponent;
+
+    switch (currencyType) {
+      case "USD":
+        FlagComponent = USFlag;
+        break;
+      case "CDF":
+        FlagComponent = CDFFlag;
+        break;
+      case "EUR":
+        FlagComponent = EURFlag;
+        break;
+      case "GBP":
+        FlagComponent = GBPFlag;
+        break;
+      default:
+        FlagComponent = USFlag;
+    }
+
+    return (
+      <>
+        <FlagComponent width={20} height={12} />
+        <Typography size="xs" weight="semibold" className="text-gray-600">
+          {currencyType}
+        </Typography>
+      </>
+    );
+  };
 
   const { data: _requestDetails, isLoading: _requestLoading } = useQuery<any>({
     queryKey: [`project-${requestId}-address`],
@@ -464,20 +498,10 @@ const TestRequestDetails = () => {
                                   {t("project_amount")}:
                                 </Typography>
                                 <div className="flex items-center space-x-2">
-                                  {(requestData?.amount_summary
-                                    ?.contract_currency || "USD") === "USD" ? (
-                                    <USFlag width={20} height={12} />
-                                  ) : (
-                                    <CDFFlag width={20} height={12} />
+                                  {renderCurrencyDisplay(
+                                    requestData?.amount_summary
+                                      ?.contract_currency
                                   )}
-                                  <Typography
-                                    size="xs"
-                                    weight="semibold"
-                                    className="text-gray-600"
-                                  >
-                                    {requestData?.amount_summary
-                                      ?.contract_currency || "USD"}
-                                  </Typography>
                                   <Typography
                                     size="sm"
                                     weight="bold"
@@ -593,20 +617,10 @@ const TestRequestDetails = () => {
                                   {t("contract_amount")}:
                                 </Typography>
                                 <div className="flex items-center space-x-2">
-                                  {(requestData?.amount_summary
-                                    ?.contract_currency || "USD") === "USD" ? (
-                                    <USFlag width={20} height={12} />
-                                  ) : (
-                                    <CDFFlag width={20} height={12} />
+                                  {renderCurrencyDisplay(
+                                    requestData?.amount_summary
+                                      ?.contract_currency
                                   )}
-                                  <Typography
-                                    size="xs"
-                                    weight="semibold"
-                                    className="text-gray-600"
-                                  >
-                                    {requestData?.amount_summary
-                                      ?.contract_currency || "USD"}
-                                  </Typography>
                                   <Typography
                                     size="sm"
                                     weight="bold"
@@ -679,11 +693,7 @@ const TestRequestDetails = () => {
                 <DashBoardCard
                   icon={
                     <CurrencyBadge
-                      currency={
-                        (requestData?.amount_summary.contract_currency as
-                          | "USD"
-                          | "CDF") || "USD"
-                      }
+                      currency="CDF"
                       variant="green"
                       width={36}
                       height={36}
@@ -698,11 +708,7 @@ const TestRequestDetails = () => {
                   isSelected={true}
                   icon={
                     <CurrencyBadge
-                      currency={
-                        (requestData?.amount_summary.contract_currency as
-                          | "USD"
-                          | "CDF") || "USD"
-                      }
+                      currency="CDF"
                       variant="violet"
                       width={36}
                       height={36}
@@ -716,11 +722,7 @@ const TestRequestDetails = () => {
                 <DashBoardCard
                   icon={
                     <CurrencyBadge
-                      currency={
-                        (requestData?.amount_summary.contract_currency as
-                          | "USD"
-                          | "CDF") || "USD"
-                      }
+                      currency="CDF"
                       variant="orange"
                       width={36}
                       height={36}
@@ -964,8 +966,7 @@ const TestRequestDetails = () => {
                                 (entity as any).nature_of_operation || "",
                               // Map it_ic field for importation tax category
                               itIc: (entity as any).it_ic || "",
-                              currency:
-                                requestData.amount_summary.contract_currency,
+                              currency: "CDF",
                             };
                             console.log("🚀 Mapped entity with unit:", {
                               original: entity,

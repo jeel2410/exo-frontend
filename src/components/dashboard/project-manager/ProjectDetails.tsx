@@ -22,6 +22,8 @@ export interface ProjectProps {
   reference: string;
   currency: "USD" | "CDF" | "EUR" | "GBP";
   amount: string;
+  amount_cdf?: string | number;
+  exchange_rate_used?: string | number;
   begin_date: string;
   end_date: string;
   description: string;
@@ -381,19 +383,25 @@ const ProjectDetails = () => {
                       </span>
                       {projectData?.amount || 0}
                     </Typography>
-                    {projectData?.currency !== "CDF" && projectData?.amount_cdf && projectData?.exchange_rate_used && (
-                      <Typography
-                        className="text-secondary-60"
-                        size="xs"
-                        weight="normal"
-                      >
-                        ≈ CDF {Number(projectData.amount_cdf).toLocaleString()}
-                        {" "}
-                        <span className="text-[10px]">
-                          (Rate: 1 {projectData.currency} = {parseFloat(projectData.exchange_rate_used).toFixed(2)} CDF)
-                        </span>
-                      </Typography>
-                    )}
+                    {projectData?.currency !== "CDF" &&
+                      projectData?.amount_cdf &&
+                      projectData?.exchange_rate_used && (
+                        <Typography
+                          className="text-secondary-60"
+                          size="xs"
+                          weight="normal"
+                        >
+                          ≈ CDF{" "}
+                          {Number(projectData.amount_cdf).toLocaleString()}{" "}
+                          <span className="text-[10px]">
+                            (Rate: 1 {projectData.currency} ={" "}
+                            {parseFloat(
+                              String(projectData.exchange_rate_used)
+                            ).toFixed(2)}{" "}
+                            CDF)
+                          </span>
+                        </Typography>
+                      )}
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:gap-4">
@@ -489,7 +497,11 @@ const ProjectDetails = () => {
                             className="inline-flex items-center gap-1 text-blue-600 hover:underline hover:bg-blue-50 px-2 py-1 rounded-md border border-gray-200 text-sm max-w-full"
                             title={doc?.original_name}
                           >
-                            <PdfIcon width={14} height={14} className="flex-shrink-0" />
+                            <PdfIcon
+                              width={14}
+                              height={14}
+                              className="flex-shrink-0"
+                            />
                             <span className="truncate max-w-[200px]">
                               {doc?.original_name}
                             </span>
@@ -560,15 +572,21 @@ const ProjectDetails = () => {
                   // Modern contract structure
                   contractName: contract.name || contract.reference,
                   contractingAgencyName: contract.contracting_agency_name,
-                  contractingAgencyPersonName: contract.contracting_agency_person_name,
-                  contractingAgencyPersonPosition: contract.contracting_agency_person_position,
+                  contractingAgencyPersonName:
+                    contract.contracting_agency_person_name,
+                  contractingAgencyPersonPosition:
+                    contract.contracting_agency_person_position,
                   awardedCompanyName: contract.awarded_company_name,
-                  awardedCompanyPersonName: contract.awarded_company_person_name,
-                  awardedCompanyPersonPosition: contract.awarded_company_person_position,
+                  awardedCompanyPersonName:
+                    contract.awarded_company_person_name,
+                  awardedCompanyPersonPosition:
+                    contract.awarded_company_person_position,
                   amountByContract: Number(contract.amount),
                   currency: contract.currency,
                   place: contract.place,
-                  dateOfSigning: contract.date_of_signing ? moment(contract.date_of_signing).format("YYYY/MM/DD") : undefined,
+                  dateOfSigning: contract.date_of_signing
+                    ? moment(contract.date_of_signing).format("YYYY/MM/DD")
+                    : undefined,
                   numberOfRequests: contract.requests_data_count,
                   contract_id: contract.id,
                   // Legacy fields as fallback

@@ -24,6 +24,8 @@ export interface ContractDetailsResponse {
   project_id: string;
   currency: string;
   amount: string;
+  amount_cdf?: string | number;
+  exchange_rate_used?: string | number;
   place: string;
   date_of_signing: string;
   contracting_agency_name?: string;
@@ -45,7 +47,7 @@ class ContractService extends ApiBaseService {
   async getProjects(data: any) {
     return await this.authorizedRequest.post(ApiRoutes.LIST_ALL_PPROJECT, data);
   }
-  
+
   async getContractDetails(data: { contract_id: string } | FormData) {
     return await this.authorizedRequest.post<{
       status: number;
@@ -59,7 +61,7 @@ class ContractService extends ApiBaseService {
       message?: string;
     }>(ApiRoutes.CONTRACT_DETAILS, data);
   }
-  
+
   async creteContract(data: FormData) {
     return await this.authorizedRequest.post<{
       status: number;
@@ -67,13 +69,15 @@ class ContractService extends ApiBaseService {
       message?: string;
     }>(ApiRoutes.CREATE_CONTRACT, data);
   }
-  
+
   async getAllContractList(data: any) {
     return await this.authorizedRequest.post(ApiRoutes.ALL_CONTRACT_LIST, data);
   }
-  
+
   async archiveContract(data: any) {
-    return await this.authorizedRequest.delete(ApiRoutes.ARCHIVE_CONTRACT, { data: data });
+    return await this.authorizedRequest.delete(ApiRoutes.ARCHIVE_CONTRACT, {
+      data: data,
+    });
   }
 }
 

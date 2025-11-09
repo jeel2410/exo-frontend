@@ -337,7 +337,10 @@ const ContractDetails = () => {
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(contractData?.currency as "USD" | "CDF" | "EUR" | "GBP") || "CDF"}
+                  currency={
+                    (contractData?.currency as "USD" | "CDF" | "EUR" | "GBP") ||
+                    "CDF"
+                  }
                   variant="violet"
                   width={32}
                   height={32}
@@ -452,15 +455,20 @@ const ContractDetails = () => {
                               ? formatAmount(contractData.amount)
                               : "0"}
                           </Typography>
-                          {contractData?.currency !== "CDF" && contractData?.amount_cdf && contractData?.exchange_rate_used && (
-                            <div className="text-xs text-secondary-60">
-                              ≈ CDF {formatAmount(contractData.amount_cdf)}
-                              {" "}
-                              <span className="text-[10px]">
-                                (Rate: 1 {contractData.currency} = {parseFloat(contractData.exchange_rate_used).toFixed(2)} CDF)
-                              </span>
-                            </div>
-                          )}
+                          {contractData?.currency !== "CDF" &&
+                            contractData?.amount_cdf &&
+                            contractData?.exchange_rate_used && (
+                              <div className="text-xs text-secondary-60">
+                                ≈ CDF {formatAmount(contractData.amount_cdf)}{" "}
+                                <span className="text-[10px]">
+                                  (Rate: 1 {contractData.currency} ={" "}
+                                  {parseFloat(
+                                    String(contractData.exchange_rate_used)
+                                  ).toFixed(2)}{" "}
+                                  CDF)
+                                </span>
+                              </div>
+                            )}
                         </div>
                       </div>
                       <div className="space-y-1">

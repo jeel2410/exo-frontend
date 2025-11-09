@@ -197,7 +197,7 @@ const ProjectDetails = () => {
                             ≈ CDF {formatAmount(project.amount_cdf)}
                             {" "}
                             <span className="text-[10px]">
-                              (Rate: 1 {project.currency} = {parseFloat(project.exchange_rate_used).toFixed(2)} CDF)
+                              (Rate: 1 {project.currency} = {parseFloat(String(project.exchange_rate_used)).toFixed(2)} CDF)
                             </span>
                           </div>
                         )}

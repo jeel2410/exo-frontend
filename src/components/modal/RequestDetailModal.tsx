@@ -1,7 +1,5 @@
 import { useTranslation } from "react-i18next";
-import {
-  FileVioletIcon,
-} from "../../icons";
+import { FileVioletIcon } from "../../icons";
 import Modal from "../../lib/components/atoms/Modal";
 import DashBoardCard from "../../lib/components/molecules/DashBoardCard";
 import Typography from "../../lib/components/atoms/Typography";
@@ -110,7 +108,13 @@ const RequestDetailModal = ({
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(requestDetails?.contract_currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
+                  currency={
+                    (requestDetails?.contract_currency as
+                      | "USD"
+                      | "CDF"
+                      | "EUR"
+                      | "GBP") || "USD"
+                  }
                   variant="green"
                   width={36}
                   height={36}
@@ -122,7 +126,13 @@ const RequestDetailModal = ({
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(requestDetails?.contract_currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
+                  currency={
+                    (requestDetails?.contract_currency as
+                      | "USD"
+                      | "CDF"
+                      | "EUR"
+                      | "GBP") || "USD"
+                  }
                   variant="violet"
                   width={36}
                   height={36}
@@ -134,7 +144,13 @@ const RequestDetailModal = ({
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(requestDetails?.contract_currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
+                  currency={
+                    (requestDetails?.contract_currency as
+                      | "USD"
+                      | "CDF"
+                      | "EUR"
+                      | "GBP") || "USD"
+                  }
                   variant="orange"
                   width={36}
                   height={36}
@@ -146,7 +162,13 @@ const RequestDetailModal = ({
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(requestDetails?.contract_currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
+                  currency={
+                    (requestDetails?.contract_currency as
+                      | "USD"
+                      | "CDF"
+                      | "EUR"
+                      | "GBP") || "USD"
+                  }
                   variant="green"
                   width={36}
                   height={36}
@@ -158,7 +180,13 @@ const RequestDetailModal = ({
             <DashBoardCard
               icon={
                 <CurrencyBadge
-                  currency={(requestDetails?.contract_currency as "USD" | "CDF" | "EUR" | "GBP") || "USD"}
+                  currency={
+                    (requestDetails?.contract_currency as
+                      | "USD"
+                      | "CDF"
+                      | "EUR"
+                      | "GBP") || "USD"
+                  }
                   variant="violet"
                   width={36}
                   height={36}
@@ -195,7 +223,7 @@ const RequestDetailModal = ({
                 natureOfOperations: entity.nature_of_operation || "",
                 // Map it_ic field for importation tax category
                 itIc: entity.it_ic || "",
-                currency: requestDetails.contract_currency,
+                currency: "CDF",
               })) || []
             }
             showActions={false}
