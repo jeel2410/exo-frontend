@@ -12,9 +12,9 @@ class LocalStorageService {
 
   getLanguage() {
     if (typeof window !== "undefined" && window.localStorage) {
-      return localStorage.getItem(this.LANGUAGE) || "en";
+      return localStorage.getItem(this.LANGUAGE) || "fr";
     }
-    return "en";
+    return "fr";
   }
 
   setLanguage(data: string) {
