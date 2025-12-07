@@ -116,7 +116,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
     {}
   );
-  const [removingFile, setRemovingFile] = useState<boolean>(false);
+  const [removingFiles, setRemovingFiles] = useState<Set<string>>(new Set());
   const [renamingFiles, setRenamingFiles] = useState<Set<string>>(new Set());
 
   const filesDep = useMemo(() => files?.map((f) => f.id).join(","), [files]);
@@ -217,7 +217,7 @@ const UploadFile: React.FC<FileUploadProps> = ({
       setError("");
       setUploadingFiles(new Set());
       setUploadProgress({});
-      setRemovingFile(false);
+      setRemovingFiles(new Set());
       setRenamingFiles(new Set());
 
       // Reset refs
@@ -400,97 +400,87 @@ const UploadFile: React.FC<FileUploadProps> = ({
     const additionalRow = additionalDocs.find((r) => r.id === rowId);
     const row = mandatoryRow || additionalRow;
 
-    if (!row) return;
-
-    // Allow deletion of mandatory documents for replacement - just reset the row instead of preventing deletion
-    if (row.isMandatory && row.isUploaded) {
-      // For custom added mandatory rows (editable name), allow full deletion
-      if (row.isNameEditable && row.uploadedFile && onDeleteFile) {
-        setRemovingFile(true);
-        try {
-          const response = await onDeleteFile(row.uploadedFile.id);
-          if (response?.status) {
-            // Remove the row entirely for custom mandatory docs
-            setMandatoryDocs((prev) => prev.filter((r) => r.id !== rowId));
-
-            // Update parent component
-            const remainingFiles = [...mandatoryDocs, ...additionalDocs]
-              .filter((r) => r.id !== rowId && r.isUploaded && r.uploadedFile)
-              .map((r) => r.uploadedFile!)
-              .filter((file): file is UploadedFile => Boolean(file));
-
-            onFilesSelect?.(remainingFiles);
-            setError("");
-          }
-        } catch (error) {
-          console.error("Error removing file:", error);
-          setError("Failed to remove file. Please try again.");
-        } finally {
-          setRemovingFile(false);
-        }
-      } else if (row.isNameEditable && !row.uploadedFile) {
-        // Just remove the row if no file uploaded and it's a custom mandatory doc
-        setMandatoryDocs((prev) => prev.filter((r) => r.id !== rowId));
-      } else if (row.uploadedFile && onDeleteFile) {
-        // For preset mandatory documents (non-editable name), reset instead of delete
-        setRemovingFile(true);
-        try {
-          const response = await onDeleteFile(row.uploadedFile.id);
-          if (response?.status) {
-            // Reset the mandatory row to allow new upload
-            setMandatoryDocs((prev) => prev.map((r) => 
-              r.id === rowId ? { ...r, isUploaded: false, uploadedFile: undefined } : r
-            ));
-
-            // Update parent component
-            const remainingFiles = [...mandatoryDocs, ...additionalDocs]
-              .filter((r) => r.id !== rowId && r.isUploaded && r.uploadedFile)
-              .map((r) => r.uploadedFile!)
-              .filter((file): file is UploadedFile => Boolean(file));
-
-            onFilesSelect?.(remainingFiles);
-            setError("");
-          }
-        } catch (error) {
-          console.error("Error removing file:", error);
-          setError("Failed to remove file. Please try again.");
-        } finally {
-          setRemovingFile(false);
-        }
-      } else {
-        // Just reset the row if no file uploaded
-        setMandatoryDocs((prev) => prev.map((r) => 
-          r.id === rowId ? { ...r, isUploaded: false, uploadedFile: undefined } : r
-        ));
-      }
+    if (!row) {
+      console.warn("Row not found for deletion:", rowId);
       return;
     }
 
+    // Prevent deletion of preset mandatory documents (required documents with fixed names)
+    // Only allow deletion of additional documents OR custom mandatory rows (with editable names)
+    if (row.isMandatory && !row.isNameEditable) {
+      // This is a preset mandatory document - do not allow deletion
+      console.log("Cannot delete preset mandatory document:", row.name);
+      return;
+    }
+
+    // Handle deletion for:
+    // 1. Additional documents (in additionalDocs array)
+    // 2. Custom mandatory rows (in mandatoryDocs but with isNameEditable: true)
+    
+    // If file is uploaded, delete it from server first
     if (row.isUploaded && row.uploadedFile && onDeleteFile) {
-      setRemovingFile(true);
+      setRemovingFiles((prev) => new Set(prev).add(rowId));
       try {
         const response = await onDeleteFile(row.uploadedFile.id);
         if (response?.status) {
-          setAdditionalDocs((prev) => prev.filter((r) => r.id !== rowId));
-
-          // Update parent component
-          const remainingFiles = [...mandatoryDocs, ...additionalDocs]
-            .filter((r) => r.id !== rowId && r.isUploaded && r.uploadedFile)
-            .map((r) => r.uploadedFile!)
-            .filter((file): file is UploadedFile => Boolean(file));
-
-          onFilesSelect?.(remainingFiles);
+          // Remove from the appropriate array
+          if (additionalRow) {
+            // Remove from additional docs
+            setAdditionalDocs((prev) => {
+              const updated = prev.filter((r) => r.id !== rowId);
+              // Ensure at least one empty row exists if showAdditionalDocs is true
+              if (updated.length === 0 && showAdditionalDocs) {
+                updated.push({
+                  id: `additional_${Date.now()}`,
+                  name: "",
+                  isUploaded: false,
+                  isMandatory: false,
+                  isNameEditable: true,
+                });
+              }
+              return updated;
+            });
+          } else if (mandatoryRow && mandatoryRow.isNameEditable) {
+            // Remove custom mandatory row (added via "Add More")
+            setMandatoryDocs((prev) => prev.filter((r) => r.id !== rowId));
+          }
           setError("");
+        } else {
+          setError("Failed to delete file. Please try again.");
         }
       } catch (error) {
         console.error("Error removing file:", error);
         setError("Failed to remove file. Please try again.");
       } finally {
-        setRemovingFile(false);
+        setRemovingFiles((prev) => {
+          const updated = new Set(prev);
+          updated.delete(rowId);
+          return updated;
+        });
       }
     } else {
-      // Just remove the row if no file uploaded (only for additional docs)
-      setAdditionalDocs((prev) => prev.filter((r) => r.id !== rowId));
+      // Just remove the row if no file uploaded
+      if (additionalRow) {
+        // Remove from additional docs
+        setAdditionalDocs((prev) => {
+          const updated = prev.filter((r) => r.id !== rowId);
+          // Ensure at least one empty row exists if showAdditionalDocs is true
+          if (updated.length === 0 && showAdditionalDocs) {
+            updated.push({
+              id: `additional_${Date.now()}`,
+              name: "",
+              isUploaded: false,
+              isMandatory: false,
+              isNameEditable: true,
+            });
+          }
+          return updated;
+        });
+      } else if (mandatoryRow && mandatoryRow.isNameEditable) {
+        // Remove custom mandatory row (added via "Add More")
+        setMandatoryDocs((prev) => prev.filter((r) => r.id !== rowId));
+      }
+      setError("");
     }
   };
 
@@ -818,36 +808,44 @@ const UploadFile: React.FC<FileUploadProps> = ({
                 </button>
               )}
 
-            {/* Delete button */}
-            <button
-              onClick={() => removeRow(row.id)}
-              disabled={removingFile}
-              className="p-2 rounded-md transition-colors text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-50"
-              title={t("delete")}
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            {/* Delete button - Only show for additional documents, not for required/mandatory documents */}
+            {!row.isMandatory || row.isNameEditable ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log("Delete button clicked for row:", row.id, row);
+                  removeRow(row.id);
+                }}
+                disabled={removingFiles.has(row.id)}
+                className="p-2 rounded-md transition-colors text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-50"
+                title={t("delete")}
               >
-                <path
-                  d="M3 6H5H21"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 6H5H21"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            ) : null}
           </div>
         </td>
       </tr>

@@ -654,10 +654,8 @@ const AddRequest = () => {
   const handleDeleteFile = async (fileId: string) => {
     const response = await removeFileMutation.mutateAsync(fileId);
     if (response.status) {
-      const filteredFiles = uploadedFiles.filter(
-        (file: UploadedFile) => file.id !== fileId
-      );
-      setUploadedFiles(filteredFiles);
+      // Don't update state here - let UploadFile component handle it via onFilesSelect
+      // This prevents state update conflicts
       return { status: true };
     }
     return { status: false };
