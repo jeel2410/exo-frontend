@@ -60,6 +60,9 @@ interface CreateRequestPayload {
   request_id?: string;
 }
 
+// Default currency constant
+const DEFAULT_CURRENCY = "CDF";
+
 const financialAuthorityList: {
   name: string;
   value: string;
@@ -226,6 +229,7 @@ const AddRequest = () => {
         issueDate: entity.issue_date || "", // Map issue_date from API response
         natureOfOperations: entity.nature_of_operation || "", // Map nature_of_operation from API response
         itIc: entity.it_ic || "", // Map it_ic from API response for importation
+        currency: DEFAULT_CURRENCY, // Set default currency to CDF
       };
     });
     // Note: For editing existing requests, tax_category will be fetched separately
@@ -1213,7 +1217,7 @@ const AddRequest = () => {
             <CreateRequestTable
               data={data.map((item) => ({
                 ...item,
-                currency: "CDF",
+                currency: item.currency || DEFAULT_CURRENCY, // Default to CDF if not set
               }))}
               onDataChange={handleTableDataChange}
               onEditComplete={handleEditComplete}

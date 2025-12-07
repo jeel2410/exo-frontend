@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { USFlag, CDFFlag } from "../../icons";
+import { USFlag, CDFFlag, EURFlag, GBPFlag } from "../../icons";
 import { formatAmount } from "../../utils/numberFormat";
 import EntityFormModal from "../modals/EntityFormModal";
 import Button from "../../lib/components/atoms/Button";
@@ -299,7 +299,7 @@ const CreateRequestTable = ({
           taxAmount: data.taxAmount || 0,
           vatIncluded: data.vatIncluded || 0,
           customDuty: data.customDuty,
-          currency: data.currency,
+          currency: data.currency || "CDF", // Default to CDF if not provided
           cif: data.cif ?? (isImportation ? (data.unitPrice ?? undefined) : undefined),
           totalCif: data.totalCif,
           droit: isImportation ? (data.taxAmount || 0) : (data.droit || 0),
@@ -332,6 +332,7 @@ const CreateRequestTable = ({
             taxAmount: data.taxAmount || order.taxAmount,
             vatIncluded: data.vatIncluded || order.vatIncluded,
             customDuty: data.customDuty || order.customDuty,
+            currency: data.currency || order.currency || "CDF", // Default to CDF if not provided
             cif: data.cif ?? order.cif,
             totalCif: data.totalCif ?? order.totalCif,
             droit: data.droit ?? order.droit,
@@ -408,7 +409,7 @@ const CreateRequestTable = ({
 
   // Helper function to render currency with flag (for currency column)
   const renderCurrencyDisplay = (currency?: string) => {
-    const currencyType = currency || "USD";
+    const currencyType = currency || "CDF"; // Default to CDF instead of USD
     return (
       <div className="font-medium text-secondary-100 text-sm flex gap-2 items-center">
         {currencyType === "USD" ? (
@@ -421,18 +422,39 @@ const CreateRequestTable = ({
     );
   };
 
-  // Helper function to render amounts as numbers only
-  const renderAmountOnly = (amount: number | string) => {
+  // Helper function to render amounts with currency flag
+  const renderAmountOnly = (amount: number | string, currency?: string) => {
     const numericAmount =
       typeof amount === "string" ? parseFloat(amount) : amount;
     const formattedAmount = isNaN(numericAmount)
       ? "0.00"
       : formatAmount(numericAmount);
+    
+    const currencyType = currency || "CDF"; // Default to CDF
+    
+    // Get the appropriate flag component
+    const getFlag = () => {
+      switch (currencyType) {
+        case "USD":
+          return <USFlag width={16} height={10} className="flex-shrink-0" />;
+        case "CDF":
+          return <CDFFlag width={16} height={10} className="flex-shrink-0" />;
+        case "EUR":
+          return <EURFlag width={16} height={10} className="flex-shrink-0" />;
+        case "GBP":
+          return <GBPFlag width={16} height={10} className="flex-shrink-0" />;
+        default:
+          return <CDFFlag width={16} height={10} className="flex-shrink-0" />;
+      }
+    };
 
     return (
-      <span className="block font-medium text-secondary-100 text-sm">
-        {formattedAmount}
-      </span>
+      <div className="flex items-center gap-1.5">
+        {getFlag()}
+        <span className="block font-medium text-secondary-100 text-sm">
+          {formattedAmount}
+        </span>
+      </div>
     );
   };
 
@@ -537,14 +559,14 @@ const CreateRequestTable = ({
         // Unit Price
         columns.push(
           <TableCell key="unit_price" className="px-5 py-4 sm:px-6">
-            {renderAmountOnly(order.unitPrice || order.unit_price || 0)}
+            {renderAmountOnly(order.unitPrice || order.unit_price || 0, order.currency || "CDF")}
           </TableCell>
         );
 
         // Total
         columns.push(
           <TableCell key="total" className="px-5 py-4 sm:px-6">
-            {renderAmountOnly(order.total || 0)}
+            {renderAmountOnly(order.total || 0, order.currency || "CDF")}
           </TableCell>
         );
 
@@ -563,7 +585,7 @@ const CreateRequestTable = ({
             <div className="absolute inset-0 bg-gradient-to-r from-green-50 via-green-100 to-green-50 opacity-60 animate-pulse"></div>
             <div className="relative z-10 font-bold text-green-900 text-center">
               <div className="bg-white bg-opacity-80 rounded px-2 py-1 shadow-sm">
-                {renderAmountOnly(order.taxAmount || order.tax_amount || 0)}
+                {renderAmountOnly(order.taxAmount || order.tax_amount || 0, order.currency || "CDF")}
               </div>
             </div>
           </TableCell>
@@ -572,7 +594,7 @@ const CreateRequestTable = ({
         // TTC (VAT Included)
         columns.push(
           <TableCell key="ttc" className="px-5 py-4 sm:px-6">
-            {renderAmountOnly(order.vatIncluded || order.vat_included || 0)}
+            {renderAmountOnly(order.vatIncluded || order.vat_included || 0, order.currency || "CDF")}
           </TableCell>
         );
       } else if (currentTaxCategory === "importation") {
@@ -616,7 +638,8 @@ const CreateRequestTable = ({
         columns.push(
           <TableCell key="cif" className="px-5 py-4 sm:px-6">
             {renderAmountOnly(
-              (order.cif ?? order.unitPrice ?? order.unit_price ?? 0)
+              (order.cif ?? order.unitPrice ?? order.unit_price ?? 0),
+              order.currency || "CDF"
             )}
           </TableCell>
         );
@@ -624,7 +647,7 @@ const CreateRequestTable = ({
         // Total CIF
         columns.push(
           <TableCell key="total_cif" className="px-5 py-4 sm:px-6">
-            {renderAmountOnly(order.total || 0)}
+            {renderAmountOnly(order.total || 0, order.currency || "CDF")}
           </TableCell>
         );
 
@@ -643,7 +666,7 @@ const CreateRequestTable = ({
             <div className="absolute inset-0 bg-gradient-to-r from-green-50 via-green-100 to-green-50 opacity-60 animate-pulse"></div>
             <div className="relative z-10 font-bold text-green-900 text-center">
               <div className="bg-white bg-opacity-80 rounded px-2 py-1 shadow-sm">
-                {renderAmountOnly(order.taxAmount || order.tax_amount || 0)}
+                {renderAmountOnly(order.taxAmount || order.tax_amount || 0, order.currency || "CDF")}
               </div>
             </div>
           </TableCell>
@@ -652,7 +675,7 @@ const CreateRequestTable = ({
         // TTC
         columns.push(
           <TableCell key="ttc" className="px-5 py-4 sm:px-6">
-            {renderAmountOnly(order.vatIncluded || order.vat_included || 0)}
+            {renderAmountOnly(order.vatIncluded || order.vat_included || 0, order.currency || "CDF")}
           </TableCell>
         );
       } else {
@@ -677,10 +700,10 @@ const CreateRequestTable = ({
             {renderCurrencyDisplay(order.currency)}
           </TableCell>,
           <TableCell key="unitPrice" className="px-5 py-4 sm:px-6">
-            {renderAmountOnly(order.unitPrice || order.unit_price || 0)}
+            {renderAmountOnly(order.unitPrice || order.unit_price || 0, order.currency || "CDF")}
           </TableCell>,
           <TableCell key="total" className="px-5 py-4 sm:px-6">
-            {renderAmountOnly(order.total || 0)}
+            {renderAmountOnly(order.total || 0, order.currency || "CDF")}
           </TableCell>,
           <TableCell key="taxRate" className="px-5 py-4 sm:px-6">
             <span className="block font-medium text-secondary-100 text-sm">
@@ -691,12 +714,12 @@ const CreateRequestTable = ({
             <div className="absolute inset-0 bg-gradient-to-r from-green-50 via-green-100 to-green-50 opacity-60 animate-pulse"></div>
             <div className="relative z-10 font-bold text-green-900 text-center">
               <div className="bg-white bg-opacity-80 rounded px-2 py-1 shadow-sm">
-                {renderAmountOnly(order.taxAmount || order.tax_amount || 0)}
+                {renderAmountOnly(order.taxAmount || order.tax_amount || 0, order.currency || "CDF")}
               </div>
             </div>
           </TableCell>,
           <TableCell key="vatIncluded" className="px-5 py-4 sm:px-6">
-            {renderAmountOnly(order.vatIncluded || order.vat_included || 0)}
+            {renderAmountOnly(order.vatIncluded || order.vat_included || 0, order.currency || "CDF")}
           </TableCell>
         );
       }

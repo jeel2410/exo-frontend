@@ -8,6 +8,7 @@ import Label from "../../lib/components/atoms/Label";
 import Button from "../../lib/components/atoms/Button";
 import Modal from "../../lib/components/atoms/Modal";
 import { formatAmount } from "../../utils/numberFormat";
+import { USFlag, CDFFlag, EURFlag, GBPFlag } from "../../icons";
 
 interface EntityFormModalProps {
   isOpen: boolean;
@@ -107,7 +108,10 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
   // Reset form when modal opens/closes or initialData changes
   useEffect(() => {
     if (isOpen) {
-      setFormData(initialData || {});
+      setFormData({
+        ...initialData,
+        currency: initialData?.currency || "CDF", // Default to CDF if not set
+      });
       // Update quantity display when form resets
       const quantity = initialData?.quantity;
       if (quantity) {
@@ -231,6 +235,24 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
       return constraints.allowedValues.includes(taxRate);
     }
     return taxRate >= constraints.min && taxRate <= constraints.max;
+  };
+
+  // Helper function to render currency flag
+  const renderCurrencyFlag = (currency?: string) => {
+    const currencyType = currency || "CDF"; // Default to CDF
+    
+    switch (currencyType) {
+      case "USD":
+        return <USFlag width={16} height={10} className="flex-shrink-0" />;
+      case "CDF":
+        return <CDFFlag width={16} height={10} className="flex-shrink-0" />;
+      case "EUR":
+        return <EURFlag width={16} height={10} className="flex-shrink-0" />;
+      case "GBP":
+        return <GBPFlag width={16} height={10} className="flex-shrink-0" />;
+      default:
+        return <CDFFlag width={16} height={10} className="flex-shrink-0" />;
+    }
   };
 
   const handleInputChange = (field: keyof Order, value: string | number) => {
@@ -724,35 +746,40 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
                   ? t("cif_required")
                   : t("unit_price_required")}
               </Label>
-              <Input
-                id="unit-price"
-                name={
-                  currentTaxCategory === "importation" ? "cif" : "unitPrice"
-                }
-                type="text"
-                value={
-                  isPriceTyping
-                    ? priceDisplay
-                    : currentTaxCategory === "importation"
-                    ? getPriceDisplayValue(formData.cif)
-                    : getPriceDisplayValue(formData.unitPrice)
-                }
-                onChange={(e) =>
-                  handlePriceChange(
-                    e,
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                  {renderCurrencyFlag(formData.currency || "CDF")}
+                </div>
+                <Input
+                  id="unit-price"
+                  name={
                     currentTaxCategory === "importation" ? "cif" : "unitPrice"
-                  )
-                }
-                onFocus={() => setIsPriceTyping(true)}
-                onBlur={() => setIsPriceTyping(false)}
-                placeholder={t("enter_price", {
-                  type:
-                    currentTaxCategory === "importation"
-                      ? t("cif")
-                      : t("unit_price"),
-                })}
-                className="!bg-white"
-              />
+                  }
+                  type="text"
+                  value={
+                    isPriceTyping
+                      ? priceDisplay
+                      : currentTaxCategory === "importation"
+                      ? getPriceDisplayValue(formData.cif)
+                      : getPriceDisplayValue(formData.unitPrice)
+                  }
+                  onChange={(e) =>
+                    handlePriceChange(
+                      e,
+                      currentTaxCategory === "importation" ? "cif" : "unitPrice"
+                    )
+                  }
+                  onFocus={() => setIsPriceTyping(true)}
+                  onBlur={() => setIsPriceTyping(false)}
+                  placeholder={t("enter_price", {
+                    type:
+                      currentTaxCategory === "importation"
+                        ? t("cif")
+                        : t("unit_price"),
+                  })}
+                  className="!bg-white pl-10"
+                />
+              </div>
             </div>
 
             {/* Tax Rate */}
@@ -830,47 +857,62 @@ const EntityFormModal: React.FC<EntityFormModalProps> = ({
             {/* Calculated Fields - Read Only */}
             <div>
               <Label htmlFor="total-amount">{t("total_amount")}</Label>
-              <Input
-                id="total-amount"
-                type="text"
-                value={
-                  formData.total
-                    ? formatAmount(formData.total)
-                    : formatAmount(0)
-                }
-                disabled
-                className="bg-gray-50 text-gray-600"
-              />
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                  {renderCurrencyFlag(formData.currency || "CDF")}
+                </div>
+                <Input
+                  id="total-amount"
+                  type="text"
+                  value={
+                    formData.total
+                      ? formatAmount(formData.total)
+                      : formatAmount(0)
+                  }
+                  disabled
+                  className="bg-gray-50 text-gray-600 pl-10"
+                />
+              </div>
             </div>
 
             <div>
               <Label htmlFor="tax-amount">{t("tax_amount")}</Label>
-              <Input
-                id="tax-amount"
-                type="text"
-                value={
-                  formData.taxAmount
-                    ? formatAmount(formData.taxAmount)
-                    : formatAmount(0)
-                }
-                disabled
-                className="bg-gray-50 text-gray-600"
-              />
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                  {renderCurrencyFlag(formData.currency || "CDF")}
+                </div>
+                <Input
+                  id="tax-amount"
+                  type="text"
+                  value={
+                    formData.taxAmount
+                      ? formatAmount(formData.taxAmount)
+                      : formatAmount(0)
+                  }
+                  disabled
+                  className="bg-gray-50 text-gray-600 pl-10"
+                />
+              </div>
             </div>
 
             <div>
               <Label htmlFor="total-with-tax">{t("total_with_tax")}</Label>
-              <Input
-                id="total-with-tax"
-                type="text"
-                value={
-                  formData.vatIncluded
-                    ? formatAmount(formData.vatIncluded)
-                    : formatAmount(0)
-                }
-                disabled
-                className="bg-gray-50 text-gray-600"
-              />
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                  {renderCurrencyFlag(formData.currency || "CDF")}
+                </div>
+                <Input
+                  id="total-with-tax"
+                  type="text"
+                  value={
+                    formData.vatIncluded
+                      ? formatAmount(formData.vatIncluded)
+                      : formatAmount(0)
+                  }
+                  disabled
+                  className="bg-gray-50 text-gray-600 pl-10"
+                />
+              </div>
             </div>
           </div>
         </div>
